@@ -3,20 +3,33 @@
 /* ---------------------------------- */
 
 .community-list-container {
-  max-width: 1200px; /* PCでの表示幅を制限 */
-  margin: 0 auto; /* 中央寄せ */
+  max-width: 1200px; 
+  margin: 0 auto; 
   padding: 30px 20px;
   font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
   color: #333;
-  background-color: #ffffff; /* 背景色 */
+  background-color: #ffffff;
+}
+
+.main-title-area {
+  display: flex; 
+  align-items: center; 
+  gap: 15px; 
+  margin-bottom: 25px; 
+  border-bottom: 3px solid #E3F2FD; 
+  padding-bottom: 10px; 
 }
 
 .community-list-container h1 {
   font-size: 2.2em;
-  color: #1976D2; /* メインタイトルは青色に */
-  margin-bottom: 25px;
-  border-bottom: 3px solid #E3F2FD; /* 下線 */
-  padding-bottom: 10px;
+  color: #1976D2; 
+  margin: 0; 
+}
+
+/* 🌟 追加: ロゴのスタイル */
+.main-logo {
+  vertical-align: middle; 
+  flex-shrink: 0; /* ロゴが縮まないようにする */
 }
 
 /* ---------------------------------- */
