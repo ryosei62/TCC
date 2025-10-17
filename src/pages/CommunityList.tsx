@@ -5,8 +5,17 @@ import "./CommunityList.css";
 
 const CommunityList: React.FC = () => {
   return (
-    <div className="community-list-container">
-      <h1>つくばカジュアルコミュニティ</h1>
+      <div className="community-list-container">
+        <div className="main-title-area">
+          <img 
+            src="/favicon.png" 
+            alt="TCCロゴ" 
+            width="40" 
+            height="40" 
+            className="main-logo" 
+          />
+          <h1>つくばカジュアルコミュニティ</h1>
+      </div>
       
       <div className="header-links">
         <Link to="/search" className="header-link">
