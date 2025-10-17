@@ -17,7 +17,7 @@ const CommunityList: React.FC = () => {
         </Link>
       </div>
 
-<div className="search-area">
+      <div className="search-area">
         <input 
           type="text" 
           placeholder="キーワードで探す" 
