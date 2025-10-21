@@ -3,6 +3,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom' // or useRouter if Next.js
+import { Link } from 'react-router-dom'
 
 type Community = {
   name: string
@@ -36,7 +37,8 @@ export default function CommunityDetail() {
   if (!community) return <p>読み込み中...</p>
 
   return (
-    <div>
+    <div style={{ padding: "24px", fontFamily: "sans-serif" }}>
+      <Link to="/CommunitiesList">← 一覧へ戻る</Link>
       <h1>{community.name}</h1>
       <p><strong>一言メッセージ:</strong> {community.message}</p>
       <p><strong>構成人数:</strong> {community.memberCount}</p>
