@@ -6,7 +6,7 @@ import CommunityDetail from "./pages/CommunityDetail";
 import CommunitiesList from "./pages/CommunitiesList";
 import CommunitiesDetail from "./pages/CommunitiesDetail";
 import { CreateCommunity } from "./pages/CreateCommunity";
-import { About } from "./pages/about";
+import { About } from "./pages/About";
 
 const App: React.FC = () => {
   return (
