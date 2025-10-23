@@ -14,6 +14,15 @@ const CommunityDetail: React.FC = () => {
     <div style={{ padding: "24px", fontFamily: "sans-serif" }}>
       <Link to="/">← 一覧へ戻る</Link>
       <h1>{community.name}</h1>
+
+      {community.image && (
+        <img
+          src={community.image}
+          alt={community.name}
+          style={{ width: "100%", maxWidth: "400px", borderRadius: "8px", marginTop: "12px" }}
+        />
+      )}
+
       <p><strong>一言メッセージ：</strong> {community.message}</p>
       <p><strong>参加人数：</strong> {community.members}人</p>
       <p><strong>活動内容：</strong> {community.description}</p>
