@@ -1,4 +1,5 @@
 // CommunityDetail.tsx
+//　DBからデータを取得してる方！
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { useEffect, useState } from 'react'
@@ -13,6 +14,7 @@ type Community = {
   activityTime: string
   activityLocation: string
   contact: string
+  imageUrl?: string;
 }
 
 export default function CommunityDetail() {
@@ -40,6 +42,21 @@ export default function CommunityDetail() {
     <div style={{ padding: "24px", fontFamily: "sans-serif" }}>
       <Link to="/CommunitiesList">← 一覧へ戻る</Link>
       <h1>{community.name}</h1>
+
+      {/* 画像がある場合だけ表示 */}
+      {community.imageUrl && (
+        <img
+          src={community.imageUrl}
+          alt={community.name}
+          style={{
+            width: "100%",
+            maxWidth: "400px",
+            borderRadius: "8px",
+            marginTop: "12px",
+          }}
+        />
+      )}
+
       <p><strong>一言メッセージ:</strong> {community.message}</p>
       <p><strong>構成人数:</strong> {community.memberCount}</p>
       <p><strong>活動内容:</strong> {community.activityDescription}</p>

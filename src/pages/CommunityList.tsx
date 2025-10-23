@@ -1,3 +1,4 @@
+// サンプルデータの方！
 import React from "react";
 import { Link } from "react-router-dom";
 import { communities } from "../data/communities";
