@@ -3,8 +3,10 @@ import { useState } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
 import { db } from "../firebase/config";
+import { useNavigate } from "react-router-dom";
 
 export const CreateCommunity = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     message: "",
@@ -76,6 +78,8 @@ export const CreateCommunity = () => {
         createdAt: serverTimestamp(), // Firestoreのサーバー時刻を使う
       });
       alert("コミュニティを作成しました！");
+
+      navigate("/");
 
       setFormData({
         name: "",
