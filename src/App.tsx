@@ -1,8 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TestLogin from "./pages/testLogin"; // Changed from testLogin to TestLogin
-import CommunityList from "./pages/CommunityList";
-import CommunityDetail from "./pages/CommunityDetail";
 import CommunitiesList from "./pages/CommunitiesList";
 import CommunitiesDetail from "./pages/CommunitiesDetail";
 import { CreateCommunity } from "./pages/CreateCommunity";
@@ -13,8 +11,6 @@ const App: React.FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<TestLogin />} />
-        <Route path="/CommunityList" element={<CommunityList />} />
-        <Route path="/community/:id" element={<CommunityDetail />} />
         <Route path="/communitiesList" element={<CommunitiesList />} />
         <Route path="/communities/:id" element={<CommunitiesDetail />} />
         <Route path="/CreateCommunity" element={<CreateCommunity />} />

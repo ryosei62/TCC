@@ -6,9 +6,6 @@ const testLogin: React.FC = () => {
     <div className="community-list-container">
       
       <div className="header-links">
-        <Link to="/CommunityList">
-          <h2>サンプルデータ</h2>
-        </Link>
         <Link to="/CommunitiesList">
           <h2>DBデータ</h2>
         </Link>
