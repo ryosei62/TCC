@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { db, auth } from "../firebase/config";
+// import { db, auth } from "../firebase/config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
+import { db } from "../firebase/config";
 
 export const CreateCommunity = () => {
   const [formData, setFormData] = useState({
@@ -16,7 +17,7 @@ export const CreateCommunity = () => {
 
   const [imageFile, setImageFile] = useState<File | null>(null); // 画像ファイル
   const [previewUrl, setPreviewUrl] = useState<string>(""); // プレビュー用
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   const CLOUD_NAME = "dvc15z98t";
   const UPLOAD_PRESET = "community_images";
