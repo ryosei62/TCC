@@ -137,6 +137,7 @@ export const CreateCommunity: React.FC = () => {
   const [activityLocation, setActivityLocation] = useState("");
   const [activityTime, setActivityTime] = useState("");
   const [contact, setContact] = useState("");
+  const [url, setUrl] = useState("");
   const [memberCount, setMemberCount] = useState<number>(0);
 
   const [user] = useAuthState(auth); // ログイン中のユーザーを取得（いない場合は null）
@@ -152,6 +153,7 @@ export const CreateCommunity: React.FC = () => {
         activityLocation,
         activityTime,
         contact,
+        url,
         memberCount,
         createdAt: serverTimestamp(),
         createdBy: user ? user.uid : "guest_" + Math.random().toString(36).slice(2, 10), // 👈 未ログイン時は一時IDを生成
@@ -164,6 +166,7 @@ export const CreateCommunity: React.FC = () => {
       setActivityLocation("");
       setActivityTime("");
       setContact("");
+      setUrl("");
       setMemberCount(0);
     } catch (error) {
       console.error("コミュニティ作成エラー:", error);
@@ -220,6 +223,13 @@ export const CreateCommunity: React.FC = () => {
           placeholder="連絡先"
           value={contact}
           onChange={(e) => setContact(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <input
+          type="text"
+          placeholder="URL"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
           className="border p-2 rounded"
         />
         <input
