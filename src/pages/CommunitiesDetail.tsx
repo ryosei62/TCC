@@ -63,6 +63,7 @@ export default function CommunityDetail() {
       <p><strong>活動時間:</strong> {community.activityTime}</p>
       <p><strong>活動場所:</strong> {community.activityLocation}</p>
       <p><strong>連絡先:</strong> {community.contact}</p>
+      <p><strong>URL:</strong><a href= {community.url}> {community.url}</a></p>
     </div>
   )
 }
