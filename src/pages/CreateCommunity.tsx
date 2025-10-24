@@ -14,6 +14,7 @@ export const CreateCommunity = () => {
     activityLocation: "",
     activityTime: "",
     contact: "",
+    url: "",
     memberCount: 0,
   });
 
@@ -88,6 +89,7 @@ export const CreateCommunity = () => {
         activityLocation: "",
         activityTime: "",
         contact: "",
+        url: "",
         memberCount: 0,
       });
       setImageFile(null);
@@ -147,6 +149,14 @@ export const CreateCommunity = () => {
           name="contact"
           placeholder="連絡先"
           value={formData.contact}
+          onChange={handleChange}
+          className="border p-2 rounded"
+        />
+        <input
+          type="text"
+          name="url"
+          placeholder="URL"
+          value={formData.url}
           onChange={handleChange}
           className="border p-2 rounded"
         />
