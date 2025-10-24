@@ -14,7 +14,8 @@ type Community = {
   activityTime: string
   activityLocation: string
   contact: string
-  imageUrl?: string;
+  url: string;
+  imageUrl: string;
 }
 
 export default function CommunityDetail() {

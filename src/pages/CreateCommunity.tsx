@@ -185,7 +185,7 @@ export const CreateCommunity = () => {
 };
 
 
-import React, { useState } from "react";
+/*import React, { useState } from "react";
 import { db, auth } from "../firebase/config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -308,4 +308,4 @@ export const CreateCommunity: React.FC = () => {
       </form>
     </div>
   );
-};
+};*/
