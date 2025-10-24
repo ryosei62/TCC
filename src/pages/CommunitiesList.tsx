@@ -1,4 +1,5 @@
 // CommunityList.tsx
+//　DBからデータを取得してる方！
 import { collection, getDocs } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
 import { db } from '../firebase/config'
@@ -77,6 +78,7 @@ export default function CommunitiesList() {
             className="community-list-item"
           >
             <Link to={`/communities/${c.id}`} className="community-link" >
+              <h2>{c.name}</h2>
 
               {c.imageUrl && (
                 <img
@@ -93,7 +95,6 @@ export default function CommunitiesList() {
                 />
               )}
 
-              <h2>{c.name}</h2>
               <p>{c.message}</p>
               <p>メンバー数: {c.memberCount}人</p>
             </Link>
