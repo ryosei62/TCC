@@ -1,4 +1,5 @@
 export interface Community {
+  image: string | undefined;
   id: number;
   name: string;
   message: string;
