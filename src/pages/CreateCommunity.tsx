@@ -4,7 +4,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
 import { db } from "../firebase/config";
 import "./CreateCommunity.css";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export const CreateCommunity = () => {
   const navigate = useNavigate();
@@ -107,6 +107,8 @@ export const CreateCommunity = () => {
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
       <h1 className="text-2xl font-bold mb-4 title">新しいコミュニティを作る</h1>
+
+      <Link to="/" className="returnList">← 一覧に戻る</Link>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="item">
