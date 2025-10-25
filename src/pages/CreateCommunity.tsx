@@ -106,7 +106,7 @@ export const CreateCommunity = () => {
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-      <h1 className="text-2xl font-bold mb-4 title">新しいコミュニティを作る</h1>
+      <h2 className="text-2xl font-bold mb-4 title">新しいコミュニティを作る</h2>
 
       <Link to="/" className="returnList">← 一覧に戻る</Link>
 
