@@ -81,6 +81,8 @@ export const CreateCommunity = () => {
       });
       alert("コミュニティを作成しました！");
 
+      navigate("/");
+
       setFormData({
         name: "",
         message: "",
