@@ -1,0 +1,68 @@
+.title {
+    text-align: center;
+}
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* space-between → flex-start */
+    gap: 12px;
+}
+
+.item p {
+    flex-shrink: 0;
+    width: 140px;
+    font-weight: 500;
+    color: #333;
+}
+
+  /* 入力欄と同じ揃え方に */
+.item input,
+.item textarea,
+.item select {
+    flex: 1; /* 横に広がって他と左端が揃う */
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.item select {
+    width: auto; /* ←固定幅を解除して、自然なサイズに */
+    max-width: 150px; /* 必要なら上限を設定 */
+    text-align: left;
+}
+
+.item textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+  /* 作成ボタン全体の配置 */
+.createButton[type="submit"] {
+    display: block;              /* 幅を指定できるように */
+    margin: 30px auto 0;         /* 上に余白をとって中央寄せ */
+    padding: 14px 60px;          /* ボタンを大きく */
+    font-size: 1.1rem;           /* 文字を少し大きく */
+    font-weight: 600;
+    background-color: #909090;   /* 青色（Vercelっぽい） */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+  /* ホバー時 */
+.createButton[type="submit"]:hover {
+    background-color: #909090;
+    transform: translateY(-2px); /* 少し浮く感じに */
+}
+
+  /* スマホでも見やすく */
+@media (max-width: 640px) {
+    .createButton[type="submit"] {
+        width: 100%;
+        padding: 20px 0;
+        margin: 20px 20px 20px 0;
+    }
+}

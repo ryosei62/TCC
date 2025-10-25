@@ -3,8 +3,11 @@ import { useState } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
 import { db } from "../firebase/config";
+import "./CreateCommunity.css";
+import { useNavigate } from "react-router-dom";
 
 export const CreateCommunity = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     message: "",
@@ -24,7 +27,7 @@ export const CreateCommunity = () => {
   const UPLOAD_PRESET = "community_images";
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -90,6 +93,9 @@ export const CreateCommunity = () => {
       });
       setImageFile(null);
       setPreviewUrl("");
+
+      navigate("/");
+
     } catch (error) {
       console.error("コミュニティ作成エラー:", error);
       alert("作成に失敗しました");
@@ -98,72 +104,101 @@ export const CreateCommunity = () => {
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-      <h1 className="text-2xl font-bold mb-4">新しいコミュニティを作る</h1>
+      <h1 className="text-2xl font-bold mb-4 title">新しいコミュニティを作る</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="text"
-          name="name"
-          placeholder="コミュニティ名"
-          value={formData.name}
-          onChange={handleChange}
-          className="border p-2 rounded"
-          required
+        <div className="item">
+          <p className="name">コミュニティ名:</p>
+          <input
+            type="text"
+            name="name"
+            placeholder="筑波散歩会"
+            value={formData.name}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </div>
+        <div className="item">
+          <p className="message">一言メッセージ:</p>
+          <textarea
+            name="message"
+            placeholder="楽しく活動しています！"
+            value={formData.message}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </div>
+        <div className="item">
+          <p className="activityDescription">活動内容:</p>
+          <textarea
+            name="activityDescription"
+            placeholder="つくばを練り歩きます"
+            value={formData.activityDescription}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </div>
+        <div className="item">
+          <p className="activityLocation">活動場所:</p>
+          <input
+            type="text"
+            name="activityLocation"
+            placeholder="つくば市内"
+            value={formData.activityLocation}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </div>
+        <div className="item">
+          <p className="activityTime">活動頻度:</p>
+          <input
+            type="text"
+            name="activityTime"
+            placeholder="気が向いた時"
+            value={formData.activityTime}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </div>
+        <div className="item">
+          <p className="contact">連絡先:</p>
+          <input
+            type="text"
+            name="contact"
+            placeholder="XXX@YYY.ZZZ"
+            value={formData.contact}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </div>
+        <div className="item">
+          <p className="url">URL:</p>
+          <input
+            type="text"
+            name="url"
+            placeholder="https://example.com"
+            value={formData.url}
+            onChange={handleChange}
+            className="border p-2 rounded"
         />
-        <textarea
-          name="message"
-          placeholder="メッセージ"
-          value={formData.message}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <textarea
-          name="activityDescription"
-          placeholder="活動内容"
-          value={formData.activityDescription}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="activityLocation"
-          placeholder="活動場所"
-          value={formData.activityLocation}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="activityTime"
-          placeholder="活動頻度"
-          value={formData.activityTime}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="contact"
-          placeholder="連絡先"
-          value={formData.contact}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          name="url"
-          placeholder="URL"
-          value={formData.url}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          name="memberCount"
-          placeholder="メンバー数"
-          value={formData.memberCount}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
+        </div>
+        <div className="item">
+          <p className="memberCount">メンバー数:</p>
+          <select
+            name="memberCount"
+            value={formData.memberCount}
+            onChange={handleChange}
+            className="border p-2 rounded w-full"
+          >
+            <option value="">メンバー数を選択</option>
+            {[...Array(301)].map((_, i) => (
+              <option key={i} value={i}>
+                {i} 人
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* 画像アップロード部分 */}
         <div>
@@ -185,7 +220,7 @@ export const CreateCommunity = () => {
 
         <button
           type="submit"
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 createButton"
         >
           作成する
         </button>
