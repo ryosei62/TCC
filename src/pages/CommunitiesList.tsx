@@ -23,6 +23,8 @@ type Community = {
 // コミュニティ要素をDBから取得
 export default function CommunitiesList() {
   const [communities, setCommunities] = useState<Community[]>([])
+  const [searchTerm, setSearchTerm] = useState<string>(''); // 👈 追加
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -44,6 +46,26 @@ export default function CommunitiesList() {
 
     fetchCommunities()
   }, [])
+
+  // 検索処理：漢字・カタカナ・ひらがなの完全一致ベースで部分一致
+
+  const filteredCommunities = communities.filter((c) => {
+
+    if (!searchQuery) return true; // 検索クエリが空の場合は全て表示
+
+    const regex = new RegExp(searchQuery, "g");
+
+    return regex.test(c.name);
+
+  });
+
+  // 検索実行関数
+
+  const handleSearch = () => {
+
+    setSearchQuery(searchTerm.trim());
+
+  };
 
 // コミュニティ一覧表示
   return (
@@ -71,17 +93,29 @@ export default function CommunitiesList() {
 
       <div className="search-area">
         <input 
-          type="text" 
-          placeholder="キーワードで探す" 
+          type="text"
+          placeholder="キーワードで探す"
           className="search-input"
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)} 
+          onKeyDown={(e) => { 
+            if (e.key === 'Enter') {
+              handleSearch();
+            }
+          }}
         />
-        <button type="button" className="search-button">
+        <button type="button"
+          className="search-button"
+          onClick={handleSearch}>
           検索
         </button>
       </div>
 
       <ul className="community-ul">
-        {communities.map((c) => (
+        {filteredCommunities.length === 0 ? (
+          <p>該当するコミュニティはありません。</p>
+        ) : (
+          filteredCommunities.map((c) => (
           <li 
             key={c.id}
             className="community-list-item"
@@ -100,7 +134,7 @@ export default function CommunitiesList() {
               <p>活動時間: {c.activityTime}</p>
             </Link>
           </li>
-        ))}
+        )))}
       </ul>
     </div>
   )
