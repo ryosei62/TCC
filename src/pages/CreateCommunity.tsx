@@ -4,7 +4,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
 import { db } from "../firebase/config";
 import "./CreateCommunity.css";
-import { TagSelector } from "./TagSelector";
+import { TagSelector, Tag } from "./TagSelector";
 import { Link, useNavigate } from "react-router-dom";
 
 export const CreateCommunity = () => {
@@ -21,6 +21,7 @@ export const CreateCommunity = () => {
     tags: [] as string[],
   });
 
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null); // 画像ファイル
   const [previewUrl, setPreviewUrl] = useState<string>(""); // プレビュー用
   // const [loading, setLoading] = useState(false);
@@ -79,6 +80,7 @@ export const CreateCommunity = () => {
         ...formData,
         imageUrl, // 画像URLを追加
         // ログインしないと登録できなかったため createdBy: user.uid,
+        tags: selectedTags.map((tag) => tag.name),
         createdAt: serverTimestamp(), // Firestoreのサーバー時刻を使う
       });
       alert("コミュニティを作成しました！");
@@ -206,11 +208,14 @@ export const CreateCommunity = () => {
             ))}
           </select>
         </div>
-        <TagSelector
-          tags={formData.tags}
-          setTags={(newTags) => setFormData({ ...formData, tags: newTags })}
-        />
-
+        
+        <div className="item">
+          <p className="tags">タグ:</p>
+          <TagSelector
+            selectedTags={selectedTags}
+            setSelectedTags={setSelectedTags}
+          />
+        </div>
 
         {/* 画像アップロード部分 */}
         <div>
