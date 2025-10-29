@@ -4,6 +4,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
 import { db } from "../firebase/config";
 import "./CreateCommunity.css";
+import { TagSelector } from "./TagSelector";
 import { Link, useNavigate } from "react-router-dom";
 
 export const CreateCommunity = () => {
@@ -17,6 +18,7 @@ export const CreateCommunity = () => {
     contact: "",
     url: "",
     memberCount: 0,
+    tags: [] as string[],
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null); // 画像ファイル
@@ -92,6 +94,7 @@ export const CreateCommunity = () => {
         contact: "",
         url: "",
         memberCount: 0,
+        tags: [],
       });
       setImageFile(null);
       setPreviewUrl("");
@@ -203,6 +206,11 @@ export const CreateCommunity = () => {
             ))}
           </select>
         </div>
+        <TagSelector
+          tags={formData.tags}
+          setTags={(newTags) => setFormData({ ...formData, tags: newTags })}
+        />
+
 
         {/* 画像アップロード部分 */}
         <div>
