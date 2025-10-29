@@ -18,7 +18,7 @@ type Community = {
   activityTime: string
   /** 画像のURL (省略可能) */
   imageUrl?: string 
-  tags: [] // 型定義にタグを追加
+  tags: string[] // 型定義にタグを追加
 }
 
 // コミュニティ要素をDBから取得
@@ -38,7 +38,7 @@ export default function CommunitiesList() {
           memberCount: data.memberCount,
           activityTime: data.activityTime,
           imageUrl: data.imageUrl || "",
-          tags:data.data.tags || [],
+          tags:data.tags || [],
         })
       })
       setCommunities(results)
