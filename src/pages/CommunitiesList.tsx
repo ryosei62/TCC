@@ -1,5 +1,4 @@
 // CommunityList.tsx
-//　DBからデータを取得してる方！
 import { collection, getDocs } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
 import { db } from '../firebase/config'
@@ -7,13 +6,21 @@ import { useEffect, useState } from 'react'
 import "./CommunityList.css"
 
 type Community = {
+  /** コミュニティID (FirestoreのドキュメントID) */
   id: string
+  /** コミュニティ名 */
   name: string
+  /** コミュニティの紹介文または説明 */
   message: string
+  /** メンバーの数 */
   memberCount: number
-  imageUrl?: string // 画像URL
+  /** コミュニティの主な活動時間や頻度 */
+  activityTime: string
+  /** 画像のURL (省略可能) */
+  imageUrl?: string 
 }
 
+// コミュニティ要素をDBから取得
 export default function CommunitiesList() {
   const [communities, setCommunities] = useState<Community[]>([])
 
@@ -28,6 +35,7 @@ export default function CommunitiesList() {
           name: data.name,
           message: data.message,
           memberCount: data.memberCount,
+          activityTime: data.activityTime,
           imageUrl: data.imageUrl || "",
         })
       })
@@ -37,6 +45,7 @@ export default function CommunitiesList() {
     fetchCommunities()
   }, [])
 
+// コミュニティ一覧表示
   return (
     
     <div className="community-list-container">
@@ -78,25 +87,17 @@ export default function CommunitiesList() {
             className="community-list-item"
           >
             <Link to={`/communities/${c.id}`} className="community-link" >
-              <h2>{c.name}</h2>
-
               {c.imageUrl && (
                 <img
                   src={c.imageUrl}
                   alt={c.name}
                   className="community-thumbnail"
-                  style={{
-                    width: "120px",
-                    height: "120px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    marginBottom: "8px",
-                  }}
                 />
               )}
-
+              <h2>{c.name}</h2>
               <p>{c.message}</p>
               <p>メンバー数: {c.memberCount}人</p>
+              <p>活動時間: {c.activityTime}</p>
             </Link>
           </li>
         ))}
