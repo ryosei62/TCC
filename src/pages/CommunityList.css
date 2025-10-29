@@ -170,3 +170,22 @@
   margin-top: 10px !important;
   font-size: 0.95em;
 }
+
+/* タグ全体を囲むコンテナ */
+.community-tags-container {
+  display: flex;
+  flex-wrap: wrap; /* タグが多場合に折り返す */
+  gap: 8px; /* タグ同士の間隔 */
+  margin-top: 10px; /* 上の要素との間隔 */
+}
+
+/* 個々のタグ（ピル＝錠剤 のような形） */
+.community-tag-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: #f0f0f0; /* 薄いグレー */
+  color: #333; /* 暗めの文字色 */
+  border-radius: 16px; /* 角を丸くする */
+  font-size: 0.85rem;
+  font-weight: 500;
+}
