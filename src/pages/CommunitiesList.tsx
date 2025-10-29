@@ -16,6 +16,8 @@ type Community = {
 
 export default function CommunitiesList() {
   const [communities, setCommunities] = useState<Community[]>([])
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -37,8 +39,19 @@ export default function CommunitiesList() {
     fetchCommunities()
   }, [])
 
+  // 検索処理：漢字・カタカナ・ひらがなの完全一致ベースで部分一致
+  const filteredCommunities = communities.filter((c) => {
+    if (!searchQuery) return true; // 検索クエリが空の場合は全て表示
+    const regex = new RegExp(searchQuery, "g"); 
+    return regex.test(c.name);
+  });
+
+  // 検索実行関数
+  const handleSearch = () => {
+    setSearchQuery(searchTerm.trim());
+  };
+
   return (
-    
     <div className="community-list-container">
       <div className="main-title-area">
         <img 
@@ -60,47 +73,60 @@ export default function CommunitiesList() {
         </Link>
       </div>
 
+      {/* 🔍 検索欄 */}
       <div className="search-area">
-        <input 
-          type="text" 
-          placeholder="キーワードで探す" 
+        <input
+          type="text"
+          placeholder="キーワードで探す"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSearch();
+            }
+          }}
         />
-        <button type="button" className="search-button">
+        <button
+          type="button"
+          className="search-button"
+          onClick={handleSearch}
+        >
           検索
         </button>
       </div>
 
       <ul className="community-ul">
-        {communities.map((c) => (
-          <li 
-            key={c.id}
-            className="community-list-item"
-          >
-            <Link to={`/communities/${c.id}`} className="community-link" >
-              <h2>{c.name}</h2>
+        {filteredCommunities.length === 0 ? (
+          <p>該当するコミュニティはありません。</p>
+        ) : (
+          filteredCommunities.map((c) => (
+            <li key={c.id} className="community-list-item">
+              <Link to={`/communities/${c.id}`} className="community-link">
+                <h2>{c.name}</h2>
 
-              {c.imageUrl && (
-                <img
-                  src={c.imageUrl}
-                  alt={c.name}
-                  className="community-thumbnail"
-                  style={{
-                    width: "120px",
-                    height: "120px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    marginBottom: "8px",
-                  }}
-                />
-              )}
+                {c.imageUrl && (
+                  <img
+                    src={c.imageUrl}
+                    alt={c.name}
+                    className="community-thumbnail"
+                    style={{
+                      width: "120px",
+                      height: "120px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      marginBottom: "8px",
+                    }}
+                  />
+                )}
 
-              <p>{c.message}</p>
-              <p>メンバー数: {c.memberCount}人</p>
-            </Link>
-          </li>
-        ))}
+                <p>{c.message}</p>
+                <p>メンバー数: {c.memberCount}人</p>
+              </Link>
+            </li>
+          ))
+        )}
       </ul>
     </div>
-  )
+  );
 }
