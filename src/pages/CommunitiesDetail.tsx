@@ -1,5 +1,5 @@
 // CommunityDetail.tsx
-//　DBからデータを取得してる方！
+// DBからデータを取得してる方！
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { useEffect, useState } from 'react'

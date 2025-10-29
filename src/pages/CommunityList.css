@@ -127,6 +127,15 @@
   cursor: pointer;
 }
 
+.community-thumbnail {
+  /* インラインスタイルを移行 */
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px; /* marginBottom: "8px" を CSS の margin-bottom に変換 */
+}
+
 .community-list-item:hover {
   transform: translateY(-3px); /* わずかに浮き上がらせる */
   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1); /* 影を濃くする */
