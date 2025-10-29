@@ -41,7 +41,7 @@ export default function CommunityDetail() {
 
   return (
     <div style={{ padding: "24px", fontFamily: "sans-serif" }}>
-      <Link to="/CommunitiesList">← 一覧へ戻る</Link>
+      <Link to="/">← 一覧へ戻る</Link>
       <h1>{community.name}</h1>
 
       {/* 画像がある場合だけ表示 */}
