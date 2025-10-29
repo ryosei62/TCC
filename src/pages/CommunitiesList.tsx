@@ -18,6 +18,7 @@ type Community = {
   activityTime: string
   /** 画像のURL (省略可能) */
   imageUrl?: string 
+  tags: string[] // 型定義にタグを追加
 }
 
 // コミュニティ要素をDBから取得
@@ -39,6 +40,7 @@ export default function CommunitiesList() {
           memberCount: data.memberCount,
           activityTime: data.activityTime,
           imageUrl: data.imageUrl || "",
+          tags:data.tags || [],
         })
       })
       setCommunities(results)
@@ -132,6 +134,17 @@ export default function CommunitiesList() {
               <p>{c.message}</p>
               <p>メンバー数: {c.memberCount}人</p>
               <p>活動時間: {c.activityTime}</p>
+
+              {/* 👇 3. ここからタグ表示を追加 */}
+              <div className="community-tags-container">
+                {c.tags.map((tag) => (
+                  <span key={tag} className="community-tag-pill">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              {/* 👆 ここまでタグ表示を追加 */}
+
             </Link>
           </li>
         )))}
