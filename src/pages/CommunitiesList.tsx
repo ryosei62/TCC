@@ -1,4 +1,4 @@
-// CommunityList.tsx
+// CommunitiesList.tsx
 import { collection, getDocs } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
 import { db } from '../firebase/config'
@@ -55,9 +55,11 @@ export default function CommunitiesList() {
 
     if (!searchQuery) return true; // 検索クエリが空の場合は全て表示
 
-    const regex = new RegExp(searchQuery, "g");
+    const normalizedQuery = searchQuery.toLowerCase()
+    const nameMatch = c.name.toLowerCase().includes(normalizedQuery)
+    const tagMatch = c.tags.some(tag => tag.toLowerCase().includes(normalizedQuery))
 
-    return regex.test(c.name);
+    return nameMatch || tagMatch
 
   });
 
@@ -68,6 +70,11 @@ export default function CommunitiesList() {
     setSearchQuery(searchTerm.trim());
 
   };
+
+  const handleTagClick = (tag: string) => {
+    setSearchQuery(tag)
+    setSearchTerm(tag)
+  }
 
 // コミュニティ一覧表示
   return (
@@ -135,17 +142,24 @@ export default function CommunitiesList() {
               <p>メンバー数: {c.memberCount}人</p>
               <p>活動時間: {c.activityTime}</p>
 
-              {/* 👇 3. ここからタグ表示を追加 */}
-              <div className="community-tags-container">
+              
+              
+
+            </Link>
+            {/* 👇 3. ここからタグ表示を追加 */}
+            <div className="community-tags-container">
                 {c.tags.map((tag) => (
-                  <span key={tag} className="community-tag-pill">
-                    {tag}
+                  <span
+                    key={tag}
+                    className="community-tag-pill"
+                    onClick={() => handleTagClick(tag)} // ←追加
+                    style={{ cursor: 'pointer' }}       // ←見た目上クリックできるように
+                  >
+                    #{tag}
                   </span>
                 ))}
               </div>
               {/* 👆 ここまでタグ表示を追加 */}
-
-            </Link>
           </li>
         )))}
       </ul>
