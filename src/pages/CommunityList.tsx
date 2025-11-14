@@ -130,36 +130,30 @@ export default function CommunitiesList() {
             className="community-list-item"
           >
             <Link to={`/communities/${c.id}`} className="community-link" >
-              {c.imageUrl && (
-                <img
-                  src={c.imageUrl}
-                  alt={c.name}
-                  className="community-thumbnail"
-                />
-              )}
+              <img
+                src={c.imageUrl || "/favicon.png"}
+                alt={c.name}
+                className="community-thumbnail"
+              />
+          
               <h2>{c.name}</h2>
               <p>{c.message}</p>
               <p>メンバー数: {c.memberCount}人</p>
               <p>活動時間: {c.activityTime}</p>
 
-              
-              
-
             </Link>
-            {/* 👇 3. ここからタグ表示を追加 */}
             <div className="community-tags-container">
                 {c.tags.map((tag) => (
                   <span
                     key={tag}
                     className="community-tag-pill"
-                    onClick={() => handleTagClick(tag)} // ←追加
-                    style={{ cursor: 'pointer' }}       // ←見た目上クリックできるように
+                    onClick={() => handleTagClick(tag)} 
+                    style={{ cursor: 'pointer' }}       
                   >
                     #{tag}
                   </span>
                 ))}
               </div>
-              {/* 👆 ここまでタグ表示を追加 */}
           </li>
         )))}
       </ul>
