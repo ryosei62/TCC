@@ -7,20 +7,21 @@ import { useParams } from 'react-router-dom' // or useRouter if Next.js
 import { Link } from 'react-router-dom'
 
 type Community = {
-  name: string
-  message: string
-  memberCount: number
-  activityDescription: string
-  activityTime: string
-  activityLocation: string
-  contact: string
+  name: string;
+  message: string;
+  memberCount: number;
+  activityDescription: string;
+  activityTime: string;
+  activityLocation: string;
+  contact: string;
   url: string;
-  imageUrl: string;
-}
+  imageUrls: string[];     // ← 複数
+};
 
 export default function CommunityDetail() {
   const { id } = useParams()
   const [community, setCommunity] = useState<Community | null>(null)
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const fetchCommunity = async () => {
@@ -44,19 +45,46 @@ export default function CommunityDetail() {
       <Link to="/">← 一覧へ戻る</Link>
       <h1>{community.name}</h1>
 
-      {/* 画像がある場合だけ表示 */}
-      {community.imageUrl && (
-        <img
-          src={community.imageUrl}
-          alt={community.name}
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            borderRadius: "8px",
-            marginTop: "12px",
-          }}
-        />
-      )}
+  {community.imageUrls.length > 0 && (
+    <div style={{ textAlign: "center", marginTop: "20px" }}>
+      <img
+        src={community.imageUrls[currentIndex]}
+        alt="community"
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          borderRadius: "10px",
+        }}
+      />
+
+      <div style={{ marginTop: "10px" }}>
+        <button
+          onClick={() =>
+            setCurrentIndex((prev) =>
+              prev === 0 ? community.imageUrls.length - 1 : prev - 1
+            )
+          }
+        >
+          ←
+        </button>
+
+        <span style={{ margin: "0 20px" }}>
+          {currentIndex + 1} / {community.imageUrls.length}
+        </span>
+
+        <button
+          onClick={() =>
+            setCurrentIndex((prev) =>
+              prev === community.imageUrls.length - 1 ? 0 : prev + 1
+            )
+          }
+        >
+          →
+        </button>
+      </div>
+    </div>
+  )}
+
 
       <p><strong>一言メッセージ:</strong> {community.message}</p>
       <p><strong>構成人数:</strong> {community.memberCount}</p>

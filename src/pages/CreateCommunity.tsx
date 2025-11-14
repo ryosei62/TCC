@@ -22,9 +22,10 @@ export const CreateCommunity = () => {
   });
 
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-  const [imageFile, setImageFile] = useState<File | null>(null); // 画像ファイル
-  const [previewUrl, setPreviewUrl] = useState<string>(""); // プレビュー用
-  // const [loading, setLoading] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [thumbnailIndex, setThumbnailIndex] = useState<number>(0); // 一枚選ぶ
+
 
   const CLOUD_NAME = "dvc15z98t";
   const UPLOAD_PRESET = "community_images";
@@ -36,52 +37,50 @@ export const CreateCommunity = () => {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
+    if (!e.target.files) return;
+
+    const files = Array.from(e.target.files);
+    setImageFiles(files);
+    setPreviewUrls(files.map((f) => URL.createObjectURL(f)));
+    setThumbnailIndex(0); // 最初の画像をデフォルトのサムネに
   };
 
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", UPLOAD_PRESET);
 
-    console.log("file:", file);
-    console.log("upload_preset:", UPLOAD_PRESET);
+    const uploadImagesToCloudinary = async (): Promise<string[]> => {
+      const urls: string[] = [];
 
-    const response = await axios.post(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-      formData
-    );
+      for (const file of imageFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", UPLOAD_PRESET);
 
-    return response.data.secure_url; // Cloudinary上の画像URL
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // const user = auth.currentUser;
-    // if (!user) {
-    //   alert("ログインが必要です");
-    //   return;
-    // }
-
-    try {
-      let imageUrl = "";
-      if (imageFile) {
-        // Cloudinaryにアップロード
-        imageUrl = await uploadImageToCloudinary(imageFile);
+        const res = await axios.post(
+          `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+          formData
+        );
+        urls.push(res.data.secure_url);
       }
+
+      return urls;
+    };
+
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        let imageUrls: string[] = [];
+
+        if (imageFiles.length > 0) {
+          imageUrls = await uploadImagesToCloudinary();
+        }
 
       // Firestoreへ保存
       await addDoc(collection(db, "communities"), {
         ...formData,
-        imageUrl, // 画像URLを追加
-        // ログインしないと登録できなかったため createdBy: user.uid,
-        tags: selectedTags.map((tag) => tag.name),
-        createdAt: serverTimestamp(), // Firestoreのサーバー時刻を使う
+        imageUrls,                      // 全部の画像
+        thumbnailUrl: imageUrls[thumbnailIndex] || "", // ← 一覧用の1枚
+        tags: selectedTags.map(tag => tag.name),
+        createdAt: serverTimestamp(),
       });
       alert("コミュニティを作成しました！");
 
@@ -98,8 +97,8 @@ export const CreateCommunity = () => {
         memberCount: 0,
         tags: [],
       });
-      setImageFile(null);
-      setPreviewUrl("");
+      setImageFiles([]);
+      setPreviewUrls([]);
 
       navigate("/");
 
@@ -217,22 +216,38 @@ export const CreateCommunity = () => {
           />
         </div>
 
-        {/* 画像アップロード部分 */}
         <div>
-          <label className="block mb-2 font-medium">コミュニティ画像</label>
+          <label className="block mb-2 font-medium">コミュニティ画像（複数可）</label>
           <input
             type="file"
+            multiple
             accept="image/*"
             onChange={handleImageChange}
             className="border p-2 rounded w-full"
           />
-          {previewUrl && (
-            <img
-              src={previewUrl}
-              alt="プレビュー"
-              className="w-64 mt-2 rounded"
-            />
-          )}
+
+        {/* 複数枚プレビュー表示の問題で一旦ここにCSS入ってる */}
+          <div className="flex gap-4 mt-3 overflow-x-auto">
+            {previewUrls.map((url, index) => (
+              <div
+                key={index}
+                className={`relative w-28 h-28 flex items-center justify-center rounded cursor-pointer border-4 ${
+                  thumbnailIndex === index ? "border-blue-500" : "border-gray-300"
+                }`}
+                onClick={() => setThumbnailIndex(index)}  // ← これで選択
+              >
+                <img
+                  src={url}
+                  className="max-w-full max-h-full object-contain rounded"
+                  alt={`preview-${index}`}
+                />
+              </div>
+            ))}
+          </div>
+
+          <p className="text-sm mt-1">
+            ※ 青枠の画像が一覧ページに表示されます
+          </p>
         </div>
 
         <button

@@ -17,7 +17,8 @@ type Community = {
   /** コミュニティの主な活動時間や頻度 */
   activityTime: string
   /** 画像のURL (省略可能) */
-  imageUrl?: string 
+  imageUrls?: string[];
+  thumbnailUrl?: string;
   tags: string[] // 型定義にタグを追加
 }
 
@@ -39,8 +40,9 @@ export default function CommunitiesList() {
           message: data.message,
           memberCount: data.memberCount,
           activityTime: data.activityTime,
-          imageUrl: data.imageUrl || "",
-          tags:data.tags || [],
+          imageUrls: data.imageUrls || [],
+          thumbnailUrl: data.thumbnailUrl || "",
+          tags: data.tags || [],
         })
       })
       setCommunities(results)
@@ -130,20 +132,18 @@ export default function CommunitiesList() {
             className="community-list-item"
           >
             <Link to={`/communities/${c.id}`} className="community-link" >
-              {c.imageUrl && (
-                <img
-                  src={c.imageUrl}
-                  alt={c.name}
-                  className="community-thumbnail"
-                />
-              )}
+            {c.thumbnailUrl && (
+              <img
+                src={c.thumbnailUrl}
+                alt={c.name}
+                className="community-thumbnail"
+              />
+            )}
               <h2>{c.name}</h2>
               <p>{c.message}</p>
               <p>メンバー数: {c.memberCount}人</p>
               <p>活動時間: {c.activityTime}</p>
 
-              
-              
 
             </Link>
             {/* 👇 3. ここからタグ表示を追加 */}
