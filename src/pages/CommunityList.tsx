@@ -98,6 +98,9 @@ export default function CommunitiesList() {
         <Link to="/about" className="header-link">
           <h2>TCCについて</h2>
         </Link>
+        <Link to="/signup" className="header-link">
+          <h2>新規登録</h2>
+        </Link>
       </div>
 
       <div className="search-area">
