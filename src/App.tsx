@@ -4,6 +4,8 @@ import CommunityList from "./pages/CommunityList";
 import CommunitiesDetail from "./pages/CommunitiesDetail";
 import { CreateCommunity } from "./pages/CreateCommunity";
 import { About } from "./pages/About";
+import { SignupForm } from "./pages/SignupForm";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 
 const App: React.FC = () => {
   return (
@@ -13,6 +15,8 @@ const App: React.FC = () => {
         <Route path="/communities/:id" element={<CommunitiesDetail />} />
         <Route path="/CreateCommunity" element={<CreateCommunity />} />
         <Route path="/about" element={<About />} />
+        <Route path="/signup" element={<SignupForm />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
       </Routes>
     </BrowserRouter>
   );
