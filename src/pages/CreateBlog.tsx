@@ -1,23 +1,25 @@
 // src/pages/CreateBlog.tsx
 
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { addDoc, collection } from "firebase/firestore";
 import axios from "axios";
 import { db } from "../firebase/config";
 
 type Props = {
-  communityId: string; // ★ CommunityDetail から渡す ID
+  communityId: string; // CommunityDetail から渡す ID
+  onPosted?: () => void; // 投稿後に実行されるコールバック（任意）
 };
 
-export const CreateBlog: React.FC<Props> = () => {
-  const { id } = useParams<{ id: string }>();
+export const CreateBlog: React.FC<Props> = ({ communityId, onPosted }) => {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [imageUrl, setImageUrl] = useState(""); // Firestore に入れる URL
-  const [previewUrl, setPreviewUrl] = useState(""); // プレビュー表示用
+
+  const [imageUrl, setImageUrl] = useState(""); // Firestore に保存する URL
+  const [previewUrl, setPreviewUrl] = useState(""); // プレビュー用
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,18 +27,14 @@ export const CreateBlog: React.FC<Props> = () => {
   const CLOUD_NAME = "dvc15z98t";
   const UPLOAD_PRESET = "community_images";
 
-  if (!id) {
-    return <p>コミュニティIDが指定されていません。</p>;
-  }
-
-  // ★ 画像選択 → Cloudinaryにアップロード
+  // 画像選択 → Cloudinary にアップロード
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // プレビュー表示
     setPreviewUrl(URL.createObjectURL(file));
 
-    // Cloudinaryへアップロード
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", UPLOAD_PRESET);
@@ -46,32 +44,36 @@ export const CreateBlog: React.FC<Props> = () => {
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
         formData
       );
-
-      setImageUrl(res.data.secure_url); // Firestore に保存する URL
+      setImageUrl(res.data.secure_url);
     } catch (err) {
       console.error("画像アップロードエラー:", err);
       setError("画像アップロードに失敗しました。");
     }
   };
 
+  // フォーム送信
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
 
     try {
-      const postsRef = collection(db, "communities", id, "posts");
+      const postsRef = collection(db, "communities", communityId, "posts");
 
       await addDoc(postsRef, {
         title,
         body,
-        imageUrl: imageUrl || "", // Cloudinary URL が入る
+        imageUrl: imageUrl || "",
         createdAt: new Date().toISOString(),
       });
+
+      if (onPosted) onPosted(); // 親に知らせる
       alert("ブログを投稿しました！");
-      navigate(`/communities/${id}`);
+
+      // 投稿後コミュニティページへ
+      navigate(`/communities/${communityId}`);
     } catch (err) {
-      console.error("ブログ投稿作成中にエラー", err);
+      console.error("ブログ投稿中にエラー:", err);
       setError("投稿の作成に失敗しました。時間をおいて再度お試しください。");
     } finally {
       setSubmitting(false);
@@ -87,14 +89,18 @@ export const CreateBlog: React.FC<Props> = () => {
         margin: "0 auto",
       }}
     >
-      <Link to={`/communities/${id}`}>← コミュニティ詳細へ戻る</Link>
       <h1 style={{ marginTop: "16px" }}>ブログ記事を作成</h1>
 
       {error && <p style={{ color: "red", marginTop: "8px" }}>{error}</p>}
 
       <form
         onSubmit={handleSubmit}
-        style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "12px" }}
+        style={{
+          marginTop: "16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
       >
         <div>
           <label style={{ display: "block", fontWeight: 600 }}>タイトル</label>
@@ -119,7 +125,7 @@ export const CreateBlog: React.FC<Props> = () => {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             required
-            rows={10}
+            rows={8}
             style={{
               width: "100%",
               padding: "8px",
@@ -131,7 +137,7 @@ export const CreateBlog: React.FC<Props> = () => {
           />
         </div>
 
-        {/* ★ Cloudinary に送る画像アップロード欄 */}
+        {/* Cloudinary 画像アップロード欄 */}
         <div>
           <label style={{ display: "block", fontWeight: 600 }}>
             画像（任意）
@@ -156,7 +162,11 @@ export const CreateBlog: React.FC<Props> = () => {
               <img
                 src={previewUrl}
                 alt="プレビュー"
-                style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "8px" }}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "300px",
+                  borderRadius: "8px",
+                }}
               />
             </div>
           )}
