@@ -18,6 +18,7 @@ export const CreateCommunity = () => {
     contact: "",
     url: "",
     memberCount: 0,
+    official: 0,
     tags: [] as string[],
   });
 
@@ -96,6 +97,7 @@ export const CreateCommunity = () => {
         contact: "",
         url: "",
         memberCount: 0,
+        official: 0,
         tags: [],
       });
       setImageFile(null);
@@ -206,6 +208,18 @@ export const CreateCommunity = () => {
                 {i} 人
               </option>
             ))}
+          </select>
+        </div>
+        <div className="item">
+          <p className="official">公式・非公式:</p>
+          <select
+            name="official"
+            value={formData.official}
+            onChange={handleChange}
+            className="border p-2 rounded w-full"
+          >
+            <option value={0}>公式</option>
+            <option value={1}>非公式</option>
           </select>
         </div>
         
