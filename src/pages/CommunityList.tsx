@@ -19,6 +19,7 @@ type Community = {
   /** 画像のURL (省略可能) */
   imageUrl?: string 
   tags: string[] // 型定義にタグを追加
+  official:number //0=公式, 1=非公式
 }
 
 // コミュニティ要素をDBから取得
@@ -41,6 +42,7 @@ export default function CommunitiesList() {
           activityTime: data.activityTime,
           imageUrl: data.imageUrl || "",
           tags:data.tags || [],
+          official: data.official ?? 1, // ★追加: 未設定の場合はとりあえず非公式(1)扱いにする
         })
       })
       setCommunities(results)
@@ -132,6 +134,11 @@ export default function CommunitiesList() {
             key={c.id}
             className="community-list-item"
           >
+            {/* ★追加: 公式・非公式バッジ */}
+            <div className={`status-badge ${c.official === 0 ? 'official' : 'unofficial'}`}>
+              {c.official === 0 ? '公式' : '非公式'}
+            </div>
+            
             <Link to={`/communities/${c.id}`} className="community-link" >
               <img
                 src={c.imageUrl || "/favicon.png"}

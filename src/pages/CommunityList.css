@@ -119,6 +119,7 @@
 }
 
 .community-list-item {
+  position: relative; /* : バッジを絶対配置するために必要 */
   border: 1px solid #E0E0E0;
   border-radius: 12px;
   padding: 20px;
@@ -192,4 +193,37 @@
   border-radius: 16px;
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+/* ---------------------------------- */
+/* 公式・非公式バッジ (新規追加) */
+/* ---------------------------------- */
+
+.status-badge {
+  position: absolute;
+  top: 10px;  /* 上からの位置 */
+  right: 10px; /* 右からの位置 */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; /* 完全な円にする */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.75rem; /* 文字サイズ */
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 影をつけて浮かせる */
+  z-index: 10; /* 画像の上に表示 */
+}
+
+/* 公式の場合のデザイン（赤） */
+.status-badge.official {
+  background-color: #ef4444; /* 赤色 */
+  border: 2px solid #fff; /* 白い縁取りで見やすく */
+}
+
+/* 非公式の場合のデザイン（青） */
+.status-badge.unofficial {
+  background-color: #3b82f6; /* 青色 */
+  border: 2px solid #fff;
 }
