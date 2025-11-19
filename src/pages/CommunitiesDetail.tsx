@@ -30,6 +30,7 @@ type Post = {
   title: string;
   body: string;
   createdAt: string;
+  imageUrl: string;
 };
 
 type TabType = "info" | "blog";
@@ -190,6 +191,20 @@ export default function CommunityDetail() {
                 }}
               >
                 <h3>{post.title}</h3>
+                {/* 画像があるときだけ表示 */}
+                {post.imageUrl && (
+                  <img
+                    src={post.imageUrl}
+                    alt={post.title}
+                    className="community-thumbnail"
+                    style={{
+                      width: "100%",
+                      borderRadius: "8px",
+                      marginTop: "8px",
+                    }}
+                  />
+                )}
+
                 <p style={{ whiteSpace: "pre-wrap", marginTop: "8px" }}>
                   {post.body}
                 </p>
