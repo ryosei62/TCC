@@ -23,8 +23,9 @@ export const CreateCommunity = () => {
   });
 
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-  const [imageFile, setImageFile] = useState<File | null>(null); // 画像ファイル
-  const [previewUrl, setPreviewUrl] = useState<string>(""); // プレビュー用
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [thumbnailIndex, setThumbnailIndex] = useState<number>(0); // 何番目の画像をサムネイルにするか
   // const [loading, setLoading] = useState(false);
 
   const CLOUD_NAME = "dvc15z98t";
@@ -37,11 +38,22 @@ export const CreateCommunity = () => {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      const newPreviews = files.map((file) => URL.createObjectURL(file));
+
+      // 既存リストに追加
+      setImageFiles((prev) => [...prev, ...files]);
+      setPreviewUrls((prev) => [...prev, ...newPreviews]);
     }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    // インデックスずれの修正
+    if (index === thumbnailIndex) setThumbnailIndex(0);
+    else if (index < thumbnailIndex) setThumbnailIndex((prev) => prev - 1);
   };
 
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
@@ -62,24 +74,25 @@ export const CreateCommunity = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // const user = auth.currentUser;
-    // if (!user) {
-    //   alert("ログインが必要です");
-    //   return;
-    // }
-
+    
     try {
-      let imageUrl = "";
-      if (imageFile) {
-        // Cloudinaryにアップロード
-        imageUrl = await uploadImageToCloudinary(imageFile);
+      let uploadedImageUrls: string[] = [];
+      let thumbnailUrl = "";
+
+      // 画像がある場合、並列アップロード
+      if (imageFiles.length > 0) {
+        uploadedImageUrls = await Promise.all(
+          imageFiles.map((file) => uploadImageToCloudinary(file))
+        );
+        // 指定されたインデックスの画像をサムネイルURLとする（なければ0番目）
+        thumbnailUrl = uploadedImageUrls[thumbnailIndex] || uploadedImageUrls[0];
       }
 
       // Firestoreへ保存
       await addDoc(collection(db, "communities"), {
         ...formData,
-        imageUrl, // 画像URLを追加
+        imageUrls: uploadedImageUrls,// 画像URLを追加
+        thumbnailUrl: thumbnailUrl,
         // ログインしないと登録できなかったため createdBy: user.uid,
         tags: selectedTags.map((tag) => tag.name),
         createdAt: serverTimestamp(), // Firestoreのサーバー時刻を使う
@@ -100,9 +113,9 @@ export const CreateCommunity = () => {
         official: 0,
         tags: [],
       });
-      setImageFile(null);
-      setPreviewUrl("");
-
+      setImageFiles([]);
+      setPreviewUrls([]);
+      setThumbnailIndex(0);
       navigate("/");
 
     } catch (error) {
@@ -233,19 +246,49 @@ export const CreateCommunity = () => {
 
         {/* 画像アップロード部分 */}
         <div>
-          <label className="block mb-2 font-medium">コミュニティ画像</label>
+          <label className="block mb-2 font-medium">コミュニティ画像 (複数可):</label>
           <input
             type="file"
             accept="image/*"
+            multiple
             onChange={handleImageChange}
             className="border p-2 rounded w-full"
           />
-          {previewUrl && (
-            <img
-              src={previewUrl}
-              alt="プレビュー"
-              className="w-64 mt-2 rounded"
-            />
+   
+          {previewUrls.length > 0 && (
+            <div className="preview-area">
+              <p style={{fontSize: '0.8rem', color: '#666', marginBottom: '5px'}}>
+                ※画像をクリックして一覧に表示する「サムネイル」を選択してください
+              </p>
+              
+              <div className="preview-grid">
+                {previewUrls.map((url, index) => (
+                  <div
+                    key={index}
+                    // サムネイルに選ばれている画像には枠をつけるクラス(selected)を付与
+                    className={`preview-item ${thumbnailIndex === index ? "selected" : ""}`}
+                    onClick={() => setThumbnailIndex(index)}
+                  >
+                    <img src={url} alt="プレビュー" />
+                    
+                    {thumbnailIndex === index && (
+                      <span className="thumbnail-badge">サムネイル</span>
+                    )}
+                    
+                    <button
+                      type="button"
+                      className="remove-btn"
+                      onClick={(e) => {
+                        e.stopPropagation(); // 親のonClick(サムネイル選択)をキャンセル
+                        handleRemoveImage(index);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
@@ -260,128 +303,3 @@ export const CreateCommunity = () => {
   );
 };
 
-
-/*import React, { useState } from "react";
-import { db, auth } from "../firebase/config";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { useAuthState } from "react-firebase-hooks/auth";
-
-export const CreateCommunity: React.FC = () => {
-  const [name, setName] = useState("");
-  const [message, setMessage] = useState("");
-  const [activityDescription, setActivityDescription] = useState("");
-  const [activityLocation, setActivityLocation] = useState("");
-  const [activityTime, setActivityTime] = useState("");
-  const [contact, setContact] = useState("");
-  const [url, setUrl] = useState("");
-  const [memberCount, setMemberCount] = useState<number>(0);
-
-  const [user] = useAuthState(auth); // ログイン中のユーザーを取得（いない場合は null）
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      await addDoc(collection(db, "communities"), {
-        name,
-        message,
-        activityDescription,
-        activityLocation,
-        activityTime,
-        contact,
-        url,
-        memberCount,
-        createdAt: serverTimestamp(),
-        createdBy: user ? user.uid : "guest_" + Math.random().toString(36).slice(2, 10), // 👈 未ログイン時は一時IDを生成
-      });
-
-      alert("コミュニティを作成しました！");
-      setName("");
-      setMessage("");
-      setActivityDescription("");
-      setActivityLocation("");
-      setActivityTime("");
-      setContact("");
-      setUrl("");
-      setMemberCount(0);
-    } catch (error) {
-      console.error("コミュニティ作成エラー:", error);
-      alert("作成に失敗しました");
-    }
-  };
-
-  return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-xl font-bold mb-4">コミュニティ作成</h1>
-      {!user && (
-        <p className="text-sm text-gray-500 mb-2">
-          ※ ログインしていないため、一時的なユーザーとして作成されます。
-        </p>
-      )}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <input
-          type="text"
-          placeholder="コミュニティ名"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="border p-2 rounded"
-          required
-        />
-        <input
-          type="text"
-          placeholder="メッセージ"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <textarea
-          placeholder="活動内容"
-          value={activityDescription}
-          onChange={(e) => setActivityDescription(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          placeholder="活動場所"
-          value={activityLocation}
-          onChange={(e) => setActivityLocation(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          placeholder="活動頻度"
-          value={activityTime}
-          onChange={(e) => setActivityTime(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          placeholder="連絡先"
-          value={contact}
-          onChange={(e) => setContact(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <input
-          type="text"
-          placeholder="URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          placeholder="メンバー数"
-          value={memberCount}
-          onChange={(e) => setMemberCount(Number(e.target.value))}
-          className="border p-2 rounded"
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-        >
-          作成する
-        </button>
-      </form>
-    </div>
-  );
-};*/
