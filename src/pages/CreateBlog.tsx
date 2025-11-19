@@ -1,7 +1,7 @@
 // src/pages/CreateBlog.tsx
 
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase/config";
 
