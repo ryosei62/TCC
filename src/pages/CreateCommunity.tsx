@@ -218,8 +218,8 @@ export const CreateCommunity = () => {
             onChange={handleChange}
             className="border p-2 rounded w-full"
           >
-            <option value={0}>公式</option>
-            <option value={1}>非公式</option>
+            <option value={0}>非公式</option>
+            <option value={1}>公式</option>
           </select>
         </div>
         
