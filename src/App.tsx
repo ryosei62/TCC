@@ -18,7 +18,7 @@ const App: React.FC = () => {
         <Route path="/about" element={<About />} />
         <Route path="/signup" element={<SignupForm />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
-        <Route path="/communities/:id/create-blog" element={<CreateBlog />} />
+        <Route path="/communities/:id/create-blog" element={<CreateBlog communityId={""} />} />
       </Routes>
     </BrowserRouter>
   );
