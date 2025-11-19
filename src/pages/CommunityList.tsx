@@ -12,11 +12,12 @@ type Community = {
   name: string
   /** コミュニティの紹介文または説明 */
   message: string
-  /** メンバーの数 */
+  /** メンバーの数 *u/
   memberCount: number
   /** コミュニティの主な活動時間や頻度 */
   activityTime: string
   /** 画像のURL (省略可能) */
+  thubmnailUrl?:string
   imageUrl?: string 
   tags: string[] // 型定義にタグを追加
   official:number //0=公式, 1=非公式
@@ -40,6 +41,7 @@ export default function CommunitiesList() {
           message: data.message,
           memberCount: data.memberCount,
           activityTime: data.activityTime,
+          thubmnailUrl: data.thumbnailUrl,
           imageUrl: data.imageUrl || "",
           tags:data.tags || [],
           official: data.official ?? 1, // ★追加: 未設定の場合はとりあえず非公式(1)扱いにする
@@ -141,7 +143,7 @@ export default function CommunitiesList() {
             
             <Link to={`/communities/${c.id}`} className="community-link" >
               <img
-                src={c.imageUrl || "/favicon.png"}
+                src={c.thubmnailUrl || c.imageUrl || "/favicon.png"}
                 alt={c.name}
                 className="community-thumbnail"
               />
