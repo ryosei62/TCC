@@ -12,7 +12,7 @@ type Community = {
   name: string
   /** コミュニティの紹介文または説明 */
   message: string
-  /** メンバーの数 *u/
+  /** メンバーの数 */
   memberCount: number
   /** コミュニティの主な活動時間や頻度 */
   activityTime: string
