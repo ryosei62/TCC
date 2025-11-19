@@ -226,21 +226,14 @@ export const CreateCommunity = () => {
             className="border p-2 rounded w-full"
           />
 
-        {/* 複数枚プレビュー表示の問題で一旦ここにCSS入ってる */}
-          <div className="flex gap-4 mt-3 overflow-x-auto">
+          <div className="preview-wrapper">
             {previewUrls.map((url, index) => (
               <div
                 key={index}
-                className={`relative w-28 h-28 flex items-center justify-center rounded cursor-pointer border-4 ${
-                  thumbnailIndex === index ? "border-blue-500" : "border-gray-300"
-                }`}
-                onClick={() => setThumbnailIndex(index)}  // ← これで選択
+                className={`preview-container ${thumbnailIndex === index ? "selected" : ""}`}
+                onClick={() => setThumbnailIndex(index)}
               >
-                <img
-                  src={url}
-                  className="max-w-full max-h-full object-contain rounded"
-                  alt={`preview-${index}`}
-                />
+                <img src={url} className="preview-image" alt={`preview-${index}`} />
               </div>
             ))}
           </div>

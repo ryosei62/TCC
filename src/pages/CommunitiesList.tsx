@@ -132,6 +132,7 @@ export default function CommunitiesList() {
             className="community-list-item"
           >
             <Link to={`/communities/${c.id}`} className="community-link" >
+              <h2>{c.name}</h2>
             {c.thumbnailUrl && (
               <img
                 src={c.thumbnailUrl}
@@ -139,7 +140,6 @@ export default function CommunitiesList() {
                 className="community-thumbnail"
               />
             )}
-              <h2>{c.name}</h2>
               <p>{c.message}</p>
               <p>メンバー数: {c.memberCount}人</p>
               <p>活動時間: {c.activityTime}</p>
