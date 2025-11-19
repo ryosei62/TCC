@@ -4,10 +4,10 @@
 import {
   doc,
   getDoc,
-  getDocs,
   collection,
   orderBy,
   query,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useEffect, useState } from "react";
@@ -64,22 +64,24 @@ export default function CommunityDetail() {
         // ブログ記事
         const postsRef = collection(db, "communities", id, "posts");
         const q = query(postsRef, orderBy("createdAt", "desc"));
-        const postsSnap = await getDocs(q);
-
-        const postsData: Post[] = postsSnap.docs.map((d) => ({
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+        const postsData: Post[] = snapshot.docs.map((d) => ({
           id: d.id,
           ...(d.data() as Omit<Post, "id">),
         }));
-        setPosts(postsData);
-      } catch (e) {
-        console.error("コミュニティ情報取得中にエラー", e);
-      } finally {
-        setLoading(false);
-      }
-    };
+        setPosts(postsData);   // ← リアルタイム反映
+      });
 
-    fetchData();
-  }, [id]);
+      return () => unsubscribe(); // cleanup
+    } catch (e) {
+      console.error("エラー:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [id]);
 
   if (loading) return <p>読み込み中...</p>;
   if (!community) return <p>コミュニティが見つかりません。</p>;

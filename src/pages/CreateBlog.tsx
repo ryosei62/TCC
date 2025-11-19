@@ -68,7 +68,7 @@ export const CreateBlog: React.FC<Props> = () => {
         imageUrl: imageUrl || "", // Cloudinary URL が入る
         createdAt: new Date().toISOString(),
       });
-
+      alert("ブログを投稿しました！");
       navigate(`/communities/${id}`);
     } catch (err) {
       console.error("ブログ投稿作成中にエラー", err);
