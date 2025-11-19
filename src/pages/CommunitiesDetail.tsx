@@ -12,6 +12,7 @@ import {
 import { db } from "../firebase/config";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { CreateBlog } from "./CreateBlog";
 
 type Community = {
   name: string;
@@ -180,38 +181,45 @@ export default function CommunityDetail() {
             <p>まだブログ記事がありません。</p>
           ) : (
             posts.map((post) => (
-              <article
-                key={post.id}
-                style={{
-                  border: "1px solid #eee",
-                  borderRadius: "8px",
-                  padding: "12px",
-                  marginBottom: "12px",
-                  background: "#fafafa",
-                }}
-              >
-                <h3>{post.title}</h3>
-                {/* 画像があるときだけ表示 */}
-                {post.imageUrl && (
-                  <img
-                    src={post.imageUrl}
-                    alt={post.title}
-                    className="community-thumbnail"
-                    style={{
-                      width: "100%",
-                      borderRadius: "8px",
-                      marginTop: "8px",
-                    }}
-                  />
-                )}
+              <div>
+                <article
+                  key={post.id}
+                  style={{
+                    border: "1px solid #eee",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    marginBottom: "12px",
+                    background: "#fafafa",
+                  }}
+                >
+                  <h3>{post.title}</h3>
+                  {/* 画像があるときだけ表示 */}
+                  {post.imageUrl && (
+                    <img
+                      src={post.imageUrl}
+                      alt={post.title}
+                      className="community-thumbnail"
+                      style={{
+                        width: "100%",
+                        borderRadius: "8px",
+                        marginTop: "8px",
+                      }}
+                    />
+                  )}
 
-                <p style={{ whiteSpace: "pre-wrap", marginTop: "8px" }}>
-                  {post.body}
-                </p>
-              </article>
+                  <p style={{ whiteSpace: "pre-wrap", marginTop: "8px" }}>
+                    {post.body}
+                  </p>
+                </article>
+                
+              </div>
             ))
           )}
+          <div style={{ height: "16px" }}>
+                  <CreateBlog communityId={id!} />
+          </div>
         </div>
+        
       )}
     </div>
   );
