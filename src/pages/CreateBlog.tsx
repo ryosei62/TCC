@@ -1,7 +1,7 @@
 // src/pages/CreateBlog.tsx
 
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase/config";
 
@@ -50,7 +50,6 @@ export const CreateBlog: React.FC<Props> = () => {
 
   return (
     <div style={{ padding: "24px", fontFamily: "sans-serif", maxWidth: 800, margin: "0 auto" }}>
-      <Link to={`/communities/${id}`}>← コミュニティ詳細へ戻る</Link>
       <h1 style={{ marginTop: "16px" }}>ブログ記事を作成</h1>
 
       {error && (
