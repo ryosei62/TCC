@@ -23,7 +23,8 @@ type Community = {
   activityLocation: string;
   contact: string;
   url: string;
-  imageUrl: string;
+  thumbnailUrl?: string; 
+  imageUrls?: string[];
 };
 
 type Post = {
@@ -43,6 +44,7 @@ export default function CommunityDetail() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>("info");
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -82,25 +84,66 @@ export default function CommunityDetail() {
   if (loading) return <p>読み込み中...</p>;
   if (!community) return <p>コミュニティが見つかりません。</p>;
 
+  const displayImages = community.imageUrls || [];
+
+  // ★変更: メイン画像決定ロジック (選択中 > サムネイル > 最初の画像)
+  const mainImage = selectedImage || community.thumbnailUrl || displayImages[0];
+
   return (
     <div style={{ padding: "24px", fontFamily: "sans-serif" }}>
       <Link to="/">← 一覧へ戻る</Link>
       <h1>{community.name}</h1>
 
-      {/* 画像がある場合だけ表示 */}
-      {community.imageUrl && (
-        <img
-          src={community.imageUrl}
-          alt={community.name}
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            borderRadius: "8px",
-            marginTop: "12px",
-          }}
-        />
-      )}
+      {displayImages.length > 0 && (
+        <div style={{ marginTop: "12px", marginBottom: "24px" }}>
+          {/* メイン画像表示 */}
+          <div style={{ width: "100%", maxWidth: "500px", marginBottom: "10px" }}>
+            <img
+              src={mainImage}
+              alt={community.name}
+              style={{
+                width: "100%",
+                height: "auto",
+                maxHeight: "400px",
+                objectFit: "contain",
+                borderRadius: "8px",
+                border: "1px solid #eee",
+                backgroundColor: "#f9f9f9"
+              }}
+            />
+          </div>
 
+          {/* サムネイルリスト（画像が2枚以上ある場合のみ表示） */}
+          {displayImages.length > 1 && (
+            <div style={{ 
+              display: "flex", 
+              gap: "10px", 
+              overflowX: "auto", 
+              paddingBottom: "5px" 
+            }}>
+              {displayImages.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`sub-${idx}`}
+                  onClick={() => setSelectedImage(img)}
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    objectFit: "cover",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                    // 選択中の画像は枠線を太く青くする
+                    border: mainImage === img ? "3px solid #2563eb" : "1px solid #ddd"
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
       <div
         style={{
           display: "flex",
