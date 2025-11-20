@@ -224,9 +224,9 @@ export default function CommunityDetail() {
             <p>まだブログ記事がありません。</p>
           ) : (
             posts.map((post) => (
-              <div>
+              <div key={post.id}>
                 <article
-                  key={post.id}
+                  
                   style={{
                     border: "1px solid #eee",
                     borderRadius: "8px",
@@ -244,6 +244,7 @@ export default function CommunityDetail() {
                       className="community-thumbnail"
                       style={{
                         width: "100%",
+                        maxHeight: "400px",
                         borderRadius: "8px",
                         marginTop: "8px",
                       }}
