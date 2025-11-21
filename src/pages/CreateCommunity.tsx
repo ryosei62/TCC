@@ -214,7 +214,7 @@ export const CreateCommunity = () => {
               <div key={index} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
                 <input
                   type="text"
-                  placeholder="サービス名 (例: Discord)"
+                  placeholder="サービス名 (例: Instagram)"
                   value={item.label}
                   onChange={(e) => {
                     const newList = [...snsUrlList];
@@ -253,7 +253,7 @@ export const CreateCommunity = () => {
             {/* 追加ボタン */}
             <button
               type="button"
-              onClick={() => setJoinUrlList([...joinUrlList, { label: "", url: "" }])}
+              onClick={() => setSnsUrlList([...snsUrlList, { label: "", url: "" }])}
               className="bg-green-500 text-white px-3 py-1 rounded"
             >
               ＋ URLを追加
