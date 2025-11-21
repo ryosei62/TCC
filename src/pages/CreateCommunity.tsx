@@ -27,7 +27,11 @@ export const CreateCommunity = () => {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [thumbnailIndex, setThumbnailIndex] = useState<number>(0); // 何番目の画像をサムネイルにするか
   // const [loading, setLoading] = useState(false);
-  const [urlList, setUrlList] = useState<{ label: string; url: string }[]>([
+
+  const [snsUrlList, setSnsUrlList] = useState<{ label: string; url: string }[]>([
+    { label: "", url: "" },
+  ]);
+  const [joinUrlList, setJoinUrlList] = useState<{ label: string; url: string }[]>([
     { label: "", url: "" },
   ]);
 
@@ -94,7 +98,9 @@ export const CreateCommunity = () => {
       // Firestoreへ保存
       await addDoc(collection(db, "communities"), {
         ...formData,
-        urls: urlList,
+
+        snsUrls: snsUrlList,
+        joinUrls: joinUrlList,
         imageUrls: uploadedImageUrls,// 画像URLを追加
         thumbnailUrl: thumbnailUrl,
         // ログインしないと登録できなかったため createdBy: user.uid,
@@ -201,19 +207,19 @@ export const CreateCommunity = () => {
           />
         </div>
         <div className="item">
-          <p className="url">リンク一覧:</p>
+          <p className="url">リンク一覧(SNS):</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 
-            {urlList.map((item, index) => (
+            {snsUrlList.map((item, index) => (
               <div key={index} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
                 <input
                   type="text"
                   placeholder="サービス名 (例: Discord)"
                   value={item.label}
                   onChange={(e) => {
-                    const newList = [...urlList];
+                    const newList = [...snsUrlList];
                     newList[index].label = e.target.value;
-                    setUrlList(newList);
+                    setSnsUrlList(newList);
                   }}
                   className="border p-2 rounded w-1/3"
                 />
@@ -222,19 +228,19 @@ export const CreateCommunity = () => {
                   placeholder="https://example.com"
                   value={item.url}
                   onChange={(e) => {
-                    const newList = [...urlList];
+                    const newList = [...snsUrlList];
                     newList[index].url = e.target.value;
-                    setUrlList(newList);
+                    setSnsUrlList(newList);
                   }}
                   className="border p-2 rounded w-2/3"
                 />
 
                 {/* 削除ボタン */}
-                {urlList.length > 1 && (
+                {snsUrlList.length > 1 && (
                   <button
                     type="button"
                     onClick={() => {
-                      setUrlList(urlList.filter((_, i) => i !== index));
+                      setSnsUrlList(snsUrlList.filter((_, i) => i !== index));
                     }}
                     className="bg-red-500 text-white px-2 rounded"
                   >
@@ -247,13 +253,68 @@ export const CreateCommunity = () => {
             {/* 追加ボタン */}
             <button
               type="button"
-              onClick={() => setUrlList([...urlList, { label: "", url: "" }])}
+              onClick={() => setJoinUrlList([...joinUrlList, { label: "", url: "" }])}
               className="bg-green-500 text-white px-3 py-1 rounded"
             >
               ＋ URLを追加
             </button>
           </div>
         </div>
+
+        <div className="item">
+          <p className="url">リンク一覧(参加先):</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+
+            {joinUrlList.map((item, index) => (
+              <div key={index} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                <input
+                  type="text"
+                  placeholder="サービス名 (例: Discord)"
+                  value={item.label}
+                  onChange={(e) => {
+                    const newList = [...joinUrlList];
+                    newList[index].label = e.target.value;
+                    setJoinUrlList(newList);
+                  }}
+                  className="border p-2 rounded w-1/3"
+                />
+                <input
+                  type="url"
+                  placeholder="https://example.com"
+                  value={item.url}
+                  onChange={(e) => {
+                    const newList = [...joinUrlList];
+                    newList[index].url = e.target.value;
+                    setJoinUrlList(newList);
+                  }}
+                  className="border p-2 rounded w-2/3"
+                />
+
+                {/* 削除ボタン */}
+                {joinUrlList.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setJoinUrlList(joinUrlList.filter((_, i) => i !== index));
+                    }}
+                    className="bg-red-500 text-white px-2 rounded"
+                  >
+                    −
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {/* 追加ボタン */}
+            <button
+              type="button"
+              onClick={() => setJoinUrlList([...joinUrlList, { label: "", url: "" }])}
+              className="bg-green-500 text-white px-3 py-1 rounded"
+            >
+              ＋ URLを追加
+            </button>
+          </div>
+        </div>d
 
         <div className="item">
           <p className="memberCount">メンバー数:</p>
@@ -281,12 +342,9 @@ export const CreateCommunity = () => {
           >
             <option value={0}>非公式</option>
             <option value={1}>公式</option>
-          </select><br />
-          
+          </select>
         </div>
-        <div>
-          <p>※公式は筑波大学に認められている学生団体を指します</p>
-        </div>
+        
         <div className="item">
           <p className="tags">タグ:</p>
           <TagSelector
