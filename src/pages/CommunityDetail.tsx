@@ -150,9 +150,6 @@ export default function CommunityDetail() {
             <strong>構成人数:</strong> {community.memberCount}名
           </div>
           <div className="info-item">
-            <strong>活動内容:</strong> {community.activityDescription}
-          </div>
-          <div className="info-item">
             <strong>活動時間:</strong> {community.activityTime}
           </div>
           <div className="info-item">
@@ -166,6 +163,9 @@ export default function CommunityDetail() {
             <a href={community.url} target="_blank" rel="noreferrer">
               {community.url}
             </a>
+          </div>
+          <div className="info-item">
+            <strong>活動内容:</strong> {community.activityDescription}
           </div>
         </div>
       )}
