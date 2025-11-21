@@ -245,7 +245,7 @@ export default function CommunityDetail() {
             ) : (
               posts.map((post) => (
                 <article
-                  key={post.id}
+                  
                   style={{
                     border: "1px solid #eee",
                     borderRadius: "8px",
@@ -262,6 +262,7 @@ export default function CommunityDetail() {
                       alt={post.title}
                       style={{
                         width: "100%",
+                        maxHeight: "400px",
                         borderRadius: "8px",
                         marginTop: "8px",
                       }}
