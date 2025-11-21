@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import CommunityList from "./pages/CommunityList";
-import CommunitiesDetail from "./pages/CommunitiesDetail";
+import CommunitiesDetail from "./pages/CommunityDetail";
 import { CreateCommunity } from "./pages/CreateCommunity";
 import { About } from "./pages/About";
 import { SignupForm } from "./pages/SignupForm";

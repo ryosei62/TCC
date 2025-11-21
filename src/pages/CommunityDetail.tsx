@@ -200,10 +200,10 @@ export default function CommunityDetail() {
         <div style={{ marginTop: "16px" }}>
           <p><strong>一言メッセージ:</strong> {community.message}</p>
           <p><strong>構成人数:</strong> {community.memberCount}</p>
-          <p><strong>活動内容:</strong> {community.activityDescription}</p>
           <p><strong>活動時間:</strong> {community.activityTime}</p>
           <p><strong>活動場所:</strong> {community.activityLocation}</p>
           <p><strong>連絡先:</strong> {community.contact}</p>
+          <p><strong>活動内容:</strong> {community.activityDescription}</p>
           <p>
             <strong>URL:</strong>{" "}
             <a href={community.url} target="_blank" rel="noreferrer">
