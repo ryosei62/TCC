@@ -28,7 +28,7 @@ export default function CommunitiesList() {
   const [communities, setCommunities] = useState<Community[]>([])
   const [searchTerm, setSearchTerm] = useState<string>(''); // 👈 追加
   const [searchQuery, setSearchQuery] = useState<string>('');
-
+  const [filterStatus, setFilterStatus] = useState<number | null>(null); //フィルタリングの状態を管理 (null:すべて, 0:公式, 1:非公式)
   useEffect(() => {
     const fetchCommunities = async () => {
       const querySnapshot = await getDocs(collection(db, 'communities'))
@@ -56,16 +56,23 @@ export default function CommunitiesList() {
   // 検索処理：漢字・カタカナ・ひらがなの完全一致ベースで部分一致
 
   const filteredCommunities = communities.filter((c) => {
+      // 1. ステータスチェック
+      // filterStatusがnullなら常にtrue(チェック不要)。nullでなければ、c.officialと値が一致するか確認。
+      const statusMatch = filterStatus === null || c.official === filterStatus;
 
-    if (!searchQuery) return true; // 検索クエリが空の場合は全て表示
+      // 2. キーワードチェック
+      let keywordMatch = true; // デフォルトはtrue（キーワード入力なしの場合）
+      if (searchQuery) {
+        // キーワード入力がある場合のみチェックを行う
+        const normalizedQuery = searchQuery.toLowerCase();
+        keywordMatch =
+          c.name.toLowerCase().includes(normalizedQuery) ||
+          c.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery));
+      }
 
-    const normalizedQuery = searchQuery.toLowerCase()
-    const nameMatch = c.name.toLowerCase().includes(normalizedQuery)
-    const tagMatch = c.tags.some(tag => tag.toLowerCase().includes(normalizedQuery))
-
-    return nameMatch || tagMatch
-
-  });
+      // 両方の条件を満たすコミュニティのみ表示 (AND条件)
+      return statusMatch && keywordMatch;
+    });
 
   // 検索実行関数
 
@@ -78,6 +85,10 @@ export default function CommunitiesList() {
   const handleTagClick = (tag: string) => {
     setSearchQuery(tag)
     setSearchTerm(tag)
+  }
+
+  const handleFilterClick = (status: number | null) => {
+    setFilterStatus(status);
   }
 
 // コミュニティ一覧表示
@@ -126,6 +137,34 @@ export default function CommunitiesList() {
           検索
         </button>
       </div>
+
+      <div className="filter-buttons-area">
+        <button
+          type="button"
+          // 現在の状態(filterStatus)に応じて 'active' クラスを付与
+          className={`filter-button ${filterStatus === null ? 'active' : ''}`}
+          onClick={() => handleFilterClick(null)}
+        >
+          すべて
+        </button>
+        <button
+          type="button"
+          // 公式用のスタイルクラスと、アクティブ状態のクラスを付与
+          className={`filter-button official ${filterStatus === 0 ? 'active' : ''}`}
+          onClick={() => handleFilterClick(0)}
+        >
+          公式
+        </button>
+        <button
+          type="button"
+          // 非公式用のスタイルクラスと、アクティブ状態のクラスを付与
+          className={`filter-button unofficial ${filterStatus === 1 ? 'active' : ''}`}
+          onClick={() => handleFilterClick(1)}
+        >
+          非公式
+        </button>
+      </div>
+
 
       <ul className="community-ul">
         {filteredCommunities.length === 0 ? (
