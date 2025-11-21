@@ -227,3 +227,73 @@
   background-color: #3b82f6; /* 青色 */
   border: 2px solid #fff;
 }
+
+
+/* ---------------------------------- */
+/* フィルタボタンエリア  */
+/* ---------------------------------- */
+
+.filter-buttons-area {
+  display: flex;
+  gap: 10px; /* ボタン間の間隔 */
+  margin-bottom: 25px; /* リストとの間隔 */
+  flex-wrap: wrap; /* 画面幅が狭いときに折り返す */
+}
+
+/* フィルタボタンの基本スタイル */
+.filter-button {
+  padding: 8px 20px;
+  border: 2px solid #B0BEC5; /* デフォルトの枠線色 */
+  border-radius: 20px; /* 丸みのあるデザイン */
+  background-color: #fff;
+  color: #555;
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease; /* ホバー時のアニメーション */
+}
+
+.filter-button:hover {
+  background-color: #f5f5f5;
+  border-color: #78909c;
+}
+
+/* --- アクティブ（選択中）状態の共通スタイル --- */
+.filter-button.active {
+  color: #fff; /* 文字色を白に */
+  border-color: transparent; /* 枠線を透明に（背景色で表現） */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 少し浮かせる */
+}
+
+/* --- 各ボタン個別の色設定 --- */
+
+/* 「すべて」ボタンのアクティブ時 */
+.filter-button.active {
+  background-color: #78909c; /* ニュートラルなグレー */
+}
+
+/* 「公式」ボタン */
+.filter-button.official {
+  color: #ef4444; /* 文字色を赤に */
+  border-color: #ef4444; /* 枠線も赤に */
+}
+.filter-button.official:hover {
+  background-color: #fee2e2; /* ホバー時に薄い赤背景 */
+}
+.filter-button.official.active {
+  background-color: #ef4444; /* アクティブ時に赤背景 */
+  color: #fff;
+}
+
+/* 「非公式」ボタン */
+.filter-button.unofficial {
+  color: #3b82f6; /* 文字色を青に */
+  border-color: #3b82f6; /* 枠線も青に */
+}
+.filter-button.unofficial:hover {
+  background-color: #dbeafe; /* ホバー時に薄い青背景 */
+}
+.filter-button.unofficial.active {
+  background-color: #3b82f6; /* アクティブ時に青背景 */
+  color: #fff;
+}
