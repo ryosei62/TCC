@@ -150,7 +150,7 @@ export default function CommunitiesList() {
         <button
           type="button"
           // 公式用のスタイルクラスと、アクティブ状態のクラスを付与
-          className={`filter-button official ${filterStatus === 0 ? 'active' : ''}`}
+          className={`filter-button official ${filterStatus === 1 ? 'active' : ''}`}
           onClick={() => handleFilterClick(0)}
         >
           公式
@@ -158,7 +158,7 @@ export default function CommunitiesList() {
         <button
           type="button"
           // 非公式用のスタイルクラスと、アクティブ状態のクラスを付与
-          className={`filter-button unofficial ${filterStatus === 1 ? 'active' : ''}`}
+          className={`filter-button unofficial ${filterStatus === 0 ? 'active' : ''}`}
           onClick={() => handleFilterClick(1)}
         >
           非公式
