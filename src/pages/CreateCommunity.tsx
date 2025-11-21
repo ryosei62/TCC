@@ -17,7 +17,7 @@ export const CreateCommunity = () => {
     activityTime: "",
     contact: "",
     url: "",
-    memberCount: 0,
+    memberCount: "",
     official: 0,
     tags: [] as string[],
   });
@@ -79,6 +79,11 @@ export const CreateCommunity = () => {
     return response.data.secure_url; // Cloudinary上の画像URL
   };
 
+  const normalizeNumberString = (s: string) =>
+    s.replace(/[０-９]/g, (c) =>
+      String.fromCharCode(c.charCodeAt(0) - 0xfee0)
+    );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -95,10 +100,13 @@ export const CreateCommunity = () => {
         thumbnailUrl = uploadedImageUrls[thumbnailIndex] || uploadedImageUrls[0];
       }
 
+      const normalizedMemberCount = normalizeNumberString(formData.memberCount);
+
       // Firestoreへ保存
       await addDoc(collection(db, "communities"), {
         ...formData,
 
+        memberCount: normalizedMemberCount,
         snsUrls: snsUrlList,
         joinUrls: joinUrlList,
         imageUrls: uploadedImageUrls,// 画像URLを追加
@@ -119,7 +127,7 @@ export const CreateCommunity = () => {
         activityTime: "",
         contact: "",
         url: "",
-        memberCount: 0,
+        memberCount: "",
         official: 0,
         tags: [],
       });
@@ -318,20 +326,26 @@ export const CreateCommunity = () => {
 
         <div className="item">
           <p className="memberCount">メンバー数:</p>
-          <select
+          <input
+            type="text"
             name="memberCount"
+            placeholder="例: 15"
             value={formData.memberCount}
-            onChange={handleChange}
+            onChange={(e) => {
+              const value = e.target.value;
+
+              // ★ 全角・半角どちらの数字も許可（それ以外は無視）
+              if (/^[0-9０-９]*$/.test(value)) {
+                setFormData({
+                  ...formData,
+                  memberCount: value,  // ★ まだ全角のまま持っておく
+                });
+              }
+            }}
             className="border p-2 rounded w-full"
-          >
-            <option value="">メンバー数を選択</option>
-            {[...Array(301)].map((_, i) => (
-              <option key={i} value={i}>
-                {i} 人
-              </option>
-            ))}
-          </select>
+          />
         </div>
+
         <div className="item">
           <p className="official">公式・非公式:</p>
           <select
