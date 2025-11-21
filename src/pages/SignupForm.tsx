@@ -26,6 +26,8 @@ export const SignupForm = () => {
   };
 
   return (
+    <div>
+      <h2>開発中</h2>
     <form onSubmit={handleSubmit}>
       <input
         type="email"
@@ -47,5 +49,6 @@ export const SignupForm = () => {
       {error && <p style={{ color: "red" }}>{error}</p>}
       {message && <p style={{ color: "green" }}>{message}</p>}
     </form>
+    </div>
   );
 };
