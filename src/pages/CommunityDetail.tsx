@@ -25,6 +25,8 @@ type Community = {
   url: string;
   thumbnailUrl?: string;
   imageUrls?: string[];
+  snsUrls?: { label: string; url: string }[];
+  joinUrls?: { label: string; url: string }[];
 };
 
 type Post = {
@@ -46,6 +48,7 @@ export default function CommunityDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showBlogForm, setShowBlogForm] = useState(false);
+  const [showJoinPanel, setShowJoinPanel] = useState(false);
 
   // ------- Firestore リアルタイム取得 -------
   useEffect(() => {
@@ -204,12 +207,138 @@ export default function CommunityDetail() {
           <p><strong>活動場所:</strong> {community.activityLocation}</p>
           <p><strong>連絡先:</strong> {community.contact}</p>
           <p><strong>活動内容:</strong> {community.activityDescription}</p>
-          <p>
-            <strong>URL:</strong>{" "}
-            <a href={community.url} target="_blank" rel="noreferrer">
-              {community.url}
-            </a>
-          </p>
+          
+          {community.snsUrls && community.snsUrls.length > 0 && (
+            <div style={{ marginTop: "12px" }}>
+              <p><strong>SNS:</strong></p>
+              <ul style={{ paddingLeft: "1.2rem", marginTop: "4px" }}>
+                {community.snsUrls.map((item, idx) => (
+                  <li key={idx} style={{ marginBottom: "4px" }}>
+                    {/* ラベルがあれば表示（例: X, Instagram） */}
+                    {item.label && (
+                      <span style={{ marginRight: "4px", fontWeight: 500 }}>
+                        {item.label}:
+                      </span>
+                    )}
+                    <a href={item.url} target="_blank" rel="noreferrer">
+                      {item.url}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+    {community.joinUrls && community.joinUrls.length > 0 && (
+      <>
+        <button
+          onClick={() => {
+            // ★ ここを変更：常に一覧パネルを開く
+            setShowJoinPanel(true);
+          }}
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            right: "24px",
+            width: "110px",
+            height: "44px",
+            borderRadius: "22px",
+            backgroundColor: "#16a34a",
+            color: "white",
+            border: "none",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            zIndex: 1000,
+          }}
+        >
+          参加する
+        </button>
+
+        {/* ★ 一覧パネルの表示条件も変更 */}
+        {showJoinPanel && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              width: "100%",
+              maxHeight: "60%",
+              backgroundColor: "white",
+              borderTopLeftRadius: "16px",
+              borderTopRightRadius: "16px",
+              boxShadow: "0 -2px 12px rgba(0,0,0,0.25)",
+              padding: "16px 20px 24px",
+              zIndex: 2000,
+              overflowY: "auto",
+            }}
+          >
+            {/* 閉じるボタン */}
+            <button
+              onClick={() => setShowJoinPanel(false)}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "40px",
+                fontSize: "40px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 9999,
+              }}
+            >
+              ×
+            </button>
+
+            <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "12px" }}>
+              参加先リンク
+            </h2>
+            <p style={{ fontSize: "14px", marginBottom: "12px", color: "#555" }}>
+              好きな参加先を選んでください。
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {community.joinUrls.map((item, idx) => (
+                <a
+                  key={idx}
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid #e5e7eb",
+                    textDecoration: "none",
+                    color: "#111827",
+                    backgroundColor: "#f9fafb",
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontWeight: 600 }}>
+                      {item.label || "参加先リンク"}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#6b7280",
+                        wordBreak: "break-all",
+                      }}
+                    >
+                      {item.url}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: "18px" }}>↗</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </>
+    )}
+
         </div>
       )}
 
