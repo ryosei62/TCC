@@ -1,6 +1,4 @@
 // CommunityDetail.tsx
-// DBからデータを取得してる方！
-
 import {
   doc,
   getDoc,
@@ -13,6 +11,7 @@ import { db } from "../firebase/config";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
+import "./CommunityDetail.css";
 
 type Community = {
   name: string;
@@ -23,7 +22,7 @@ type Community = {
   activityLocation: string;
   contact: string;
   url: string;
-  thumbnailUrl?: string; 
+  thumbnailUrl?: string;
   imageUrls?: string[];
 };
 
@@ -81,189 +80,125 @@ export default function CommunityDetail() {
     fetchData();
   }, [id]);
 
-  if (loading) return <p>読み込み中...</p>;
-  if (!community) return <p>コミュニティが見つかりません。</p>;
+  if (loading) return <p className="loading-text">読み込み中...</p>;
+  if (!community) return <p className="error-text">コミュニティが見つかりません。</p>;
 
   const displayImages = community.imageUrls || [];
-
-  // ★変更: メイン画像決定ロジック (選択中 > サムネイル > 最初の画像)
+  // メイン画像決定ロジック
   const mainImage = selectedImage || community.thumbnailUrl || displayImages[0];
 
   return (
-    <div style={{ padding: "24px", fontFamily: "sans-serif" }}>
-      <Link to="/">← 一覧へ戻る</Link>
-      <h1>{community.name}</h1>
+    <div className="community-detail-container">
+      <Link to="/" className="back-link">← 一覧へ戻る</Link>
+      <h1 className="detail-title">{community.name}</h1>
 
       {displayImages.length > 0 && (
-        <div style={{ marginTop: "12px", marginBottom: "24px" }}>
+        <div className="images-section">
           {/* メイン画像表示 */}
-          <div style={{ width: "100%", maxWidth: "500px", marginBottom: "10px" }}>
+          <div className="main-image-wrapper">
             <img
               src={mainImage}
               alt={community.name}
-              style={{
-                width: "100%",
-                height: "auto",
-                maxHeight: "400px",
-                objectFit: "contain",
-                borderRadius: "8px",
-                border: "1px solid #eee",
-                backgroundColor: "#f9f9f9"
-              }}
+              className="main-image"
             />
           </div>
 
           {/* サムネイルリスト（画像が2枚以上ある場合のみ表示） */}
           {displayImages.length > 1 && (
-            <div style={{ 
-              display: "flex", 
-              gap: "10px", 
-              overflowX: "auto", 
-              paddingBottom: "5px" 
-            }}>
+            <div className="thumbnail-list">
               {displayImages.map((img, idx) => (
                 <img
                   key={idx}
                   src={img}
                   alt={`sub-${idx}`}
                   onClick={() => setSelectedImage(img)}
-                  style={{
-                    width: "80px",
-                    height: "80px",
-                    objectFit: "cover",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    flexShrink: 0,
-                    // 選択中の画像は枠線を太く青くする
-                    border: mainImage === img ? "3px solid #2563eb" : "1px solid #ddd"
-                  }}
+                  // 条件付きクラス付与: 選択中の画像に 'selected' クラスをつける
+                  className={`thumbnail-image ${mainImage === img ? "selected" : ""}`}
                 />
               ))}
             </div>
           )}
         </div>
       )}
-      
-      <div
-        style={{
-          display: "flex",
-          borderBottom: "1px solid #ddd",
-          marginTop: "16px",
-        }}
-      >
+
+      {/* タブヘッダー */}
+      <div className="tab-header">
         <button
           type="button"
           onClick={() => setActiveTab("info")}
-          style={{
-            flex: 1,
-            padding: "8px 0",
-            border: "none",
-            borderBottom:
-              activeTab === "info"
-                ? "2px solid #2563eb"
-                : "2px solid transparent",
-            background: "transparent",
-            cursor: "pointer",
-            fontWeight: activeTab === "info" ? 600 : 400,
-          }}
+          className={`tab-button ${activeTab === "info" ? "active" : ""}`}
         >
           コミュニティ情報
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("blog")}
-          style={{
-            flex: 1,
-            padding: "8px 0",
-            border: "none",
-            borderBottom:
-              activeTab === "blog"
-                ? "2px solid #2563eb"
-                : "2px solid transparent",
-            background: "transparent",
-            cursor: "pointer",
-            fontWeight: activeTab === "blog" ? 600 : 400,
-          }}
+          className={`tab-button ${activeTab === "blog" ? "active" : ""}`}
         >
           ブログ
         </button>
       </div>
 
+      {/* コミュニティ情報タブ */}
       {activeTab === "info" && (
-        <div style={{ marginTop: "16px" }}>
-          <p>
+        <div className="tab-content info-content">
+          <div className="info-item">
             <strong>一言メッセージ:</strong> {community.message}
-          </p>
-          <p>
-            <strong>構成人数:</strong> {community.memberCount}
-          </p>
-          <p>
-            <strong>活動内容:</strong> {community.activityDescription}
-          </p>
-          <p>
+          </div>
+          <div className="info-item">
+            <strong>構成人数:</strong> {community.memberCount}名
+          </div>
+          <div className="info-item">
             <strong>活動時間:</strong> {community.activityTime}
-          </p>
-          <p>
+          </div>
+          <div className="info-item">
             <strong>活動場所:</strong> {community.activityLocation}
-          </p>
-          <p>
+          </div>
+          <div className="info-item">
             <strong>連絡先:</strong> {community.contact}
-          </p>
-          <p>
+          </div>
+          <div className="info-item">
             <strong>URL:</strong>{" "}
             <a href={community.url} target="_blank" rel="noreferrer">
               {community.url}
             </a>
-          </p>
+          </div>
+          <div className="info-item">
+            <strong>活動内容:</strong> {community.activityDescription}
+          </div>
         </div>
       )}
 
+      {/* ブログタブ */}
       {activeTab === "blog" && (
-        <div style={{ marginTop: "16px" }}>
+        <div className="tab-content blog-content">
           {posts.length === 0 ? (
             <p>まだブログ記事がありません。</p>
           ) : (
             posts.map((post) => (
               <div key={post.id}>
-                <article
-                  
-                  style={{
-                    border: "1px solid #eee",
-                    borderRadius: "8px",
-                    padding: "12px",
-                    marginBottom: "12px",
-                    background: "#fafafa",
-                  }}
-                >
-                  <h3>{post.title}</h3>
+                <article className="blog-post">
+                  <h3 className="blog-title">{post.title}</h3>
                   {/* 画像があるときだけ表示 */}
                   {post.imageUrl && (
                     <img
                       src={post.imageUrl}
                       alt={post.title}
-                      className="community-thumbnail"
-                      style={{
-                        width: "100%",
-                        maxHeight: "400px",
-                        borderRadius: "8px",
-                        marginTop: "8px",
-                      }}
+                      className="blog-image"
                     />
                   )}
 
-                  <p style={{ whiteSpace: "pre-wrap", marginTop: "8px" }}>
+                  <p className="blog-body">
                     {post.body}
                   </p>
                 </article>
-                
               </div>
             ))
           )}
-          <div style={{ height: "16px" }}>
-                  <CreateBlog communityId={id!} />
+          <div className="create-blog-wrapper">
+            <CreateBlog communityId={id!} />
           </div>
         </div>
-        
       )}
     </div>
   );
