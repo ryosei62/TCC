@@ -151,7 +151,7 @@ export default function CommunitiesList() {
           type="button"
           // 公式用のスタイルクラスと、アクティブ状態のクラスを付与
           className={`filter-button official ${filterStatus === 1 ? 'active' : ''}`}
-          onClick={() => handleFilterClick(0)}
+          onClick={() => handleFilterClick(1)}
         >
           公式
         </button>
@@ -159,7 +159,7 @@ export default function CommunitiesList() {
           type="button"
           // 非公式用のスタイルクラスと、アクティブ状態のクラスを付与
           className={`filter-button unofficial ${filterStatus === 0 ? 'active' : ''}`}
-          onClick={() => handleFilterClick(1)}
+          onClick={() => handleFilterClick(0)}
         >
           非公式
         </button>
@@ -176,8 +176,8 @@ export default function CommunitiesList() {
             className="community-list-item"
           >
             {/* ★追加: 公式・非公式バッジ */}
-            <div className={`status-badge ${c.official === 0 ? 'official' : 'unofficial'}`}>
-              {c.official === 0 ? '公式' : '非公式'}
+            <div className={`status-badge ${c.official === 1 ? 'official' : 'unofficial'}`}>
+              {c.official === 1 ? '公式' : '非公式'}
             </div>
             
             <Link to={`/communities/${c.id}`} className="community-link" >
