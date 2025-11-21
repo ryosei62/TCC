@@ -233,9 +233,12 @@ export const CreateCommunity = () => {
           >
             <option value={0}>非公式</option>
             <option value={1}>公式</option>
-          </select>
+          </select><br />
+          
         </div>
-        
+        <div>
+          <p>※公式は筑波大学に認められている学生団体を指します</p>
+        </div>
         <div className="item">
           <p className="tags">タグ:</p>
           <TagSelector
