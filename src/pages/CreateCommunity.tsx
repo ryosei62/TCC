@@ -27,6 +27,7 @@ export const CreateCommunity = () => {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [thumbnailIndex, setThumbnailIndex] = useState<number>(0); // 何番目の画像をサムネイルにするか
   // const [loading, setLoading] = useState(false);
+
   const [snsUrlList, setSnsUrlList] = useState<{ label: string; url: string }[]>([
     { label: "", url: "" },
   ]);
@@ -97,6 +98,7 @@ export const CreateCommunity = () => {
       // Firestoreへ保存
       await addDoc(collection(db, "communities"), {
         ...formData,
+
         snsUrls: snsUrlList,
         joinUrls: joinUrlList,
         imageUrls: uploadedImageUrls,// 画像URLを追加
