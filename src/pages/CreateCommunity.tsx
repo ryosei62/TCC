@@ -314,7 +314,7 @@ export const CreateCommunity = () => {
               ＋ URLを追加
             </button>
           </div>
-        </div>d
+        </div>
 
         <div className="item">
           <p className="memberCount">メンバー数:</p>
