@@ -426,27 +426,41 @@
 
 @media (max-width: 768px) {
   
-  /* 1. スライダーボタンを消す */
-  .slider-button {
-    display: none;
-  }
-
-  /* 2. ボタンが消えた分、コンテナの隙間や余白を詰める */
+/* 1. コンテナの設定：Flexを解除し、ボタンの基準点にする */
   .slider-container {
-    gap: 0;      /* ボタンとの隙間をなくす */
-    padding: 0;  /* 左右の余白もなくして画像を大きく */
+    display: block;      /* 重要: 横並び計算を解除 */
+    position: relative;  /* 重要: 絶対配置ボタンの基準にする */
+    width: 100%;
+    padding: 0;
+    margin-bottom: 20px;
+    gap: 0;
   }
 
-/* 2. 画像の枠 */
+  /* 2. 画像の枠：比率で高さを決める */
   .main-image-wrapper {
     width: 100%;
     max-width: 100%;
+    
+    /* 高さ固定を解除 */
     height: auto; 
-    aspect-ratio: 4 / 3; /* スマホで見やすい比率 */
+    
+    /* スマホで見やすい比率（横4 : 縦3） */
+    aspect-ratio: 4 / 3; 
+    
     margin: 0 auto;
   }
 
-  /* 3. ボタンを「復活」させて「画像の上に重ねる」 */
+  /* 3. 画像本体：ここが原因でした！ */
+  .main-image {
+    width: 100%;
+    
+    /* 重要: PC用の 400px を打ち消して、親枠(4:3)に合わせる */
+    height: 100%; 
+    
+    object-fit: contain;
+  }
+
+  /* 4. ボタンを「復活」させて「画像の上に重ねる」 */
   .slider-button {
     display: flex; /* 非表示(none)をやめて表示する */
     position: absolute; /* 浮遊させる */
@@ -472,7 +486,7 @@
     right: 10px;
   }
 
-  /* 4. サムネイルリスト（もし消えていたらこれで表示されます） */
+  /* 5. サムネイルリスト（もし消えていたらこれで表示されます） */
   .thumbnail-list {
     display: flex;
     justify-content: flex-start; /* スマホなら左から並べる */
