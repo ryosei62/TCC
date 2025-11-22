@@ -139,35 +139,117 @@
 
 /* --- 情報タブコンテンツ --- */
 .tab-content {
-  margin-top: 16px;
-  line-height: 1.6;
+  margin-top: 24px;
+  color: #374151;
 }
 
-/* 各情報の行（前回のテキスト折り返し対策含む） */
-.info-item-row {
-  margin-bottom: 8px;
-  
-  /* 長いURLやテキストの折り返し対策 */
+.info-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.basic-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 行ごとの間隔 */
+}
+
+.info-row {
+  display: flex;
+  align-items: center; /* 垂直中央揃え */
+  gap: 16px;
+}
+
+.info-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background-color: #eff6ff; /* 薄い青背景 */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-icon-main {
+  font-size: 20px;
+  color: #2563eb; 
+}
+
+.info-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: #6b7280; /* グレーのラベル */
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: #111827; /* 黒文字 */
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.section-icon {
+  font-size: 1.2rem;
+  color: #6b7280;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.info-long-text {
+  margin: 0;
+  line-height: 1.8;
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
-  word-break: break-word;
-  -webkit-hyphens: none;
-  hyphens: none;
+  color: #4b5563;
+  padding-left: 4px; /* 少しインデント */
 }
 
 /* SNSセクション */
-.sns-section {
-  margin-top: 12px;
+.sns-section-wrapper {
+  border-bottom: none; /* SNSは最後の要素になりがちなので線を消す */
 }
+
 .sns-list {
-  padding-left: 1.2rem;
-  margin-top: 4px;
+  padding-left: 0;
+  list-style: none;
+  margin: 0;
 }
+
 .sns-item {
-  margin-bottom: 4px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
-.sns-label {
-  margin-right: 4px;
-  font-weight: 500;
+
+.sns-badge {
+  background: #eff6ff;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.85em;
+  font-weight: 600;
 }
 
 /* --- 参加ボタン (固定) --- */
@@ -222,7 +304,7 @@
 .panel-close-button {
   position: absolute;
   top: 10px;
-  right: 20px;
+  right: 50px;
   font-size: 32px;
   background: none;
   border: none;
@@ -282,7 +364,7 @@
 }
 .join-link-arrow {
   font-size: 18px;
-  margin-left: 8px;
+  margin-right: 20px;
 }
 
 /* --- ブログ投稿ボタン (FAB +) --- */
@@ -328,7 +410,7 @@
 .blog-image {
   width: 100%;
   max-height: 400px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 8px;
   margin-top: 8px;
 }
