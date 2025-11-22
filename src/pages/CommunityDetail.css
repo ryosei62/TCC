@@ -304,7 +304,7 @@
 .panel-close-button {
   position: absolute;
   top: 10px;
-  right: 20px;
+  right: 50px;
   font-size: 32px;
   background: none;
   border: none;
@@ -364,7 +364,7 @@
 }
 .join-link-arrow {
   font-size: 18px;
-  margin-left: 8px;
+  margin-right: 20px;
 }
 
 /* --- ブログ投稿ボタン (FAB +) --- */
