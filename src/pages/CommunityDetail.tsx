@@ -1,6 +1,4 @@
 // CommunityDetail.tsx
-// DBからデータを取得してる方！
-
 import {
   doc,
   getDoc,
@@ -13,6 +11,8 @@ import { db } from "../firebase/config";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import "./CommunityDetail.css";
 
 type Community = {
   name: string;
@@ -91,59 +91,70 @@ export default function CommunityDetail() {
   if (!community) return <p>コミュニティが見つかりません。</p>;
 
   const displayImages = community.imageUrls || [];
-  const mainImage =
-    selectedImage || community.thumbnailUrl || displayImages[0];
+  const mainImage = selectedImage || community.thumbnailUrl || displayImages[0];
+
+  const currentIndex = displayImages.indexOf(mainImage);
+
+  // 前へボタンの処理
+  const handlePrev = () => {
+    if (displayImages.length === 0) return;
+    // 現在が0番目なら最後の画像へ、それ以外なら一つ前へ
+    const validIndex = currentIndex === -1 ? 0 : currentIndex;
+    const prevIndex = validIndex === 0 ? displayImages.length - 1 : validIndex - 1;
+
+    setSelectedImage(displayImages[prevIndex]);
+  }
+
+  // 次へボタンの実装
+  const handleNext = () => {
+    if (displayImages.length === 0) return;
+
+    const validIndex = currentIndex === -1 ? 0 : currentIndex;
+    const nextIndex = validIndex === displayImages.length - 1 ? 0 : validIndex + 1;
+
+    setSelectedImage(displayImages[nextIndex]);
+  }
 
   return (
-    <div style={{ padding: "24px", fontFamily: "sans-serif" }}>
-      <Link to="/">← 一覧へ戻る</Link>
-      <h1>{community.name}</h1>
+    <div className="community-detail-container">
+      <Link to="/" className="back-link">← 一覧へ戻る</Link>
+      <h1 className="detail-title">{community.name}</h1>
 
       {/* ---------- メイン画像とサムネイル ---------- */}
       {displayImages.length > 0 && (
-        <div style={{ marginTop: "12px", marginBottom: "24px" }}>
-          <div style={{ width: "100%", maxWidth: "500px", marginBottom: "10px" }}>
-            <img
-              src={mainImage}
-              alt={community.name}
-              style={{
-                width: "100%",
-                height: "auto",
-                maxHeight: "400px",
-                objectFit: "contain",
-                borderRadius: "8px",
-                border: "1px solid #eee",
-              }}
-            />
+        <div className="images-section">
+          <div className="main-image-wrapper">
+            <div className="slider-container">
+              {/* 左ボタン（画像が２枚以上あるとき） */}
+              {displayImages.length > 1 && (
+                <button onClick={handlePrev} className="slider-button prev">
+                  <FaChevronLeft />
+                </button>
+              )}
+              <img
+                src={mainImage}
+                alt={community.name}
+                className="main-image"
+              />
+              {/* 右ボタン(画像が２枚以上あるとき) */}
+              {displayImages.length > 1 && (
+                <button onClick={handleNext} className="slider-button next">
+                  <FaChevronRight />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* サムネイル */}
           {displayImages.length > 1 && (
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                overflowX: "auto",
-                paddingBottom: "5px",
-              }}
-            >
+            <div className="thumbnail-list">
               {displayImages.map((img, idx) => (
                 <img
                   key={idx}
                   src={img}
                   alt={`sub-${idx}`}
                   onClick={() => setSelectedImage(img)}
-                  style={{
-                    width: "80px",
-                    height: "80px",
-                    objectFit: "cover",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    border:
-                      mainImage === img
-                        ? "3px solid #2563eb"
-                        : "1px solid #ddd",
-                  }}
+                  className={`thumbnail-image ${mainImage === img ? "selected" : ""}`}
                 />
               ))}
             </div>
@@ -152,28 +163,11 @@ export default function CommunityDetail() {
       )}
 
       {/* ---------- タブ ---------- */}
-      <div
-        style={{
-          display: "flex",
-          borderBottom: "1px solid #ddd",
-          marginTop: "16px",
-        }}
-      >
+      <div className="tab-header">
         <button
           type="button"
           onClick={() => setActiveTab("info")}
-          style={{
-            flex: 1,
-            padding: "8px 0",
-            border: "none",
-            borderBottom:
-              activeTab === "info"
-                ? "2px solid #2563eb"
-                : "2px solid transparent",
-            background: "transparent",
-            cursor: "pointer",
-            fontWeight: activeTab === "info" ? 600 : 400,
-          }}
+          className={`tab-button ${activeTab === "info" ? "active" : ""}`}
         >
           コミュニティ情報
         </button>
@@ -181,18 +175,7 @@ export default function CommunityDetail() {
         <button
           type="button"
           onClick={() => setActiveTab("blog")}
-          style={{
-            flex: 1,
-            padding: "8px 0",
-            border: "none",
-            borderBottom:
-              activeTab === "blog"
-                ? "2px solid #2563eb"
-                : "2px solid transparent",
-            background: "transparent",
-            cursor: "pointer",
-            fontWeight: activeTab === "blog" ? 600 : 400,
-          }}
+          className={`tab-button ${activeTab === "blog" ? "active" : ""}`}
         >
           ブログ
         </button>
@@ -200,23 +183,22 @@ export default function CommunityDetail() {
 
       {/* ---------- info タブ ---------- */}
       {activeTab === "info" && (
-        <div style={{ marginTop: "16px" }}>
-          <p><strong>一言メッセージ:</strong> {community.message}</p>
-          <p><strong>構成人数:</strong> {community.memberCount}</p>
-          <p><strong>活動時間:</strong> {community.activityTime}</p>
-          <p><strong>活動場所:</strong> {community.activityLocation}</p>
-          <p><strong>連絡先:</strong> {community.contact}</p>
-          <p><strong>活動内容:</strong> {community.activityDescription}</p>
+        <div className="tab-content">
+          <p className="info-item-row"><strong>構成人数:</strong> {community.memberCount}</p>
+          <p className="info-item-row"><strong>活動時間:</strong> {community.activityTime}</p>
+          <p className="info-item-row"><strong>活動場所:</strong> {community.activityLocation}</p>
+          <p className="info-item-row"><strong>連絡先:</strong> {community.contact}</p>
+          <p className="info-item-row"><strong>活動内容:</strong> {community.activityDescription}</p>
           
+          {/* SNSリンク */}
           {community.snsUrls && community.snsUrls.length > 0 && (
-            <div style={{ marginTop: "12px" }}>
+            <div className="sns-section">
               <p><strong>SNS:</strong></p>
-              <ul style={{ paddingLeft: "1.2rem", marginTop: "4px" }}>
+              <ul className="sns-list">
                 {community.snsUrls.map((item, idx) => (
-                  <li key={idx} style={{ marginBottom: "4px" }}>
-                    {/* ラベルがあれば表示（例: X, Instagram） */}
+                  <li key={idx} className="sns-item">
                     {item.label && (
-                      <span style={{ marginRight: "4px", fontWeight: 500 }}>
+                      <span className="sns-label">
                         {item.label}:
                       </span>
                     )}
@@ -228,117 +210,58 @@ export default function CommunityDetail() {
               </ul>
             </div>
           )}
-    {community.joinUrls && community.joinUrls.length > 0 && (
-      <>
-        <button
-          onClick={() => {
-            // ★ ここを変更：常に一覧パネルを開く
-            setShowJoinPanel(true);
-          }}
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            width: "110px",
-            height: "44px",
-            borderRadius: "22px",
-            backgroundColor: "#16a34a",
-            color: "white",
-            border: "none",
-            fontSize: "14px",
-            fontWeight: 600,
-            cursor: "pointer",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            zIndex: 1000,
-          }}
-        >
-          参加する
-        </button>
 
-        {/* ★ 一覧パネルの表示条件も変更 */}
-        {showJoinPanel && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              width: "100%",
-              maxHeight: "60%",
-              backgroundColor: "white",
-              borderTopLeftRadius: "16px",
-              borderTopRightRadius: "16px",
-              boxShadow: "0 -2px 12px rgba(0,0,0,0.25)",
-              padding: "16px 20px 24px",
-              zIndex: 2000,
-              overflowY: "auto",
-            }}
-          >
-            {/* 閉じるボタン */}
-            <button
-              onClick={() => setShowJoinPanel(false)}
-              style={{
-                position: "absolute",
-                top: "10px",
-                right: "40px",
-                fontSize: "40px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                zIndex: 9999,
-              }}
-            >
-              ×
-            </button>
+          {/* 参加ボタン & パネル */}
+          {community.joinUrls && community.joinUrls.length > 0 && (
+            <>
+              <button
+                onClick={() => setShowJoinPanel(true)}
+                className="join-fab-button"
+              >
+                参加する
+              </button>
 
-            <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "12px" }}>
-              参加先リンク
-            </h2>
-            <p style={{ fontSize: "14px", marginBottom: "12px", color: "#555" }}>
-              好きな参加先を選んでください。
-            </p>
+              {/* 参加パネル */}
+              {showJoinPanel && (
+                <div className="slide-up-panel join-panel">
+                  {/* 閉じるボタン */}
+                  <button
+                    onClick={() => setShowJoinPanel(false)}
+                    className="panel-close-button"
+                  >
+                    ×
+                  </button>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {community.joinUrls.map((item, idx) => (
-                <a
-                  key={idx}
-                  href={item.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "10px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid #e5e7eb",
-                    textDecoration: "none",
-                    color: "#111827",
-                    backgroundColor: "#f9fafb",
-                  }}
-                >
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontWeight: 600 }}>
-                      {item.label || "参加先リンク"}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        color: "#6b7280",
-                        wordBreak: "break-all",
-                      }}
-                    >
-                      {item.url}
-                    </span>
+                  <h2 className="panel-title">参加先リンク</h2>
+                  <p className="panel-description">
+                    好きな参加先を選んでください。
+                  </p>
+
+                  <div className="join-links-container">
+                    {community.joinUrls.map((item, idx) => (
+                      <a
+                        key={idx}
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="join-link-card"
+                      >
+                        <div className="join-link-info">
+                          <span className="join-link-label">
+                            {item.label || "参加先リンク"}
+                          </span>
+                          <span className="join-link-url">
+                            {item.url}
+                          </span>
+                        </div>
+                        <span className="join-link-arrow">↗</span>
+                      </a>
+                    ))}
                   </div>
-                  <span style={{ fontSize: "18px" }}>↗</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-      </>
-    )}
-
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 
@@ -348,59 +271,29 @@ export default function CommunityDetail() {
           {/* 右下の＋ボタン */}
           <button
             onClick={() => setShowBlogForm(true)}
-            style={{
-              position: "fixed",
-              bottom: "24px",
-              right: "24px",
-              width: "64px",
-              height: "64px",
-              borderRadius: "50%",
-              backgroundColor: "#2563eb",
-              color: "white",
-              border: "none",
-              fontSize: "32px",
-              cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              zIndex: 1000,
-            }}
+            className="blog-fab-button"
           >
             ＋
           </button>
 
           {/* ブログ一覧 */}
-          <div style={{ marginTop: "16px" }}>
+          <div className="tab-content">
             {posts.length === 0 ? (
               <p>まだブログ記事がありません。</p>
             ) : (
               posts.map((post) => (
-                <article
-                  
-                  style={{
-                    border: "1px solid #eee",
-                    borderRadius: "8px",
-                    padding: "12px",
-                    marginBottom: "12px",
-                    background: "#fafafa",
-                  }}
-                >
+                <article key={post.id} className="blog-post">
                   <h3>{post.title}</h3>
 
                   {post.imageUrl && (
                     <img
                       src={post.imageUrl}
                       alt={post.title}
-                      style={{
-                        width: "100%",
-                        maxHeight: "400px",
-                        borderRadius: "8px",
-                        marginTop: "8px",
-                      }}
+                      className="blog-image"
                     />
                   )}
 
-                  <p style={{ whiteSpace: "pre-wrap", marginTop: "8px" }}>
-                    {post.body}
-                  </p>
+                  <p className="blog-body">{post.body}</p>
                 </article>
               ))
             )}
@@ -408,34 +301,11 @@ export default function CommunityDetail() {
 
           {/* ▼ スライド表示されるブログ投稿フォーム ▼ */}
           {showBlogForm && (
-            <div
-              style={{
-                position: "fixed",
-                bottom: "0",
-                left: "0",
-                width: "100%",
-                height: "70%",
-                backgroundColor: "white",
-                borderTopLeftRadius: "16px",
-                borderTopRightRadius: "16px",
-                boxShadow: "0 -2px 12px rgba(0,0,0,0.2)",
-                overflowY: "scroll",
-                padding: "16px",
-                zIndex: 2000,
-              }}
-            >
+            <div className="slide-up-panel blog-form-panel">
               {/* × ボタン */}
               <button
                 onClick={() => setShowBlogForm(false)}
-                style={{
-                  position: "absolute",
-                  top: "10px",
-                  right: "20px",
-                  fontSize: "30px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
+                className="panel-close-button"
               >
                 ×
               </button>
