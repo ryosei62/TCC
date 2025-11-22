@@ -46,6 +46,7 @@
 .main-image-wrapper {
   width: 100%;
   max-width: 500px;
+  height: 400px;
   margin-bottom: 10px;
   margin-left: auto;
   margin-right: auto;
@@ -436,9 +437,46 @@
     padding: 0;  /* 左右の余白もなくして画像を大きく */
   }
 
-  /* 3. 画像の高さを少し小さくする（任意） */
-  /* スマホで高さ400pxは大きすぎる場合があるので、300pxくらいに調整すると見やすいです */
+/* 2. 画像の枠 */
   .main-image-wrapper {
-    height: 300px; 
+    width: 100%;
+    max-width: 100%;
+    height: auto; 
+    aspect-ratio: 4 / 3; /* スマホで見やすい比率 */
+    margin: 0 auto;
+  }
+
+  /* 3. ボタンを「復活」させて「画像の上に重ねる」 */
+  .slider-button {
+    display: flex; /* 非表示(none)をやめて表示する */
+    position: absolute; /* 浮遊させる */
+    top: 50%; /* 上下真ん中 */
+    transform: translateY(-50%); /* 真ん中補正 */
+    z-index: 10; /* 画像より手前に表示 */
+    
+    /* スマホ用に少し見た目を調整（半透明にするなど） */
+    background-color: rgba(255, 255, 255, 0.8);
+    width: 40px;
+    height: 40px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  /* 左のボタンを左端に */
+  .slider-container > button:first-child {
+    left: 10px;
+  }
+
+  /* 右のボタンを右端に */
+  .slider-container > button:last-child {
+    right: 10px;
+  }
+
+  /* 4. サムネイルリスト（もし消えていたらこれで表示されます） */
+  .thumbnail-list {
+    display: flex;
+    justify-content: flex-start; /* スマホなら左から並べる */
+    padding-left: 10px; /* 端っこすぎないように */
+    padding-top: 10px;
   }
 }
