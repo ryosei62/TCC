@@ -12,6 +12,13 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { 
+  FaUsers, 
+  FaClock, 
+  FaMapMarkerAlt,  
+  FaGlobe, 
+  FaInfoCircle,
+} from "react-icons/fa";
 import "./CommunityDetail.css";
 
 type Community = {
@@ -184,23 +191,63 @@ export default function CommunityDetail() {
       {/* ---------- info タブ ---------- */}
       {activeTab === "info" && (
         <div className="tab-content">
-          <p className="info-item-row"><strong>構成人数:</strong> {community.memberCount}</p>
-          <p className="info-item-row"><strong>活動時間:</strong> {community.activityTime}</p>
-          <p className="info-item-row"><strong>活動場所:</strong> {community.activityLocation}</p>
-          <p className="info-item-row"><strong>連絡先:</strong> {community.contact}</p>
-          <p className="info-item-row"><strong>活動内容:</strong> {community.activityDescription}</p>
+          <div className="info-section basic-info-section">
+            
+            {/* 構成人数 */}
+            <div className="info-row">
+              <div className="info-icon-wrapper">
+                <FaUsers className="info-icon-main" />
+              </div>
+              <div className="info-text-wrapper">
+                <span className="info-label">構成人数</span>
+                <span className="info-value">{community.memberCount}名</span>
+              </div>
+            </div>
+
+            {/* 活動時間 */}
+            <div className="info-row">
+              <div className="info-icon-wrapper">
+                <FaClock className="info-icon-main" />
+              </div>
+              <div className="info-text-wrapper">
+                <span className="info-label">活動時間</span>
+                <span className="info-value">{community.activityTime}</span>
+              </div>
+            </div>
+
+            {/* 活動場所 */}
+            <div className="info-row">
+              <div className="info-icon-wrapper">
+                <FaMapMarkerAlt className="info-icon-main" />
+              </div>
+              <div className="info-text-wrapper">
+                <span className="info-label">活動場所</span>
+                <span className="info-value">{community.activityLocation}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 活動内容 */}
+          <div className="info-section">
+            <div className="section-title-row">
+              <FaInfoCircle className="section-icon" />
+              <h3 className="section-title">活動内容</h3>
+            </div>
+            <p className="info-long-text">{community.activityDescription}</p>
+          </div>
           
           {/* SNSリンク */}
           {community.snsUrls && community.snsUrls.length > 0 && (
-            <div className="sns-section">
-              <p><strong>SNS:</strong></p>
+            <div className="info-section sns-section-wrapper">
+              <div className="section-title-row">
+                <FaGlobe className="section-icon" />
+                <h3 className="section-title">SNS</h3>
+              </div>
               <ul className="sns-list">
                 {community.snsUrls.map((item, idx) => (
                   <li key={idx} className="sns-item">
                     {item.label && (
-                      <span className="sns-label">
-                        {item.label}:
-                      </span>
+                      <span className="sns-badge">{item.label}</span>
                     )}
                     <a href={item.url} target="_blank" rel="noreferrer">
                       {item.url}
@@ -209,7 +256,7 @@ export default function CommunityDetail() {
                 ))}
               </ul>
             </div>
-          )}
+          )}       
 
           {/* 参加ボタン & パネル */}
           {community.joinUrls && community.joinUrls.length > 0 && (
