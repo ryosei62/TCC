@@ -109,6 +109,185 @@
   border: 3px solid #2563eb;
 }
 
+/* --- 編集画面 --- */
+/* 全体の枠 */
+.admin-section {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb; /* 薄いグレー */
+  background-color: #f9fafb;  /* ほぼ白 */
+}
+
+/* タイトル行 */
+.admin-section .section-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* 編集ボタン行（通常時） */
+.admin-buttons-row {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 共通ボタンスタイル（シンプル） */
+.admin-edit-button,
+.admin-delete-button,
+.admin-save-button,
+.admin-cancel-button,
+.small-add-button,
+.small-remove-button {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* 編集ボタン */
+.admin-edit-button {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+.admin-edit-button:hover {
+  background-color: #eff6ff;
+}
+
+/* 削除ボタン */
+.admin-delete-button {
+  border-color: #f97373;
+  color: #b91c1c;
+}
+.admin-delete-button:hover {
+  background-color: #fef2f2;
+}
+
+/* 保存ボタン */
+.admin-save-button {
+  border-color: #16a34a;
+  color: #166534;
+}
+.admin-save-button:hover {
+  background-color: #ecfdf3;
+}
+
+/* キャンセルボタン */
+.admin-cancel-button {
+  color: #4b5563;
+}
+.admin-cancel-button:hover {
+  background-color: #f3f4f6;
+}
+
+/* 編集フォーム全体 */
+.admin-form {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 各フィールド（ラベル＋入力） */
+.admin-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+
+/* ラベル */
+.admin-form-field > span,
+.admin-form-field > label {
+  font-weight: 500;
+  color: #374151;
+}
+
+/* input / textarea / select 共通 */
+.admin-form-field input,
+.admin-form-field textarea,
+.admin-form-field select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.admin-form-field input:focus,
+.admin-form-field textarea:focus,
+.admin-form-field select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
+}
+
+/* 複数行入力（SNS / 参加リンク用） */
+.multi-input-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.multi-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* プラス/マイナスボタン */
+.small-add-button {
+  border-color: #22c55e;
+  color: #15803d;
+  align-self: flex-start;
+}
+.small-add-button:hover {
+  background-color: #ecfdf3;
+}
+
+.small-remove-button {
+  border-color: #f97373;
+  color: #b91c1c;
+}
+.small-remove-button:hover {
+  background-color: #fef2f2;
+}
+
+/* 保存・キャンセルボタン行 */
+.admin-form-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* ブログ編集用のパネル: slide-up-panel のデフォルトを上書き */
+.slide-up-panel.blog-form-panel {
+  position: static;         /* 画面固定をやめる */
+  bottom: auto;
+  left: auto;
+  right: auto;
+  transform: none;
+  z-index: auto;
+
+  width: 100%;
+  max-width: 800px;
+  margin: 24px auto 0;
+  padding: 16px;
+  box-sizing: border-box;
+
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+
 /* --- タブ切り替え --- */
 .tab-header {
   display: flex;

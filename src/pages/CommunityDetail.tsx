@@ -6,6 +6,9 @@ import {
   orderBy,
   query,
   onSnapshot,
+  updateDoc,
+  deleteDoc,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useEffect, useState } from "react";
@@ -19,12 +22,13 @@ import {
   FaGlobe, 
   FaInfoCircle,
 } from "react-icons/fa";
+import { useRef } from "react";
 import "./CommunityDetail.css";
 
 type Community = {
   name: string;
   message: string;
-  memberCount: number;
+  memberCount: string;
   activityDescription: string;
   activityTime: string;
   activityLocation: string;
@@ -48,6 +52,7 @@ type TabType = "info" | "blog";
 
 export default function CommunityDetail() {
   const { id } = useParams<{ id: string }>();
+  const editingPostRef = useRef<HTMLDivElement | null>(null);
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -56,6 +61,17 @@ export default function CommunityDetail() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showJoinPanel, setShowJoinPanel] = useState(false);
+  const [isEditingCommunity, setIsEditingCommunity] = useState(false);
+  const [communityForm, setCommunityForm] = useState<Community | null>(null);
+  const [snsUrls, setSnsUrls] = useState<{ label: string; url: string }[]>([]);
+  const [joinUrls, setJoinUrls] = useState<{ label: string; url: string }[]>([]);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [editingPostForm, setEditingPostForm] = useState({
+    title: "",
+    body: "",
+    imageUrl: "",
+  });
+
 
   // ------- Firestore リアルタイム取得 -------
   useEffect(() => {
@@ -68,7 +84,11 @@ export default function CommunityDetail() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setCommunity(docSnap.data() as Community);
+          const data = docSnap.data() as Community;
+          setCommunity(data);
+          setCommunityForm(data);
+          setSnsUrls(data.snsUrls ?? [{ label: "", url: "" }]);
+          setJoinUrls(data.joinUrls ?? [{ label: "", url: "" }]);
         }
 
         // ブログ一覧（リアルタイム）
@@ -121,6 +141,135 @@ export default function CommunityDetail() {
 
     setSelectedImage(displayImages[nextIndex]);
   }
+
+  // コミュニティ編集フォームの入力変更
+  const handleCommunityInputChange = (
+    field: keyof Community,
+    value: string | number
+  ) => {
+    if (!communityForm) return;
+    setCommunityForm({
+      ...communityForm,
+      [field]: value,
+    });
+  };
+
+  // コミュニティ情報を保存
+  const handleSaveCommunity = async () => {
+    if (!id || !communityForm) return;
+
+    try {
+      const docRef = doc(db, "communities", id);
+
+      const trimmedSns = snsUrls.filter((v) => v.label || v.url);
+      const trimmedJoin = joinUrls.filter((v) => v.label || v.url);
+
+      await updateDoc(docRef, { 
+        ...communityForm,
+        snsUrls: trimmedSns,
+        joinUrls: trimmedJoin,
+      });
+      setCommunity({
+        ...communityForm,
+        snsUrls: trimmedSns,
+        joinUrls: trimmedJoin,
+      });
+      setIsEditingCommunity(false);
+      alert("コミュニティ情報を更新しました");
+
+    } catch (e) {
+      console.error(e);
+      alert("更新に失敗しました");
+    }
+  };
+
+  // コミュニティ削除（posts も削除）
+  const handleDeleteCommunity = async () => {
+    if (!id) return;
+
+    const ok = window.confirm(
+      "本当にこのコミュニティと紐づくブログ記事をすべて削除しますか？"
+    );
+    if (!ok) return;
+
+    try {
+      // posts サブコレクション削除
+      const postsRef = collection(db, "communities", id, "posts");
+      const snap = await getDocs(postsRef);
+      await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+
+      // コミュニティ本体削除
+      await deleteDoc(doc(db, "communities", id));
+
+      alert("削除しました");
+      // 一覧へ
+      window.location.href = "/";
+    } catch (e) {
+      console.error(e);
+      alert("削除に失敗しました");
+    }
+  };
+
+  // ブログ記事削除
+  const handleDeletePost = async (postId: string) => {
+    if (!id) return;
+    const ok = window.confirm("この記事を削除しますか？");
+    if (!ok) return;
+
+    try {
+      const postRef = doc(db, "communities", id, "posts", postId);
+      await deleteDoc(postRef);
+    } catch (e) {
+      console.error(e);
+      alert("削除に失敗しました");
+    }
+  };
+
+  // ★ 追加: ブログ編集フォームを開く
+  const openEditPost = (post: Post) => {
+    setEditingPost(post);
+    setEditingPostForm({
+      title: post.title,
+      body: post.body,
+      imageUrl: post.imageUrl || "",
+    });
+    setTimeout(() => {
+      editingPostRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
+
+  // ★ 追加: ブログ編集フォームの入力変更
+  const handleEditPostChange = (
+    field: "title" | "body" | "imageUrl",
+    value: string
+  ) => {
+    setEditingPostForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // ★ 追加: ブログ編集を保存
+  const handleSavePostEdit = async () => {
+    if (!id || !editingPost) return;
+
+    try {
+      const postRef = doc(db, "communities", id, "posts", editingPost.id);
+      await updateDoc(postRef, {
+        title: editingPostForm.title,
+        body: editingPostForm.body,
+        imageUrl: editingPostForm.imageUrl,
+      });
+      // onSnapshot で再取得されるので state 更新は最低限でOK
+      setEditingPost(null);
+      alert("ブログ記事を更新しました");
+    } catch (e) {
+      console.error(e);
+      alert("ブログ記事の更新に失敗しました");
+    }
+  };
+
+
 
   return (
     <div className="community-detail-container">
@@ -256,7 +405,248 @@ export default function CommunityDetail() {
                 ))}
               </ul>
             </div>
-          )}       
+          )}
+
+          {/* 管理者用編集セクション */}
+          <div className="info-section admin-section">
+            <div className="section-title-row">
+              <h3 className="section-title">管理者用編集</h3>
+            </div>
+
+            {!isEditingCommunity ? (
+              <div className="admin-buttons-row">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditingCommunity(true);
+
+                    setSnsUrls(community.snsUrls ?? [{ label: "", url: "" }]);
+                    setJoinUrls(community.joinUrls ?? [{ label: "", url: "" }]);
+                  }}
+                  className="admin-edit-button"
+                >
+                  コミュニティ情報を編集
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteCommunity}
+                  className="admin-delete-button"
+                >
+                  コミュニティを削除
+                </button>
+              </div>
+            ) : (
+              communityForm && (
+                <div className="admin-form">
+                  {/* 1. コミュニティ名 */}
+                  <label className="admin-form-field">
+                    コミュニティ名
+                    <input
+                      type="text"
+                      value={communityForm.name}
+                      onChange={(e) =>
+                        handleCommunityInputChange("name", e.target.value)
+                      }
+                    />
+                  </label>
+
+                  {/* 2. 一言メッセージ */}
+                  <label className="admin-form-field">
+                    一言メッセージ
+                    <textarea
+                      value={communityForm.message}
+                      onChange={(e) =>
+                        handleCommunityInputChange("message", e.target.value)
+                      }
+                    />
+                  </label>
+
+                  {/* 3. 活動内容 */}
+                  <label className="admin-form-field">
+                    活動内容
+                    <textarea
+                      value={communityForm.activityDescription}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityDescription",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* 4. 活動場所 */}
+                  <label className="admin-form-field">
+                    活動場所
+                    <input
+                      type="text"
+                      value={communityForm.activityLocation}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityLocation",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* 5. 活動頻度 */}
+                  <label className="admin-form-field">
+                    活動頻度
+                    <input
+                      type="text"
+                      value={communityForm.activityTime}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityTime",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* 6. 連絡先（複数追加・削除可能） */}
+                  <div className="admin-form-field">
+                    <span>SNSリンク</span>
+                    <div className="multi-input-column">
+                      {snsUrls.map((item, index) => (
+                        <div key={index} className="multi-input-row">
+                          <input
+                            type="text"
+                            placeholder="サービス名 (例: Instagram)"
+                            value={item.label}
+                            onChange={(e) => {
+                              const copy = [...snsUrls];
+                              copy[index].label = e.target.value;
+                              setSnsUrls(copy);
+                            }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="https://example.com"
+                            value={item.url}
+                            onChange={(e) => {
+                              const copy = [...snsUrls];
+                              copy[index].url = e.target.value;
+                              setSnsUrls(copy);
+                            }}
+                          />
+                          {snsUrls.length > 1 && (
+                            <button
+                              type="button"
+                              className="small-remove-button"
+                              onClick={() =>
+                                setSnsUrls(snsUrls.filter((_, i) => i !== index))
+                              }
+                            >
+                              −
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="small-add-button"
+                        onClick={() =>
+                          setSnsUrls([...snsUrls, { label: "", url: "" }])
+                        }
+                      >
+                        ＋ SNSを追加
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 7. 参加先リンク */}
+                  <div className="admin-form-field">
+                    <span>参加先リンク</span>
+                    <div className="multi-input-column">
+                      {joinUrls.map((item, index) => (
+                        <div key={index} className="multi-input-row">
+                          <input
+                            type="text"
+                            placeholder="サービス名 (例: Discord)"
+                            value={item.label}
+                            onChange={(e) => {
+                              const copy = [...joinUrls];
+                              copy[index].label = e.target.value;
+                              setJoinUrls(copy);
+                            }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="https://example.com"
+                            value={item.url}
+                            onChange={(e) => {
+                              const copy = [...joinUrls];
+                              copy[index].url = e.target.value;
+                              setJoinUrls(copy);
+                            }}
+                          />
+                          {joinUrls.length > 1 && (
+                            <button
+                              type="button"
+                              className="small-remove-button"
+                              onClick={() =>
+                                setJoinUrls(joinUrls.filter((_, i) => i !== index))
+                              }
+                            >
+                              −
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="small-add-button"
+                        onClick={() =>
+                          setJoinUrls([...joinUrls, { label: "", url: "" }])
+                        }
+                      >
+                        ＋ 参加URLを追加
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 8. 構成人数 */}
+                  <label className="admin-form-field">
+                    構成人数
+                    <input
+                      type="text"
+                      value={communityForm.memberCount ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^[0-9０-９]*$/.test(value)) {
+                          handleCommunityInputChange("memberCount", value);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  <div className="admin-form-buttons">
+                    <button
+                      type="button"
+                      onClick={handleSaveCommunity}
+                      className="admin-save-button"
+                    >
+                      保存
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingCommunity(false);
+                        setCommunityForm(community);
+                      }}
+                      className="admin-cancel-button"
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                </div>
+              )
+            )}
+
+
+          </div>
 
           {/* 参加ボタン & パネル */}
           {community.joinUrls && community.joinUrls.length > 0 && (
@@ -340,7 +730,26 @@ export default function CommunityDetail() {
                     />
                   )}
 
-                  <p className="blog-body">{post.body}</p>
+                  <p className="blog-body">{post.body}
+                  </p>
+                  {/* ★ 追加: ブログ記事の編集・削除ボタン */}
+                  <div className="blog-post-actions">
+                    <button
+                      type="button"
+                      onClick={() => openEditPost(post)}  // ★ ここが変更
+                      className="blog-edit-button"
+                    >
+                      編集
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePost(post.id)}
+                      className="blog-delete-button"
+                    >
+                      削除
+                    </button>
+                  </div>
+
                 </article>
               ))
             )}
@@ -367,6 +776,60 @@ export default function CommunityDetail() {
               />
             </div>
           )}
+          {/* ▼ ブログ編集フォーム（スライド表示） ▼ */}
+          {editingPost && (
+            <div className="slide-up-panel blog-form-panel" ref={editingPostRef}>
+              {/* × ボタン */}
+              <button
+                onClick={() => setEditingPost(null)}
+                className="panel-close-button"
+              >
+                ×
+              </button>
+
+              {/* ここで admin-form 系の CSS を使って揃える */}
+              <div className="admin-form">
+                {/* タイトル */}
+                <label className="admin-form-field">
+                  タイトル
+                  <input
+                    type="text"
+                    value={editingPostForm.title}
+                    onChange={(e) => handleEditPostChange("title", e.target.value)}
+                  />
+                </label>
+
+                {/* 内容 */}
+                <label className="admin-form-field">
+                  内容
+                  <textarea
+                    value={editingPostForm.body}
+                    onChange={(e) => handleEditPostChange("body", e.target.value)}
+                    rows={5}
+                  />
+                </label>
+
+                {/* 保存／キャンセル */}
+                <div className="admin-form-buttons">
+                  <button
+                    type="button"
+                    onClick={handleSavePostEdit}
+                    className="admin-save-button"
+                  >
+                    保存
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPost(null)}
+                    className="admin-cancel-button"
+                  >
+                    キャンセル
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </>
       )}
     </div>
