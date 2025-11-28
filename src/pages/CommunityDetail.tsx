@@ -22,6 +22,7 @@ import {
   FaGlobe, 
   FaInfoCircle,
 } from "react-icons/fa";
+import { useRef } from "react";
 import "./CommunityDetail.css";
 
 type Community = {
@@ -51,6 +52,7 @@ type TabType = "info" | "blog";
 
 export default function CommunityDetail() {
   const { id } = useParams<{ id: string }>();
+  const editingPostRef = useRef<HTMLDivElement | null>(null);
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -63,6 +65,12 @@ export default function CommunityDetail() {
   const [communityForm, setCommunityForm] = useState<Community | null>(null);
   const [snsUrls, setSnsUrls] = useState<{ label: string; url: string }[]>([]);
   const [joinUrls, setJoinUrls] = useState<{ label: string; url: string }[]>([]);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [editingPostForm, setEditingPostForm] = useState({
+    title: "",
+    body: "",
+    imageUrl: "",
+  });
 
 
   // ------- Firestore リアルタイム取得 -------
@@ -217,27 +225,50 @@ export default function CommunityDetail() {
     }
   };
 
-  // ブログ記事編集（簡易版）
-  const handleEditPost = async (post: Post) => {
-    if (!id) return;
+  // ★ 追加: ブログ編集フォームを開く
+  const openEditPost = (post: Post) => {
+    setEditingPost(post);
+    setEditingPostForm({
+      title: post.title,
+      body: post.body,
+      imageUrl: post.imageUrl || "",
+    });
+    setTimeout(() => {
+      editingPostRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
 
-    const newTitle = window.prompt("タイトルを編集", post.title);
-    if (newTitle === null) return;
+  // ★ 追加: ブログ編集フォームの入力変更
+  const handleEditPostChange = (
+    field: "title" | "body" | "imageUrl",
+    value: string
+  ) => {
+    setEditingPostForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-    const newBody = window.prompt("本文を編集", post.body);
-    if (newBody === null) return;
+  // ★ 追加: ブログ編集を保存
+  const handleSavePostEdit = async () => {
+    if (!id || !editingPost) return;
 
     try {
-      const postRef = doc(db, "communities", id, "posts", post.id);
+      const postRef = doc(db, "communities", id, "posts", editingPost.id);
       await updateDoc(postRef, {
-        title: newTitle,
-        body: newBody,
+        title: editingPostForm.title,
+        body: editingPostForm.body,
+        imageUrl: editingPostForm.imageUrl,
       });
+      // onSnapshot で再取得されるので state 更新は最低限でOK
+      setEditingPost(null);
+      alert("ブログ記事を更新しました");
     } catch (e) {
       console.error(e);
-      alert("更新に失敗しました");
+      alert("ブログ記事の更新に失敗しました");
     }
   };
+
 
 
   return (
@@ -705,7 +736,7 @@ export default function CommunityDetail() {
                   <div className="blog-post-actions">
                     <button
                       type="button"
-                      onClick={() => handleEditPost(post)}
+                      onClick={() => openEditPost(post)}  // ★ ここが変更
                       className="blog-edit-button"
                     >
                       編集
@@ -718,6 +749,7 @@ export default function CommunityDetail() {
                       削除
                     </button>
                   </div>
+
                 </article>
               ))
             )}
@@ -744,6 +776,60 @@ export default function CommunityDetail() {
               />
             </div>
           )}
+          {/* ▼ ブログ編集フォーム（スライド表示） ▼ */}
+          {editingPost && (
+            <div className="slide-up-panel blog-form-panel" ref={editingPostRef}>
+              {/* × ボタン */}
+              <button
+                onClick={() => setEditingPost(null)}
+                className="panel-close-button"
+              >
+                ×
+              </button>
+
+              {/* ここで admin-form 系の CSS を使って揃える */}
+              <div className="admin-form">
+                {/* タイトル */}
+                <label className="admin-form-field">
+                  タイトル
+                  <input
+                    type="text"
+                    value={editingPostForm.title}
+                    onChange={(e) => handleEditPostChange("title", e.target.value)}
+                  />
+                </label>
+
+                {/* 内容 */}
+                <label className="admin-form-field">
+                  内容
+                  <textarea
+                    value={editingPostForm.body}
+                    onChange={(e) => handleEditPostChange("body", e.target.value)}
+                    rows={5}
+                  />
+                </label>
+
+                {/* 保存／キャンセル */}
+                <div className="admin-form-buttons">
+                  <button
+                    type="button"
+                    onClick={handleSavePostEdit}
+                    className="admin-save-button"
+                  >
+                    保存
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPost(null)}
+                    className="admin-cancel-button"
+                  >
+                    キャンセル
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </>
       )}
     </div>
