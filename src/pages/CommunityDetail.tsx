@@ -27,7 +27,7 @@ import "./CommunityDetail.css";
 type Community = {
   name: string;
   message: string;
-  memberCount: number;
+  memberCount: string;
   activityDescription: string;
   activityTime: string;
   activityLocation: string;
@@ -61,6 +61,8 @@ export default function CommunityDetail() {
   const [showJoinPanel, setShowJoinPanel] = useState(false);
   const [isEditingCommunity, setIsEditingCommunity] = useState(false);
   const [communityForm, setCommunityForm] = useState<Community | null>(null);
+  const [snsUrls, setSnsUrls] = useState<{ label: string; url: string }[]>([]);
+  const [joinUrls, setJoinUrls] = useState<{ label: string; url: string }[]>([]);
 
 
   // ------- Firestore リアルタイム取得 -------
@@ -77,6 +79,8 @@ export default function CommunityDetail() {
           const data = docSnap.data() as Community;
           setCommunity(data);
           setCommunityForm(data);
+          setSnsUrls(data.snsUrls ?? [{ label: "", url: "" }]);
+          setJoinUrls(data.joinUrls ?? [{ label: "", url: "" }]);
         }
 
         // ブログ一覧（リアルタイム）
@@ -148,10 +152,23 @@ export default function CommunityDetail() {
 
     try {
       const docRef = doc(db, "communities", id);
-      await updateDoc(docRef, { ...communityForm });
-      setCommunity(communityForm);
+
+      const trimmedSns = snsUrls.filter((v) => v.label || v.url);
+      const trimmedJoin = joinUrls.filter((v) => v.label || v.url);
+
+      await updateDoc(docRef, { 
+        ...communityForm,
+        snsUrls: trimmedSns,
+        joinUrls: trimmedJoin,
+      });
+      setCommunity({
+        ...communityForm,
+        snsUrls: trimmedSns,
+        joinUrls: trimmedJoin,
+      });
       setIsEditingCommunity(false);
       alert("コミュニティ情報を更新しました");
+
     } catch (e) {
       console.error(e);
       alert("更新に失敗しました");
@@ -359,7 +376,7 @@ export default function CommunityDetail() {
             </div>
           )}
 
-          {/* ★ 追加: 管理者用編集セクション */}
+          {/* 管理者用編集セクション */}
           <div className="info-section admin-section">
             <div className="section-title-row">
               <h3 className="section-title">管理者用編集</h3>
@@ -369,7 +386,12 @@ export default function CommunityDetail() {
               <div className="admin-buttons-row">
                 <button
                   type="button"
-                  onClick={() => setIsEditingCommunity(true)}
+                  onClick={() => {
+                    setIsEditingCommunity(true);
+
+                    setSnsUrls(community.snsUrls ?? [{ label: "", url: "" }]);
+                    setJoinUrls(community.joinUrls ?? [{ label: "", url: "" }]);
+                  }}
                   className="admin-edit-button"
                 >
                   コミュニティ情報を編集
@@ -385,34 +407,44 @@ export default function CommunityDetail() {
             ) : (
               communityForm && (
                 <div className="admin-form">
+                  {/* 1. コミュニティ名 */}
                   <label className="admin-form-field">
-                    構成人数
+                    コミュニティ名
                     <input
-                      type="number"
-                      value={communityForm.memberCount}
+                      type="text"
+                      value={communityForm.name}
                       onChange={(e) =>
-                        handleCommunityInputChange(
-                          "memberCount",
-                          Number(e.target.value)
-                        )
+                        handleCommunityInputChange("name", e.target.value)
                       }
                     />
                   </label>
 
+                  {/* 2. 一言メッセージ */}
                   <label className="admin-form-field">
-                    活動時間
-                    <input
-                      type="text"
-                      value={communityForm.activityTime}
+                    一言メッセージ
+                    <textarea
+                      value={communityForm.message}
+                      onChange={(e) =>
+                        handleCommunityInputChange("message", e.target.value)
+                      }
+                    />
+                  </label>
+
+                  {/* 3. 活動内容 */}
+                  <label className="admin-form-field">
+                    活動内容
+                    <textarea
+                      value={communityForm.activityDescription}
                       onChange={(e) =>
                         handleCommunityInputChange(
-                          "activityTime",
+                          "activityDescription",
                           e.target.value
                         )
                       }
                     />
                   </label>
 
+                  {/* 4. 活動場所 */}
                   <label className="admin-form-field">
                     活動場所
                     <input
@@ -427,20 +459,137 @@ export default function CommunityDetail() {
                     />
                   </label>
 
+                  {/* 5. 活動頻度 */}
                   <label className="admin-form-field">
-                    活動内容
-                    <textarea
-                      value={communityForm.activityDescription}
+                    活動頻度
+                    <input
+                      type="text"
+                      value={communityForm.activityTime}
                       onChange={(e) =>
                         handleCommunityInputChange(
-                          "activityDescription",
+                          "activityTime",
                           e.target.value
                         )
                       }
                     />
                   </label>
 
-                  {/* 必要に応じて message, contact, url なども追加可能 */}
+                  {/* 6. 連絡先（複数追加・削除可能） */}
+                  <div className="admin-form-field">
+                    <span>SNSリンク</span>
+                    <div className="multi-input-column">
+                      {snsUrls.map((item, index) => (
+                        <div key={index} className="multi-input-row">
+                          <input
+                            type="text"
+                            placeholder="サービス名 (例: Instagram)"
+                            value={item.label}
+                            onChange={(e) => {
+                              const copy = [...snsUrls];
+                              copy[index].label = e.target.value;
+                              setSnsUrls(copy);
+                            }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="https://example.com"
+                            value={item.url}
+                            onChange={(e) => {
+                              const copy = [...snsUrls];
+                              copy[index].url = e.target.value;
+                              setSnsUrls(copy);
+                            }}
+                          />
+                          {snsUrls.length > 1 && (
+                            <button
+                              type="button"
+                              className="small-remove-button"
+                              onClick={() =>
+                                setSnsUrls(snsUrls.filter((_, i) => i !== index))
+                              }
+                            >
+                              −
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="small-add-button"
+                        onClick={() =>
+                          setSnsUrls([...snsUrls, { label: "", url: "" }])
+                        }
+                      >
+                        ＋ SNSを追加
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 7. 参加先リンク */}
+                  <div className="admin-form-field">
+                    <span>参加先リンク</span>
+                    <div className="multi-input-column">
+                      {joinUrls.map((item, index) => (
+                        <div key={index} className="multi-input-row">
+                          <input
+                            type="text"
+                            placeholder="サービス名 (例: Discord)"
+                            value={item.label}
+                            onChange={(e) => {
+                              const copy = [...joinUrls];
+                              copy[index].label = e.target.value;
+                              setJoinUrls(copy);
+                            }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="https://example.com"
+                            value={item.url}
+                            onChange={(e) => {
+                              const copy = [...joinUrls];
+                              copy[index].url = e.target.value;
+                              setJoinUrls(copy);
+                            }}
+                          />
+                          {joinUrls.length > 1 && (
+                            <button
+                              type="button"
+                              className="small-remove-button"
+                              onClick={() =>
+                                setJoinUrls(joinUrls.filter((_, i) => i !== index))
+                              }
+                            >
+                              −
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="small-add-button"
+                        onClick={() =>
+                          setJoinUrls([...joinUrls, { label: "", url: "" }])
+                        }
+                      >
+                        ＋ 参加URLを追加
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 8. 構成人数 */}
+                  <label className="admin-form-field">
+                    構成人数
+                    <input
+                      type="text"
+                      value={communityForm.memberCount ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^[0-9０-９]*$/.test(value)) {
+                          handleCommunityInputChange("memberCount", value);
+                        }
+                      }}
+                    />
+                  </label>
 
                   <div className="admin-form-buttons">
                     <button
@@ -464,6 +613,8 @@ export default function CommunityDetail() {
                 </div>
               )
             )}
+
+
           </div>
 
           {/* 参加ボタン & パネル */}
