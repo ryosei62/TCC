@@ -6,6 +6,9 @@ import {
   orderBy,
   query,
   onSnapshot,
+  updateDoc,
+  deleteDoc,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useEffect, useState } from "react";
@@ -56,6 +59,9 @@ export default function CommunityDetail() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showJoinPanel, setShowJoinPanel] = useState(false);
+  const [isEditingCommunity, setIsEditingCommunity] = useState(false);
+  const [communityForm, setCommunityForm] = useState<Community | null>(null);
+
 
   // ------- Firestore リアルタイム取得 -------
   useEffect(() => {
@@ -68,7 +74,9 @@ export default function CommunityDetail() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setCommunity(docSnap.data() as Community);
+          const data = docSnap.data() as Community;
+          setCommunity(data);
+          setCommunityForm(data);
         }
 
         // ブログ一覧（リアルタイム）
@@ -121,6 +129,99 @@ export default function CommunityDetail() {
 
     setSelectedImage(displayImages[nextIndex]);
   }
+
+  // コミュニティ編集フォームの入力変更
+  const handleCommunityInputChange = (
+    field: keyof Community,
+    value: string | number
+  ) => {
+    if (!communityForm) return;
+    setCommunityForm({
+      ...communityForm,
+      [field]: value,
+    });
+  };
+
+  // コミュニティ情報を保存
+  const handleSaveCommunity = async () => {
+    if (!id || !communityForm) return;
+
+    try {
+      const docRef = doc(db, "communities", id);
+      await updateDoc(docRef, { ...communityForm });
+      setCommunity(communityForm);
+      setIsEditingCommunity(false);
+      alert("コミュニティ情報を更新しました");
+    } catch (e) {
+      console.error(e);
+      alert("更新に失敗しました");
+    }
+  };
+
+  // コミュニティ削除（posts も削除）
+  const handleDeleteCommunity = async () => {
+    if (!id) return;
+
+    const ok = window.confirm(
+      "本当にこのコミュニティと紐づくブログ記事をすべて削除しますか？"
+    );
+    if (!ok) return;
+
+    try {
+      // posts サブコレクション削除
+      const postsRef = collection(db, "communities", id, "posts");
+      const snap = await getDocs(postsRef);
+      await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+
+      // コミュニティ本体削除
+      await deleteDoc(doc(db, "communities", id));
+
+      alert("削除しました");
+      // 一覧へ
+      window.location.href = "/";
+    } catch (e) {
+      console.error(e);
+      alert("削除に失敗しました");
+    }
+  };
+
+  // ブログ記事削除
+  const handleDeletePost = async (postId: string) => {
+    if (!id) return;
+    const ok = window.confirm("この記事を削除しますか？");
+    if (!ok) return;
+
+    try {
+      const postRef = doc(db, "communities", id, "posts", postId);
+      await deleteDoc(postRef);
+    } catch (e) {
+      console.error(e);
+      alert("削除に失敗しました");
+    }
+  };
+
+  // ブログ記事編集（簡易版）
+  const handleEditPost = async (post: Post) => {
+    if (!id) return;
+
+    const newTitle = window.prompt("タイトルを編集", post.title);
+    if (newTitle === null) return;
+
+    const newBody = window.prompt("本文を編集", post.body);
+    if (newBody === null) return;
+
+    try {
+      const postRef = doc(db, "communities", id, "posts", post.id);
+      await updateDoc(postRef, {
+        title: newTitle,
+        body: newBody,
+      });
+    } catch (e) {
+      console.error(e);
+      alert("更新に失敗しました");
+    }
+  };
+
 
   return (
     <div className="community-detail-container">
@@ -256,7 +357,114 @@ export default function CommunityDetail() {
                 ))}
               </ul>
             </div>
-          )}       
+          )}
+
+          {/* ★ 追加: 管理者用編集セクション */}
+          <div className="info-section admin-section">
+            <div className="section-title-row">
+              <h3 className="section-title">管理者用編集</h3>
+            </div>
+
+            {!isEditingCommunity ? (
+              <div className="admin-buttons-row">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingCommunity(true)}
+                  className="admin-edit-button"
+                >
+                  コミュニティ情報を編集
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteCommunity}
+                  className="admin-delete-button"
+                >
+                  コミュニティを削除
+                </button>
+              </div>
+            ) : (
+              communityForm && (
+                <div className="admin-form">
+                  <label className="admin-form-field">
+                    構成人数
+                    <input
+                      type="number"
+                      value={communityForm.memberCount}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "memberCount",
+                          Number(e.target.value)
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label className="admin-form-field">
+                    活動時間
+                    <input
+                      type="text"
+                      value={communityForm.activityTime}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityTime",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label className="admin-form-field">
+                    活動場所
+                    <input
+                      type="text"
+                      value={communityForm.activityLocation}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityLocation",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label className="admin-form-field">
+                    活動内容
+                    <textarea
+                      value={communityForm.activityDescription}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityDescription",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* 必要に応じて message, contact, url なども追加可能 */}
+
+                  <div className="admin-form-buttons">
+                    <button
+                      type="button"
+                      onClick={handleSaveCommunity}
+                      className="admin-save-button"
+                    >
+                      保存
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingCommunity(false);
+                        setCommunityForm(community);
+                      }}
+                      className="admin-cancel-button"
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                </div>
+              )
+            )}
+          </div>
 
           {/* 参加ボタン & パネル */}
           {community.joinUrls && community.joinUrls.length > 0 && (
@@ -340,7 +548,25 @@ export default function CommunityDetail() {
                     />
                   )}
 
-                  <p className="blog-body">{post.body}</p>
+                  <p className="blog-body">{post.body}
+                  </p>
+                  {/* ★ 追加: ブログ記事の編集・削除ボタン */}
+                  <div className="blog-post-actions">
+                    <button
+                      type="button"
+                      onClick={() => handleEditPost(post)}
+                      className="blog-edit-button"
+                    >
+                      編集
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePost(post.id)}
+                      className="blog-delete-button"
+                    >
+                      削除
+                    </button>
+                  </div>
                 </article>
               ))
             )}
