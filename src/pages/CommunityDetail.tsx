@@ -225,7 +225,7 @@ export default function CommunityDetail() {
     }
   };
 
-  // ★ 追加: ブログ編集フォームを開く
+  // ブログ編集フォームを開く
   const openEditPost = (post: Post) => {
     setEditingPost(post);
     setEditingPostForm({
@@ -238,7 +238,7 @@ export default function CommunityDetail() {
     }, 50);
   };
 
-  // ★ 追加: ブログ編集フォームの入力変更
+  // ブログ編集フォームの入力変更
   const handleEditPostChange = (
     field: "title" | "body" | "imageUrl",
     value: string
@@ -249,7 +249,7 @@ export default function CommunityDetail() {
     }));
   };
 
-  // ★ 追加: ブログ編集を保存
+  // ブログ編集を保存
   const handleSavePostEdit = async () => {
     if (!id || !editingPost) return;
 
@@ -260,7 +260,7 @@ export default function CommunityDetail() {
         body: editingPostForm.body,
         imageUrl: editingPostForm.imageUrl,
       });
-      // onSnapshot で再取得されるので state 更新は最低限でOK
+      
       setEditingPost(null);
       alert("ブログ記事を更新しました");
     } catch (e) {
@@ -410,7 +410,7 @@ export default function CommunityDetail() {
           {/* 管理者用編集セクション */}
           <div className="info-section admin-section">
             <div className="section-title-row">
-              <h3 className="section-title">管理者用編集</h3>
+              <h3 className="section-title">コミュニティ編集</h3>
             </div>
 
             {!isEditingCommunity ? (
@@ -787,7 +787,6 @@ export default function CommunityDetail() {
                 ×
               </button>
 
-              {/* ここで admin-form 系の CSS を使って揃える */}
               <div className="admin-form">
                 {/* タイトル */}
                 <label className="admin-form-field">

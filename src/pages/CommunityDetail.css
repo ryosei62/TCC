@@ -634,7 +634,7 @@
     width: 100%;
     
     /* 重要: PC用の 400px を打ち消して、親枠(4:3)に合わせる */
-    height: 100%; 
+    max-height: 400px; 
     
     object-fit: contain;
   }
@@ -671,5 +671,10 @@
     justify-content: flex-start; /* スマホなら左から並べる */
     padding-left: 10px; /* 端っこすぎないように */
     padding-top: 10px;
+  }
+}
+@media (max-width: 428px) {
+  .main-image {
+    max-height:250px ;
   }
 }
