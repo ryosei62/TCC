@@ -21,14 +21,20 @@ type Community = {
   imageUrl?: string 
   tags: string[] // 型定義にタグを追加
   official:number //0=公式, 1=非公式
+  createdAt?: number
 }
+
+type SortKey = 'default' | 'createdAt' | 'memberCount'
+type SortOrder = 'asc' | 'desc'
 
 // コミュニティ要素をDBから取得
 export default function CommunitiesList() {
   const [communities, setCommunities] = useState<Community[]>([])
-  const [searchTerm, setSearchTerm] = useState<string>(''); // 👈 追加
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<number | null>(null); //フィルタリングの状態を管理 (null:すべて, 0:公式, 1:非公式)
+  const [sortKey, setSortKey] = useState<SortKey>('default')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
   useEffect(() => {
     const fetchCommunities = async () => {
       const querySnapshot = await getDocs(collection(db, 'communities'))
@@ -45,6 +51,9 @@ export default function CommunitiesList() {
           imageUrl: data.imageUrl || "",
           tags:data.tags || [],
           official: data.official ?? 1, // ★追加: 未設定の場合はとりあえず非公式(1)扱いにする
+          createdAt: data.createdAt
+            ? (data.createdAt.toMillis ? data.createdAt.toMillis() : data.createdAt)
+            : undefined,
         })
       })
       setCommunities(results)
@@ -53,9 +62,31 @@ export default function CommunitiesList() {
     fetchCommunities()
   }, [])
 
+  const sortedCommunities = [...communities].sort((a, b) => {
+    if (sortKey === 'default') {
+      // デフォルトは「元の順番」を保つためソートしない
+      return 0
+    }
+
+    let aVal: number
+    let bVal: number
+
+    if (sortKey === 'createdAt') {
+      aVal = a.createdAt ?? 0
+      bVal = b.createdAt ?? 0
+    } else {
+      // memberCount
+      aVal = a.memberCount ?? 0
+      bVal = b.memberCount ?? 0
+    }
+
+    const diff = aVal - bVal
+    return sortOrder === 'asc' ? diff : -diff
+  })
+
   // 検索処理：漢字・カタカナ・ひらがなの完全一致ベースで部分一致
 
-  const filteredCommunities = communities.filter((c) => {
+  const filteredCommunities = sortedCommunities.filter((c) => {
       // 1. ステータスチェック
       // filterStatusがnullなら常にtrue(チェック不要)。nullでなければ、c.officialと値が一致するか確認。
       const statusMatch = filterStatus === null || c.official === filterStatus;
@@ -91,6 +122,10 @@ export default function CommunitiesList() {
     setFilterStatus(status);
   }
 
+  const toggleSortOrder = () => {
+    setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+  }
+
 // コミュニティ一覧表示
   return (
     
@@ -105,6 +140,9 @@ export default function CommunitiesList() {
           />
         <h1>つくばカジュアルコミュニティ</h1>
       </div>
+      <Link to="/signup" className="signUp">
+        <h4>新規登録</h4>
+      </Link>
 
       <div className="header-links">
         <Link to="/CreateCommunity" className="header-link">
@@ -113,9 +151,7 @@ export default function CommunitiesList() {
         <Link to="/about" className="header-link">
           <h2>TCCについて</h2>
         </Link>
-        <Link to="/signup" className="header-link">
-          <h2>新規登録</h2>
-        </Link>
+        
       </div>
 
       <div className="search-area">
@@ -137,6 +173,26 @@ export default function CommunitiesList() {
           検索
         </button>
       </div>
+
+      <div className="sort-area">
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            className="sort-select"
+          >
+            <option value="default">デフォルト順</option>
+            <option value="createdAt">作成日時</option>
+            <option value="memberCount">メンバー数</option>
+          </select>
+
+          <button
+            type="button"
+            onClick={toggleSortOrder}
+            className="sort-order-button"
+          >
+            {sortOrder === 'asc' ? '昇順 ↑' : '降順 ↓'}
+          </button>
+        </div>
 
       <div className="filter-buttons-area">
         <button
