@@ -50,7 +50,7 @@ export default function CommunitiesList() {
           thubmnailUrl: data.thumbnailUrl,
           imageUrl: data.imageUrl || "",
           tags:data.tags || [],
-          official: data.official ?? 1, // ★追加: 未設定の場合はとりあえず非公式(1)扱いにする
+          official: Number(data.official ?? 0), // ★追加: 未設定の場合はとりあえず非公式(1)扱いにする
           createdAt: data.createdAt
             ? (data.createdAt.toMillis ? data.createdAt.toMillis() : data.createdAt)
             : undefined,
