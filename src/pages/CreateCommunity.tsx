@@ -161,6 +161,7 @@ export const CreateCommunity = () => {
             required
           />
         </div>
+        <h4>一言メッセージは一覧表示の際に表示される短いキャッチコピー<br/>活動内容は具体的に何をするかを書いてください</h4>
         <div className="item">
           <p className="message">一言メッセージ:</p>
           <textarea
@@ -345,6 +346,8 @@ export const CreateCommunity = () => {
             className="border p-2 rounded w-full"
           />
         </div>
+
+        <h4>公式とは筑波大学に認可された学生団体を指します</h4>
 
         <div className="item">
           <p className="official">公式・非公式:</p>
