@@ -71,6 +71,17 @@ export default function CommunityDetail() {
     body: "",
     imageUrl: "",
   });
+  const formatDate = (isoString: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    return date.toLocaleDateString("ja-jp", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
 
   // ------- Firestore リアルタイム取得 -------
@@ -720,8 +731,12 @@ export default function CommunityDetail() {
             ) : (
               posts.map((post) => (
                 <article key={post.id} className="blog-post">
-                  <h3>{post.title}</h3>
-
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h3>{post.title}</h3>
+                    <span style={{ fontSize: "0.9rem", color: "#888" }}>
+                      {formatDate(post.createdAt)}
+                    </span>
+                  </div>
                   {post.imageUrl && (
                     <img
                       src={post.imageUrl}
