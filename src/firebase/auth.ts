@@ -1,27 +1,13 @@
 // auth.ts
-import { initializeApp } from "firebase/app";
+// src/firebase/auth.ts
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
   signOut,
   User,
 } from "firebase/auth";
-
-const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-};
-
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-
-auth.languageCode = 'ja';
+import { auth } from "./config"; // ★ ここがポイント：initializeAppしない
 
 // 大学ドメイン
 const ALLOWED_DOMAIN = "@u.tsukuba.ac.jp";
@@ -41,9 +27,12 @@ export const signUpWithUniversityEmail = async (
 
   const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-  // 大学メールに確認メールを送る
+  // ここで確認メール送信（URLも明示しておくのがおすすめ）
   if (cred.user && !cred.user.emailVerified) {
-    await sendEmailVerification(cred.user);
+    await sendEmailVerification(cred.user, {
+      url: `${window.location.origin}/verify-email`, // ここを実際のVerifyルートに合わせる
+      handleCodeInApp: true,
+    });
   }
 
   return cred.user;
@@ -57,12 +46,10 @@ export const signInWithUniversityEmail = async (
   const cred = await signInWithEmailAndPassword(auth, email, password);
 
   if (!isAllowedUniversityEmail(cred.user.email || "")) {
-    // 念のためここでもチェック
     await signOut(auth);
     throw new Error(`このサービスは ${ALLOWED_DOMAIN} のメールアドレスのみ利用できます。`);
   }
 
-  // メール未確認なら弾く（UI上でメッセージ出す）
   if (!cred.user.emailVerified) {
     await signOut(auth);
     throw new Error("メールアドレスの確認が完了していません。大学メールの受信箱を確認してください。");
