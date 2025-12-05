@@ -779,7 +779,7 @@ export default function CommunityDetail() {
 
           {/* ▼ スライド表示されるブログ投稿フォーム ▼ */}
           {showBlogForm && (
-            <div className="slide-up-panel blog-form-panel">
+            <div className="blog-modal-panel">
               {/* × ボタン */}
               <button
                 onClick={() => setShowBlogForm(false)}
@@ -800,7 +800,7 @@ export default function CommunityDetail() {
           )}
           {/* ▼ ブログ編集フォーム（スライド表示） ▼ */}
           {editingPost && (
-            <div className="slide-up-panel blog-form-panel" ref={editingPostRef}>
+            <div className="blog-modal-panel" ref={editingPostRef}>
               {/* × ボタン */}
               <button
                 onClick={() => setEditingPost(null)}

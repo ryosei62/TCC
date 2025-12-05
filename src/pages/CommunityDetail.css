@@ -475,9 +475,36 @@
   max-height: 60%;
 }
 
-/* ブログフォームパネル固有のサイズ */
-.slide-up-panel.blog-form-panel {
-  height: 70%;
+/* --- ブログ投稿モーダルパネル --- */
+.blog-modal-panel {
+  /* 画面中央に固定 */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* サイズとデザイン */
+  width: 90%;
+  max-width: 600px;
+  height: auto;
+  max-height: 85vh; /* 画面からはみ出さない */
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 0;
+  z-index: 3000; /* 参加パネルより手前に */
+  overflow-y: auto;
+
+  /* 影をつける + 画面全体を暗くする(box-shadowの裏技) */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 9999px rgba(0,0,0,0.5);
+}
+
+/* モーダル内の閉じるボタンの位置調整 */
+.blog-modal-panel .panel-close-button {
+  top: 16px;
+  right: 16px;
+  font-size: 28px;
+  color: #666;
 }
 
 /* パネル内の閉じるボタン (×) */
