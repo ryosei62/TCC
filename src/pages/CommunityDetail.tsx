@@ -487,6 +487,30 @@ export default function CommunityDetail() {
                     />
                   </label>
 
+                  {/* ★ここに参加方法の説明を追加する */}
+                  <label className="admin-form-field">
+                    参加方法の説明
+                    <textarea
+                      value={communityForm.joinDescription ?? ""}
+                      onChange={(e) =>
+                        handleCommunityInputChange("joinDescription", e.target.value)
+                      }
+                    />
+                  </label>
+
+                  <label className="admin-form-field">
+                    連絡先
+                    <textarea
+                      value={communityForm.contact ?? ""}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "contact",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
                   {/* 4. 活動場所 */}
                   <label className="admin-form-field">
                     活動場所
