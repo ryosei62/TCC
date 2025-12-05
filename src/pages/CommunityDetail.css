@@ -266,28 +266,6 @@
   margin-top: 8px;
 }
 
-/* ブログ編集用のパネル: slide-up-panel のデフォルトを上書き */
-.slide-up-panel.blog-form-panel {
-  position: static;         /* 画面固定をやめる */
-  bottom: auto;
-  left: auto;
-  right: auto;
-  transform: none;
-  z-index: auto;
-
-  width: 100%;
-  max-width: 800px;
-  margin: 24px auto 0;
-  padding: 16px;
-  box-sizing: border-box;
-
-  background: #ffffff;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-}
-
-
 /* --- タブ切り替え --- */
 .tab-header {
   display: flex;
@@ -475,7 +453,7 @@
   max-height: 60%;
 }
 
-/* --- ブログ投稿モーダルパネル --- */
+/* --- ブログ投稿,編集モーダルパネル --- */
 .blog-modal-panel {
   /* 画面中央に固定 */
   position: fixed;
