@@ -38,6 +38,7 @@ type Community = {
   imageUrls?: string[];
   snsUrls?: { label: string; url: string }[];
   joinUrls?: { label: string; url: string }[];
+  joinDescription?: string;  
 };
 
 type Post = {
@@ -648,32 +649,37 @@ export default function CommunityDetail() {
 
           </div>
 
-          {/* 参加ボタン & パネル */}
-          {community.joinUrls && community.joinUrls.length > 0 && (
-            <>
+          {/* 参加ボタン */}
+          {(community.joinDescription || community.contact || (community.joinUrls && community.joinUrls.length > 0)) && (
+            <button
+              onClick={() => setShowJoinPanel(true)}
+              className="join-fab-button"
+            >
+              参加する
+            </button>
+          )}
+
+          {/* 参加パネル（内容を SNS＋連絡先と同一イメージに） */}
+          {showJoinPanel && (
+            <div className="slide-up-panel join-panel">
               <button
-                onClick={() => setShowJoinPanel(true)}
-                className="join-fab-button"
+                onClick={() => setShowJoinPanel(false)}
+                className="panel-close-button"
               >
-                参加する
+                ×
               </button>
 
-              {/* 参加パネル */}
-              {showJoinPanel && (
-                <div className="slide-up-panel join-panel">
-                  {/* 閉じるボタン */}
-                  <button
-                    onClick={() => setShowJoinPanel(false)}
-                    className="panel-close-button"
-                  >
-                    ×
-                  </button>
+              <h2 className="panel-title">参加方法</h2>
 
-                  <h2 className="panel-title">参加先リンク</h2>
-                  <p className="panel-description">
-                    好きな参加先を選んでください。
-                  </p>
+              {community.joinDescription && (
+                <p className="panel-description">
+                  {community.joinDescription}
+                </p>
+              )}
 
+              {community.joinUrls && community.joinUrls.length > 0 && (
+                <div className="panel-section">
+                  <h3 className="panel-subtitle">参加先リンク</h3>
                   <div className="join-links-container">
                     {community.joinUrls.map((item, idx) => (
                       <a
@@ -697,10 +703,11 @@ export default function CommunityDetail() {
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       )}
+
 
       {/* ---------- blog タブ ---------- */}
       {activeTab === "blog" && (
