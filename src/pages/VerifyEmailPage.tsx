@@ -15,6 +15,9 @@ export const VerifyEmailPage = () => {
   const hasRunRef = useRef(false);
 
   useEffect(() => {
+
+    console.log("auth.app.options:", (auth as any).app.options);
+
     if (hasRunRef.current) {
       // 2回目以降の実行は無視
       return;
