@@ -24,6 +24,10 @@ export const VerifyEmailPage = () => {
     const mode = params.get("mode");
     const oobCode = params.get("oobCode");
 
+    console.log("mode:", mode);
+    console.log("oobCode:", oobCode);
+    console.log("current URL:", window.location.href);
+
     if (mode !== "verifyEmail" || !oobCode) {
       setStatus("invalid");
       setMessage("無効なリンクです。再度お試しください。");
