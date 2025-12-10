@@ -1,8 +1,7 @@
 import { useState } from "react";
-// import { db, auth } from "../firebase/config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
-import { db } from "../firebase/config";
+import { db, auth } from "../firebase/config";
 import "./CreateCommunity.css";
 import { TagSelector, Tag } from "./TagSelector";
 import { Link, useNavigate } from "react-router-dom";
@@ -86,8 +85,16 @@ export const CreateCommunity = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
+      // ★ ここで現在ログイン中のユーザーを取得
+      const user = auth.currentUser;
+      if (!user) {
+        alert("コミュニティを作成するにはログインが必要です。");
+        navigate("/login");
+        return;
+      }
+    
       let uploadedImageUrls: string[] = [];
       let thumbnailUrl = "";
 
@@ -111,6 +118,8 @@ export const CreateCommunity = () => {
         joinUrls: joinUrlList,
         imageUrls: uploadedImageUrls,// 画像URLを追加
         thumbnailUrl: thumbnailUrl,
+        createdBy: user.uid,
+        createdByEmail: user.email ?? null,
         // ログインしないと登録できなかったため createdBy: user.uid,
         tags: selectedTags.map((tag) => tag.name),
         createdAt: serverTimestamp(), // Firestoreのサーバー時刻を使う

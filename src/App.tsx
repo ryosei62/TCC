@@ -7,6 +7,7 @@ import { About } from "./pages/About";
 import { SignupForm } from "./pages/SignupForm";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { CreateBlog } from "./pages/CreateBlog";
+import { LoginForm } from "./pages/LoginForm";
 
 const App: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const App: React.FC = () => {
         <Route path="/signup" element={<SignupForm />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/communities/:id/create-blog" element={<CreateBlog communityId={""} />} />
+        <Route path="/login" element={<LoginForm />} />
       </Routes>
     </BrowserRouter>
   );
