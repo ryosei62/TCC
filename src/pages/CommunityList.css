@@ -18,6 +18,8 @@
   margin-bottom: 25px; 
   border-bottom: 3px solid #E3F2FD; 
   padding-bottom: 10px; 
+  cursor: default;
+  user-select: none;
 }
 
 .community-list-container h1 {
@@ -34,20 +36,6 @@
 /* ---------------------------------- */
 /* ヘッダーリンク（ナビゲーション） */
 /* ---------------------------------- */
-
-.signUp, .login {
-  display: flex;
-  justify-content: end;
-  align-items: center;
-  text-decoration: none;
-  color: #555;
-}
-
-.signUp h2, .login h2 {
-  font-size: 1.2em;
-  font-weight: 600;
-  margin: 0;
-}
 
 .header-links {
   display: flex;
