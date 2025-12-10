@@ -82,7 +82,7 @@ export const About = () => {
                             <strong>1. 筑波大学メールアドレスで認証</strong><br />
                             在学生限定の安全なコミュニティを維持するため、登録には `u.tsukuba.ac.jp` などの大学発行メールアドレスを使用します。
                             <br /><br />
-                            </p>
+                        </p>
                     </div>
                 )}
 
