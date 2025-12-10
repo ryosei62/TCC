@@ -35,7 +35,7 @@
 /* ヘッダーリンク（ナビゲーション） */
 /* ---------------------------------- */
 
-.signUp {
+.signUp, .login {
   display: flex;
   justify-content: end;
   align-items: center;
@@ -43,7 +43,7 @@
   color: #555;
 }
 
-.signUp h2 {
+.signUp h2, .login h2 {
   font-size: 1.2em;
   font-weight: 600;
   margin: 0;
