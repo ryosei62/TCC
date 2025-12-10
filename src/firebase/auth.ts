@@ -44,16 +44,24 @@ export const signInWithUniversityEmail = async (
   password: string
 ): Promise<User> => {
   const cred = await signInWithEmailAndPassword(auth, email, password);
+  const user = cred.user;
 
-  if (!isAllowedUniversityEmail(cred.user.email || "")) {
+  // 大学ドメインのチェック
+  if (!isAllowedUniversityEmail(user.email || "")) {
     await signOut(auth);
     throw new Error(`このサービスは ${ALLOWED_DOMAIN} のメールアドレスのみ利用できます。`);
   }
 
-  if (!cred.user.emailVerified) {
+  // 最新状態を取得（メール認証直後のキャッシュ問題対策）
+  await user.reload();
+
+  // メール未確認なら弾く
+  if (!user.emailVerified) {
     await signOut(auth);
-    throw new Error("メールアドレスの確認が完了していません。大学メールの受信箱を確認してください。");
+    throw new Error(
+      "メールアドレスの確認が完了していません。大学メールに届いた確認メールのリンクをクリックしてから、再度ログインしてください。"
+    );
   }
 
-  return cred.user;
+  return user;
 };

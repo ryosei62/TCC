@@ -15,9 +15,6 @@ export const VerifyEmailPage = () => {
   const hasRunRef = useRef(false);
 
   useEffect(() => {
-
-    console.log("auth.app.options:", (auth as any).app.options);
-
     if (hasRunRef.current) {
       // 2回目以降の実行は無視
       return;
@@ -26,10 +23,6 @@ export const VerifyEmailPage = () => {
 
     const mode = params.get("mode");
     const oobCode = params.get("oobCode");
-
-    console.log("mode:", mode);
-    console.log("oobCode:", oobCode);
-    console.log("current URL:", window.location.href);
 
     if (mode !== "verifyEmail" || !oobCode) {
       setStatus("invalid");

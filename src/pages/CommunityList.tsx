@@ -143,6 +143,9 @@ export default function CommunitiesList() {
       <Link to="/signup" className="signUp">
         <h4>新規登録</h4>
       </Link>
+      <Link to="/login" className="login">
+        <h4>ログイン</h4>
+      </Link>
 
       <div className="header-links">
         <Link to="/CreateCommunity" className="header-link">
