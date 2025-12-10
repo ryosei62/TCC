@@ -22,6 +22,7 @@ import {
   FaMapMarkerAlt,  
   FaGlobe, 
   FaInfoCircle,
+  FaThumbtack,
 } from "react-icons/fa";
 import { useRef } from "react";
 import "./CommunityDetail.css";
@@ -40,6 +41,7 @@ type Community = {
   snsUrls?: { label: string; url: string }[];
   joinUrls?: { label: string; url: string }[];
   createdBy?: string;
+  joinDescription?: string;  
 };
 
 type Post = {
@@ -48,6 +50,7 @@ type Post = {
   body: string;
   createdAt: string;
   imageUrl: string;
+  isPinned?: boolean;
 };
 
 type TabType = "info" | "blog";
@@ -74,6 +77,17 @@ export default function CommunityDetail() {
     body: "",
     imageUrl: "",
   });
+  const formatDate = (isoString: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    return date.toLocaleDateString("ja-jp", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
 
   // ------- Firestore リアルタイム取得 -------
@@ -96,7 +110,7 @@ export default function CommunityDetail() {
 
         // ブログ一覧（リアルタイム）
         const postsRef = collection(db, "communities", id, "posts");
-        const q = query(postsRef, orderBy("createdAt", "desc"));
+        const q = query(postsRef, orderBy("isPinned","desc"),orderBy("createdAt", "desc"));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
           const postsData: Post[] = snapshot.docs.map((d) => ({
@@ -283,6 +297,21 @@ export default function CommunityDetail() {
     }
   };
 
+
+  // ★追加: ピン留め切り替え関数
+  const handleTogglePin = async (post: Post) => {
+    if (!id) return;
+    try {
+      const postRef = doc(db, "communities", id, "posts", post.id);
+      // isPinned の状態を反転させる (trueならfalseへ、falseならtrueへ)
+      await updateDoc(postRef, {
+        isPinned: !post.isPinned
+      });
+    } catch (e) {
+      console.error("ピン留めエラー", e);
+      alert("操作に失敗しました");
+    }
+  };
 
 
   return (
@@ -484,6 +513,30 @@ export default function CommunityDetail() {
                       onChange={(e) =>
                         handleCommunityInputChange(
                           "activityDescription",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* ★ここに参加方法の説明を追加する */}
+                  <label className="admin-form-field">
+                    参加方法の説明
+                    <textarea
+                      value={communityForm.joinDescription ?? ""}
+                      onChange={(e) =>
+                        handleCommunityInputChange("joinDescription", e.target.value)
+                      }
+                    />
+                  </label>
+
+                  <label className="admin-form-field">
+                    連絡先
+                    <textarea
+                      value={communityForm.contact ?? ""}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "contact",
                           e.target.value
                         )
                       }
@@ -716,8 +769,65 @@ export default function CommunityDetail() {
                 )}
               </>
             )}
+          {/* 参加ボタン */}
+          {(community.joinDescription || community.contact || (community.joinUrls && community.joinUrls.length > 0)) && (
+            <button
+              onClick={() => setShowJoinPanel(true)}
+              className="join-fab-button"
+            >
+              参加する
+            </button>
+          )}
+
+          {/* 参加パネル（内容を SNS＋連絡先と同一イメージに） */}
+          {showJoinPanel && (
+            <div className="slide-up-panel join-panel">
+              <button
+                onClick={() => setShowJoinPanel(false)}
+                className="panel-close-button"
+              >
+                ×
+              </button>
+
+              <h2 className="panel-title">参加方法</h2>
+
+              {community.joinDescription && (
+                <p className="panel-description">
+                  {community.joinDescription}
+                </p>
+              )}
+
+              {community.joinUrls && community.joinUrls.length > 0 && (
+                <div className="panel-section">
+                  <h3 className="panel-subtitle">参加先リンク</h3>
+                  <div className="join-links-container">
+                    {community.joinUrls.map((item, idx) => (
+                      <a
+                        key={idx}
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="join-link-card"
+                      >
+                        <div className="join-link-info">
+                          <span className="join-link-label">
+                            {item.label || "参加先リンク"}
+                          </span>
+                          <span className="join-link-url">
+                            {item.url}
+                          </span>
+                        </div>
+                        <span className="join-link-arrow">↗</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
+
 
       {/* ---------- blog タブ ---------- */}
       {activeTab === "blog" && (
@@ -738,9 +848,13 @@ export default function CommunityDetail() {
               <p>まだブログ記事がありません。</p>
             ) : (
               posts.map((post) => (
-                <article key={post.id} className="blog-post">
-                  <h3>{post.title}</h3>
-
+                <article key={post.id} className={`blog-post ${post.isPinned ? "pinned-post" : ""}`}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                    {post.isPinned && (
+                      <FaThumbtack style={{ color: "#2563eb", transform: "rotate(45deg)" }} />
+                    )}
+                    <h3 style={{ margin: 0, fontSize: "1.2rem" }}>{post.title}</h3>
+                  </div>
                   {post.imageUrl && (
                     <img
                       src={post.imageUrl}
@@ -749,11 +863,19 @@ export default function CommunityDetail() {
                     />
                   )}
 
-                  <p className="blog-body">{post.body}
-                  </p>
+                  <p className="blog-body">{post.body}</p>
                   {/* ★ 追加: ブログ記事の編集・削除ボタン */}
                   {canEditCommunity && (
                   <div className="blog-post-actions">
+                    <button
+                        type="button"
+                        onClick={() => handleTogglePin(post)}
+                        className={`blog-action-button ${post.isPinned ? "active-pin" : ""}`}
+                        title={post.isPinned ? "固定を解除" : "トップに固定"}
+                      >
+                        <FaThumbtack />
+                      </button>
+
                     <button
                       type="button"
                       onClick={() => openEditPost(post)}  // ★ ここが変更
@@ -768,6 +890,9 @@ export default function CommunityDetail() {
                     >
                       削除
                     </button>
+                    <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                      {formatDate(post.createdAt)}
+                    </span>
                   </div>
                   )}
 
@@ -778,7 +903,7 @@ export default function CommunityDetail() {
 
           {/* ▼ スライド表示されるブログ投稿フォーム ▼ */}
           {showBlogForm && (
-            <div className="slide-up-panel blog-form-panel">
+            <div className="blog-modal-panel">
               {/* × ボタン */}
               <button
                 onClick={() => setShowBlogForm(false)}
@@ -799,7 +924,7 @@ export default function CommunityDetail() {
           )}
           {/* ▼ ブログ編集フォーム（スライド表示） ▼ */}
           {editingPost && (
-            <div className="slide-up-panel blog-form-panel" ref={editingPostRef}>
+            <div className="blog-modal-panel" ref={editingPostRef}>
               {/* × ボタン */}
               <button
                 onClick={() => setEditingPost(null)}

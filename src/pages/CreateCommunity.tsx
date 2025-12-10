@@ -18,6 +18,7 @@ export const CreateCommunity = () => {
     url: "",
     memberCount: "",
     official: 0,
+    joinDescription: "",
     tags: [] as string[],
   });
 
@@ -138,6 +139,7 @@ export const CreateCommunity = () => {
         url: "",
         memberCount: "",
         official: 0,
+        joinDescription: "", 
         tags: [],
       });
       setImageFiles([]);
@@ -224,6 +226,19 @@ export const CreateCommunity = () => {
             className="border p-2 rounded"
           />
         </div>
+
+        {/* ★ 参加方法（自由記述） */}
+        <div className="item">
+          <p className="joinDescription">コミュニティへの参加方法:</p>
+          <textarea
+            name="joinDescription"
+            placeholder="まずはTwitterのDMでお気軽にご連絡ください"
+            value={formData.joinDescription}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </div>
+
         <div className="item">
           <p className="url">リンク一覧(SNS):</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

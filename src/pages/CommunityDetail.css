@@ -184,6 +184,43 @@
   background-color: #f3f4f6;
 }
 
+/* 固定された記事を少し目立たせる（薄い青枠など） */
+.pinned-post {
+  border: 2px solid #e0f2fe; /* 薄い青枠 */
+  background-color: #f0f9ff; /* ほんのり青背景 */
+}
+
+/* アクションボタン共通 */
+.blog-post-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ピン留めボタン */
+.blog-action-button {
+  padding: 4px 10px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.blog-action-button:hover {
+  background-color: #f3f4f6;
+}
+
+/* ピン留め中（アクティブ）の状態 */
+.blog-action-button.active-pin {
+  color: #2563eb;
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
 /* 編集フォーム全体 */
 .admin-form {
   margin-top: 16px;
@@ -265,28 +302,6 @@
   justify-content: flex-end;
   margin-top: 8px;
 }
-
-/* ブログ編集用のパネル: slide-up-panel のデフォルトを上書き */
-.slide-up-panel.blog-form-panel {
-  position: static;         /* 画面固定をやめる */
-  bottom: auto;
-  left: auto;
-  right: auto;
-  transform: none;
-  z-index: auto;
-
-  width: 100%;
-  max-width: 800px;
-  margin: 24px auto 0;
-  padding: 16px;
-  box-sizing: border-box;
-
-  background: #ffffff;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-}
-
 
 /* --- タブ切り替え --- */
 .tab-header {
@@ -475,9 +490,36 @@
   max-height: 60%;
 }
 
-/* ブログフォームパネル固有のサイズ */
-.slide-up-panel.blog-form-panel {
-  height: 70%;
+/* --- ブログ投稿,編集モーダルパネル --- */
+.blog-modal-panel {
+  /* 画面中央に固定 */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* サイズとデザイン */
+  width: 90%;
+  max-width: 600px;
+  height: auto;
+  max-height: 85vh; /* 画面からはみ出さない */
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 0;
+  z-index: 3000; /* 参加パネルより手前に */
+  overflow-y: auto;
+
+  /* 影をつける + 画面全体を暗くする(box-shadowの裏技) */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 9999px rgba(0,0,0,0.5);
+}
+
+/* モーダル内の閉じるボタンの位置調整 */
+.blog-modal-panel .panel-close-button {
+  top: 16px;
+  right: 16px;
+  font-size: 28px;
+  color: #666;
 }
 
 /* パネル内の閉じるボタン (×) */

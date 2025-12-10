@@ -65,6 +65,7 @@ export const CreateBlog: React.FC<Props> = ({ communityId, onPosted }) => {
         body,
         imageUrl: imageUrl || "",
         createdAt: new Date().toISOString(),
+        isPinned: false, 
       });
 
       if (onPosted) onPosted(); // 親に知らせる
