@@ -184,6 +184,43 @@
   background-color: #f3f4f6;
 }
 
+/* 固定された記事を少し目立たせる（薄い青枠など） */
+.pinned-post {
+  border: 2px solid #e0f2fe; /* 薄い青枠 */
+  background-color: #f0f9ff; /* ほんのり青背景 */
+}
+
+/* アクションボタン共通 */
+.blog-post-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ピン留めボタン */
+.blog-action-button {
+  padding: 4px 10px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.blog-action-button:hover {
+  background-color: #f3f4f6;
+}
+
+/* ピン留め中（アクティブ）の状態 */
+.blog-action-button.active-pin {
+  color: #2563eb;
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
 /* 編集フォーム全体 */
 .admin-form {
   margin-top: 16px;
