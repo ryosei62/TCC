@@ -54,7 +54,7 @@
 }
 
 .header-link h2 {
-  font-size: 1.2em;
+  font-size: 1.1em;
   font-weight: 600;
   margin: 0;
 }
@@ -76,7 +76,7 @@
 
 .search-input {
   flex-grow: 1; 
-  padding: 12px 15px;
+  padding: 10px 15px;
   border: 1px solid #B0BEC5;
   border-radius: 8px;
   font-size: 1em;
