@@ -10,7 +10,8 @@ import {
   deleteDoc,
   getDocs,
 } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { db, auth } from "../firebase/config";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
@@ -38,6 +39,7 @@ type Community = {
   imageUrls?: string[];
   snsUrls?: { label: string; url: string }[];
   joinUrls?: { label: string; url: string }[];
+  createdBy?: string;
 };
 
 type Post = {
@@ -65,6 +67,7 @@ export default function CommunityDetail() {
   const [communityForm, setCommunityForm] = useState<Community | null>(null);
   const [snsUrls, setSnsUrls] = useState<{ label: string; url: string }[]>([]);
   const [joinUrls, setJoinUrls] = useState<{ label: string; url: string }[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editingPostForm, setEditingPostForm] = useState({
     title: "",
@@ -114,8 +117,19 @@ export default function CommunityDetail() {
     fetchData();
   }, [id]);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+  
+
   if (loading) return <p>読み込み中...</p>;
   if (!community) return <p>コミュニティが見つかりません。</p>;
+
+  const canEditCommunity =
+  currentUser != null && community.createdBy === currentUser.uid;
 
   const displayImages = community.imageUrls || [];
   const mainImage = selectedImage || community.thumbnailUrl || displayImages[0];
@@ -408,6 +422,7 @@ export default function CommunityDetail() {
           )}
 
           {/* 管理者用編集セクション */}
+          {canEditCommunity && (
           <div className="info-section admin-section">
             <div className="section-title-row">
               <h3 className="section-title">コミュニティ編集</h3>
@@ -644,61 +659,63 @@ export default function CommunityDetail() {
                 </div>
               )
             )}
+            
 
 
           </div>
+          )}
 
           {/* 参加ボタン & パネル */}
-          {community.joinUrls && community.joinUrls.length > 0 && (
-            <>
-              <button
-                onClick={() => setShowJoinPanel(true)}
-                className="join-fab-button"
-              >
-                参加する
-              </button>
+            {community.joinUrls && community.joinUrls.length > 0 && (
+              <>
+                <button
+                  onClick={() => setShowJoinPanel(true)}
+                  className="join-fab-button"
+                >
+                  参加する
+                </button>
 
-              {/* 参加パネル */}
-              {showJoinPanel && (
-                <div className="slide-up-panel join-panel">
-                  {/* 閉じるボタン */}
-                  <button
-                    onClick={() => setShowJoinPanel(false)}
-                    className="panel-close-button"
-                  >
-                    ×
-                  </button>
+                {/* 参加パネル */}
+                {showJoinPanel && (
+                  <div className="slide-up-panel join-panel">
+                    {/* 閉じるボタン */}
+                    <button
+                      onClick={() => setShowJoinPanel(false)}
+                      className="panel-close-button"
+                    >
+                      ×
+                    </button>
 
-                  <h2 className="panel-title">参加先リンク</h2>
-                  <p className="panel-description">
-                    好きな参加先を選んでください。
-                  </p>
+                    <h2 className="panel-title">参加先リンク</h2>
+                    <p className="panel-description">
+                      好きな参加先を選んでください。
+                    </p>
 
-                  <div className="join-links-container">
-                    {community.joinUrls.map((item, idx) => (
-                      <a
-                        key={idx}
-                        href={item.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="join-link-card"
-                      >
-                        <div className="join-link-info">
-                          <span className="join-link-label">
-                            {item.label || "参加先リンク"}
-                          </span>
-                          <span className="join-link-url">
-                            {item.url}
-                          </span>
-                        </div>
-                        <span className="join-link-arrow">↗</span>
-                      </a>
-                    ))}
+                    <div className="join-links-container">
+                      {community.joinUrls.map((item, idx) => (
+                        <a
+                          key={idx}
+                          href={item.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="join-link-card"
+                        >
+                          <div className="join-link-info">
+                            <span className="join-link-label">
+                              {item.label || "参加先リンク"}
+                            </span>
+                            <span className="join-link-url">
+                              {item.url}
+                            </span>
+                          </div>
+                          <span className="join-link-arrow">↗</span>
+                        </a>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
         </div>
       )}
 
@@ -706,12 +723,14 @@ export default function CommunityDetail() {
       {activeTab === "blog" && (
         <>
           {/* 右下の＋ボタン */}
+          {canEditCommunity && (
           <button
             onClick={() => setShowBlogForm(true)}
             className="blog-fab-button"
           >
             ＋
           </button>
+          )}
 
           {/* ブログ一覧 */}
           <div className="tab-content">
@@ -733,6 +752,7 @@ export default function CommunityDetail() {
                   <p className="blog-body">{post.body}
                   </p>
                   {/* ★ 追加: ブログ記事の編集・削除ボタン */}
+                  {canEditCommunity && (
                   <div className="blog-post-actions">
                     <button
                       type="button"
@@ -749,6 +769,7 @@ export default function CommunityDetail() {
                       削除
                     </button>
                   </div>
+                  )}
 
                 </article>
               ))
