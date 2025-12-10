@@ -21,6 +21,7 @@ import {
   FaMapMarkerAlt,  
   FaGlobe, 
   FaInfoCircle,
+  FaThumbtack,
 } from "react-icons/fa";
 import { useRef } from "react";
 import "./CommunityDetail.css";
@@ -47,6 +48,7 @@ type Post = {
   body: string;
   createdAt: string;
   imageUrl: string;
+  isPinned?: boolean;
 };
 
 type TabType = "info" | "blog";
@@ -105,7 +107,7 @@ export default function CommunityDetail() {
 
         // ブログ一覧（リアルタイム）
         const postsRef = collection(db, "communities", id, "posts");
-        const q = query(postsRef, orderBy("createdAt", "desc"));
+        const q = query(postsRef, orderBy("isPinned","desc"),orderBy("createdAt", "desc"));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
           const postsData: Post[] = snapshot.docs.map((d) => ({
@@ -281,6 +283,21 @@ export default function CommunityDetail() {
     }
   };
 
+
+  // ★追加: ピン留め切り替え関数
+  const handleTogglePin = async (post: Post) => {
+    if (!id) return;
+    try {
+      const postRef = doc(db, "communities", id, "posts", post.id);
+      // isPinned の状態を反転させる (trueならfalseへ、falseならtrueへ)
+      await updateDoc(postRef, {
+        isPinned: !post.isPinned
+      });
+    } catch (e) {
+      console.error("ピン留めエラー", e);
+      alert("操作に失敗しました");
+    }
+  };
 
 
   return (
@@ -761,12 +778,12 @@ export default function CommunityDetail() {
               <p>まだブログ記事がありません。</p>
             ) : (
               posts.map((post) => (
-                <article key={post.id} className="blog-post">
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3>{post.title}</h3>
-                    <span style={{ fontSize: "0.9rem", color: "#888" }}>
-                      {formatDate(post.createdAt)}
-                    </span>
+                <article key={post.id} className={`blog-post ${post.isPinned ? "pinned-post" : ""}`}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                    {post.isPinned && (
+                      <FaThumbtack style={{ color: "#2563eb", transform: "rotate(45deg)" }} />
+                    )}
+                    <h3 style={{ margin: 0, fontSize: "1.2rem" }}>{post.title}</h3>
                   </div>
                   {post.imageUrl && (
                     <img
@@ -776,10 +793,18 @@ export default function CommunityDetail() {
                     />
                   )}
 
-                  <p className="blog-body">{post.body}
-                  </p>
+                  <p className="blog-body">{post.body}</p>
                   {/* ★ 追加: ブログ記事の編集・削除ボタン */}
                   <div className="blog-post-actions">
+                    <button
+                        type="button"
+                        onClick={() => handleTogglePin(post)}
+                        className={`blog-action-button ${post.isPinned ? "active-pin" : ""}`}
+                        title={post.isPinned ? "固定を解除" : "トップに固定"}
+                      >
+                        <FaThumbtack />
+                      </button>
+
                     <button
                       type="button"
                       onClick={() => openEditPost(post)}  // ★ ここが変更
@@ -794,6 +819,9 @@ export default function CommunityDetail() {
                     >
                       削除
                     </button>
+                    <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                      {formatDate(post.createdAt)}
+                    </span>
                   </div>
 
                 </article>
