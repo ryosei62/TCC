@@ -3,6 +3,7 @@ import { collection, getDocs } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
 import { db } from '../firebase/config'
 import { useEffect, useState } from 'react'
+import { FaUsers, FaClock } from "react-icons/fa";
 import "./CommunityList.css"
 
 type Community = {
@@ -250,9 +251,13 @@ export default function CommunitiesList() {
           
               <h2>{c.name}</h2>
               <p>{c.message}</p>
-              <p>メンバー数: {c.memberCount}人</p>
-              <p>活動時間: {c.activityTime}</p>
-
+              <p className="meta-item">
+                <FaUsers className="meta-icon" /> {c.memberCount}人
+              </p>
+              <p className="meta-item">
+                <FaClock className="meta-icon" /> {c.activityTime}
+                </p>
+                
             </Link>
             <div className="community-tags-container">
                 {c.tags.map((tag) => (

@@ -243,17 +243,23 @@
 }
 
 .community-link h2 {
-  font-size: 1.4em;
-  color: #00897B; /* コミュニティ名はティールグリーンに */
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
   margin-top: 15px;
   margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 .community-link p {
   font-size: 0.9rem;
   margin: 4px 0;
-  line-height: 1.6;
+  line-height: 1.5;
   color: #555;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .member-count {
@@ -261,6 +267,25 @@
   color: #00897B;
   margin-top: 10px !important;
   font-size: 0.95em;
+}
+
+.meta-item {
+  display: flex;       /* アイコンと文字を横並び */
+  align-items: center; /* 上下中央揃え */
+  gap: 8px;            /* アイコンと文字の間隔 */
+  font-size: 0.85rem;
+  color: #555;
+  margin: 4px 0;       /* 行間を少し空ける */
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* アイコンの色調整 */
+.meta-icon {
+  color: #9ca3af; /* 文字より少し薄くしてバランスを取る */
+  font-size: 1rem;
+  flex-shrink: 0;
+  transform: translateY(+3px);
 }
 
 /* タグ全体を囲むコンテナ */
