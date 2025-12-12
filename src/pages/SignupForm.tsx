@@ -3,6 +3,7 @@ import { useState } from "react";
 import { signUpWithUniversityEmail } from "../firebase/auth";
 
 export const SignupForm = () => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +17,7 @@ export const SignupForm = () => {
     setLoading(true);
 
     try {
-      await signUpWithUniversityEmail(email, password);
+      await signUpWithUniversityEmail(username, email, password);
       setMessage("登録しました。大学メールに届いた確認メールをチェックしてください。");
     } catch (e: any) {
       setError(e.message ?? "登録に失敗しました");
@@ -27,28 +28,35 @@ export const SignupForm = () => {
 
   return (
     <div>
-      <h2>開発中</h2>
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        placeholder="大学メールアドレス"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="パスワード"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit" disabled={loading}>
-        {loading ? "登録中..." : "登録"}
-      </button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {message && <p style={{ color: "green" }}>{message}</p>}
-    </form>
+      <h2>新規登録</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="ユーザー名"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <input
+          type="email"
+          placeholder="大学メールアドレス"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="パスワード"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? "登録中..." : "登録"}
+        </button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {message && <p style={{ color: "green" }}>{message}</p>}
+      </form>
     </div>
   );
 };
