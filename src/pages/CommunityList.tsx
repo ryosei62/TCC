@@ -219,12 +219,6 @@ export default function CommunitiesList() {
         </>
       )}
 
-      <Link to="/signup" className="signUp">
-        <h4>新規登録</h4>
-      </Link>
-      <Link to="/login" className="login">
-        <h4>ログイン</h4>
-      </Link>
 
       <div className="header-links">
         <Link to="/CreateCommunity" className="header-link">
@@ -236,33 +230,13 @@ export default function CommunitiesList() {
         <Link to="/mypage" className="header-link">
           <h2>マイページ</h2>
         </Link>
-        
-      </div>
-
-      <div className="search-area">
-        <input 
-          type="text"
-          placeholder="キーワードで探す"
-          className="search-input"
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)} 
-          onKeyDown={(e) => { 
-            if (e.key === 'Enter') {
-              handleSearch();
-            }
-          }}
-        />
-        <button type="button"
-          className="search-button"
-          onClick={handleSearch}>
-          検索
-        </button>
         <Link to="/signup" className="signUp header-link">
           <h2>新規登録</h2>
         </Link>
         <Link to="/login" className="login header-link">
           <h2>ログイン</h2>
         </Link>
+        
       </div>
 
       <div className="controls-container">
