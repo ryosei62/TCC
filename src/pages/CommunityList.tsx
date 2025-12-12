@@ -157,71 +157,73 @@ export default function CommunitiesList() {
         </Link>
       </div>
 
-      <div className="search-area">
-        <input 
-          type="text"
-          placeholder="キーワードで探す"
-          className="search-input"
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)} 
-          onKeyDown={(e) => { 
-            if (e.key === 'Enter') {
-              handleSearch();
-            }
-          }}
-        />
-        <button type="button"
-          className="search-button"
-          onClick={handleSearch}>
-          検索
-        </button>
-      </div>
-
-      <div className="sort-area">
-          <select
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="sort-select"
-          >
-            <option value="default">デフォルト順</option>
-            <option value="createdAt">作成日時</option>
-            <option value="memberCount">メンバー数</option>
-          </select>
-
-          <button
-            type="button"
-            onClick={toggleSortOrder}
-            className="sort-order-button"
-          >
-            {sortOrder === 'asc' ? '昇順 ↑' : '降順 ↓'}
+      <div className="controls-container">
+        
+        {/* 1. 検索エリア（上段） */}
+        <div className="search-area">
+          <input 
+            type="text"
+            placeholder="キーワードで探す"
+            className="search-input"
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)} 
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+          />
+          <button type="button" className="search-button" onClick={handleSearch}>
+            検索
           </button>
         </div>
 
-      <div className="filter-buttons-area">
-        <button
-          type="button"
-          // 現在の状態(filterStatus)に応じて 'active' クラスを付与
-          className={`filter-button ${filterStatus === null ? 'active' : ''}`}
-          onClick={() => handleFilterClick(null)}
-        >
-          すべて
-        </button>
-        <button
-          type="button"
-          // 公式用のスタイルクラスと、アクティブ状態のクラスを付与
-          className={`filter-button official ${filterStatus === 1 ? 'active' : ''}`}
-          onClick={() => handleFilterClick(1)}
-        >
-          公式
-        </button>
-        <button
-          type="button"
-          // 非公式用のスタイルクラスと、アクティブ状態のクラスを付与
-          className={`filter-button unofficial ${filterStatus === 0 ? 'active' : ''}`}
-          onClick={() => handleFilterClick(0)}
-        >
-          非公式
-        </button>
+        {/* 2. フィルタとソートを横並びにするエリア（下段） */}
+        <div className="filters-sort-row">
+          
+          {/* 左側: フィルタボタン */}
+          <div className="filter-buttons-group">
+            <button
+              type="button"
+              className={`filter-tab ${filterStatus === null ? 'active' : ''}`}
+              onClick={() => handleFilterClick(null)}
+            >
+              すべて
+            </button>
+            <button
+              type="button"
+              className={`filter-tab ${filterStatus === 1 ? 'active' : ''}`}
+              onClick={() => handleFilterClick(1)}
+            >
+              公式
+            </button>
+            <button
+              type="button"
+              className={`filter-tab ${filterStatus === 0 ? 'active' : ''}`}
+              onClick={() => handleFilterClick(0)}
+            >
+              非公式
+            </button>
+          </div>
+
+          {/* 右側: ソート機能 */}
+          <div className="sort-group">
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              className="sort-select"
+            >
+              <option value="default">おすすめ順</option>
+              <option value="createdAt">新着順</option>
+              <option value="memberCount">人数順</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={toggleSortOrder}
+              className="sort-order-button"
+              title={sortOrder === 'asc' ? '昇順（少ない順/古い順）' : '降順（多い順/新しい順）'}
+            >
+              {sortOrder === 'asc' ? '▲' : '▼'}
+            </button>
+          </div>
+        </div>
       </div>
 
 
