@@ -170,6 +170,7 @@
   align-items: center;
   margin-bottom: 30px;
   gap: 30px; 
+  user-select: none;
 }
 
 .header-link {
@@ -202,6 +203,7 @@
   border-radius: 12px;
   margin-bottom: 30px;
   border: 1px solid #e5e7eb;
+  user-select: none;
 }
 
 /* 1. 検索エリア（上段） */
@@ -249,6 +251,7 @@
   align-items: center;
   flex-wrap: wrap; /* スマホで折り返し */
   gap: 15px;
+  user-select: none;
 }
 
 /* 左側：フィルタ（タブ切り替え風デザイン） */
@@ -330,6 +333,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, 280px);
   gap: 25px; 
+  user-select: none;
 }
 
 .community-list-item {
