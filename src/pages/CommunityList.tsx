@@ -154,6 +154,9 @@ export default function CommunitiesList() {
         <Link to="/about" className="header-link">
           <h2>TCCについて</h2>
         </Link>
+        <Link to="/mypage" className="header-link">
+          <h2>マイページ</h2>
+        </Link>
         
       </div>
 
