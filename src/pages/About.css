@@ -151,3 +151,35 @@
     padding: 30px 20px;
   }
 }
+
+/* 規約やポリシーの長い文章用コンテナ */
+.legal-content {
+  max-width: 800px;
+  margin: 0 auto; /* 画面中央に配置 */
+  text-align: left; /* 左揃えにする（読みやすさのため） */
+  color: #444;
+}
+
+.legal-content h3 {
+  font-size: 1.4rem;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #ddd; /* 区切り線 */
+  padding-bottom: 8px;
+  color: #333;
+}
+
+.legal-content p {
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+.legal-content ul, .legal-content ol {
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.legal-content li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
