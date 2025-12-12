@@ -1,8 +1,10 @@
 // CommunitiesList.tsx
 import { collection, getDocs } from 'firebase/firestore'
-import { Link } from 'react-router-dom'
-import { db } from '../firebase/config'
+import { Link, useNavigate } from 'react-router-dom'
+import { db, auth } from '../firebase/config'
 import { useEffect, useState } from 'react'
+import { onAuthStateChanged, User } from "firebase/auth";
+import { FaUserCircle } from "react-icons/fa";
 import "./CommunityList.css"
 
 type Community = {
@@ -35,6 +37,18 @@ export default function CommunitiesList() {
   const [filterStatus, setFilterStatus] = useState<number | null>(null); //フィルタリングの状態を管理 (null:すべて, 0:公式, 1:非公式)
   const [sortKey, setSortKey] = useState<SortKey>('default')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (!user) setIsOpen(false); // ログアウトしたら閉じる
+    });
+    return () => unsub();
+  }, []);
+
   useEffect(() => {
     const fetchCommunities = async () => {
       const querySnapshot = await getDocs(collection(db, 'communities'))
@@ -140,6 +154,71 @@ export default function CommunitiesList() {
           />
         <h1>つくばカジュアルコミュニティ</h1>
       </div>
+      {/* 右上アイコン（ログイン中だけ） */}
+      {currentUser && (
+        <>
+          <button
+            type="button"
+            aria-label="ユーザーメニュー"
+            onClick={() => setIsOpen((v) => !v)}
+            className="user-menu-trigger"
+          >
+            <FaUserCircle />
+          </button>
+
+          {/* 背景の暗幕（開いてる時だけ） */}
+          {isOpen && (
+            <div
+              className="user-menu-backdrop"
+              onClick={() => setIsOpen(false)}
+            />
+          )}
+
+          {/* 右から出るパネル */}
+          <aside className={`user-menu-panel ${isOpen ? "open" : ""}`}>
+            <div className="user-menu-header">
+              <div className="user-menu-title">メニュー</div>
+              <button
+                type="button"
+                className="user-menu-close"
+                onClick={() => setIsOpen(false)}
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="user-menu-body">
+              <div className="user-menu-user">
+                <div className="user-menu-email">{currentUser.email}</div>
+                <div className="user-menu-verified">
+                  {currentUser.emailVerified ? "✅ メール認証済み" : "❌ メール未認証"}
+                </div>
+              </div>
+
+              <nav className="user-menu-nav">
+                {/* マイページは“置いておく”だけ。不要なら消してOK */}
+                <Link to="/mypage" onClick={() => setIsOpen(false)} className="user-menu-link">
+                  マイページ
+                </Link>
+              </nav>
+
+              <button
+                type="button"
+                className="user-menu-logout"
+                onClick={async () => {
+                  await auth.signOut();
+                  setIsOpen(false);
+                  navigate("/"); // 一覧に戻す
+                }}
+              >
+                ログアウト
+              </button>
+            </div>
+          </aside>
+        </>
+      )}
+
       <Link to="/signup" className="signUp">
         <h4>新規登録</h4>
       </Link>

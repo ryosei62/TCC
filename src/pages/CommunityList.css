@@ -35,6 +35,119 @@
 /* ヘッダーリンク（ナビゲーション） */
 /* ---------------------------------- */
 
+/* 右上のアイコン */
+.user-menu-trigger {
+  position: absolute; /* 一覧右上に固定 */
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  font-size: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* 背景の暗幕 */
+.user-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 999;
+}
+
+/* 右から出るパネル本体 */
+.user-menu-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(320px, 85vw);
+  background: #fff;
+  z-index: 1001;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  box-shadow: -12px 0 30px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.user-menu-panel.open {
+  transform: translateX(0);
+}
+
+.user-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.user-menu-title {
+  font-weight: 700;
+}
+
+.user-menu-close {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.user-menu-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.user-menu-user {
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+}
+
+.user-menu-email {
+  font-size: 12px;
+  opacity: 0.85;
+  word-break: break-all;
+}
+
+.user-menu-verified {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.user-menu-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-menu-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  text-decoration: none;
+  color: inherit;
+}
+
+.user-menu-link:hover {
+  background: #f7f7f7;
+}
+
+.user-menu-logout {
+  margin-top: auto;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: #ff4d4f;
+  color: white;
+}
+
+
 .signUp, .login {
   display: flex;
   justify-content: end;
