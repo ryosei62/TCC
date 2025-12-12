@@ -68,76 +68,129 @@
 /* 検索インプット */
 /* ---------------------------------- */
 
+/* --- コントロールエリア全体 (新しいコンテナ) --- */
+.controls-container {
+  background-color: #f8f9fa; /* 薄いグレーの背景 */
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 1px solid #e5e7eb;
+}
+
+/* 1. 検索エリア（上段） */
 .search-area {
   display: flex;
-  gap: 10px; /* inputとbuttonの間隔 */
-  margin-bottom: 30px; 
+  gap: 10px;
+  margin-bottom: 20px; /* 下の段との隙間 */
 }
 
 .search-input {
-  flex-grow: 1; 
-  padding: 10px 15px;
-  border: 1px solid #B0BEC5;
+  flex-grow: 1;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 1em;
-  box-sizing: border-box; 
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
 .search-input:focus {
-  border-color: #4CAF50; 
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .search-button {
-  padding: 12px 20px;
-  font-size: 1em;
-  font-weight: bold;
-  color: white; 
-  background-color: #1976D2; /* ボタンの背景色（メインカラーに合わせる） */
+  padding: 0 24px;
+  background-color: #2563eb;
+  color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  flex-shrink: 0; 
+  font-weight: bold;
+  font-size: 1em;
+  white-space: nowrap; /* 文字が折り返さないように */
 }
 
 .search-button:hover {
-  background-color: #1565C0; /* ホバーで少し濃くする */
+  background-color: #1d4ed8;
 }
 
-/* 並び替えエリア */
-.sort-area {
+/* 2. フィルタとソートを横並びにするエリア（下段） */
+.filters-sort-row {
+  display: flex;
+  justify-content: space-between; /* 左右に離す */
+  align-items: center;
+  flex-wrap: wrap; /* スマホで折り返し */
+  gap: 15px;
+}
+
+/* 左側：フィルタ（タブ切り替え風デザイン） */
+.filter-buttons-group {
+  display: flex;
+  background-color: #e5e7eb; /* 背景色 */
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.filter-tab {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.filter-tab:hover {
+  color: #333;
+}
+
+/* アクティブなタブ */
+.filter-tab.active {
+  background-color: white;
+  color: #2563eb;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 右側：ソート */
+.sort-group {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 8px 0 16px;
-  font-size: 14px;
+  gap: 10px;
 }
 
-/* セレクトボックス */
 .sort-select {
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background: #fff;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: white;
+  color: #333;
 }
 
-/* 昇順 / 降順ボタン */
 .sort-order-button {
-  padding: 4px 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background: #f5f5f5;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #555;
+  transition: background 0.2s;
 }
 
 .sort-order-button:hover {
-  background: #e9e9e9;
+  background: #f3f4f6;
+  color: #2563eb;
 }
-
 
 /* ---------------------------------- */
 /* コミュニティリスト */
@@ -263,71 +316,29 @@
 }
 
 
-/* ---------------------------------- */
-/* フィルタボタンエリア  */
-/* ---------------------------------- */
-
-.filter-buttons-area {
-  display: flex;
-  gap: 10px; /* ボタン間の間隔 */
-  margin-bottom: 25px; /* リストとの間隔 */
-  flex-wrap: wrap; /* 画面幅が狭いときに折り返す */
-}
-
-/* フィルタボタンの基本スタイル */
-.filter-button {
-  padding: 8px 20px;
-  border: 2px solid #B0BEC5; /* デフォルトの枠線色 */
-  border-radius: 20px; /* 丸みのあるデザイン */
-  background-color: #fff;
-  color: #555;
-  font-size: 0.95em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease; /* ホバー時のアニメーション */
-}
-
-.filter-button:hover {
-  background-color: #f5f5f5;
-  border-color: #78909c;
-}
-
-/* --- アクティブ（選択中）状態の共通スタイル --- */
-.filter-button.active {
-  color: #fff; /* 文字色を白に */
-  border-color: transparent; /* 枠線を透明に（背景色で表現） */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 少し浮かせる */
-}
-
-/* --- 各ボタン個別の色設定 --- */
-
-/* 「すべて」ボタンのアクティブ時 */
-.filter-button.active {
-  background-color: #78909c; /* ニュートラルなグレー */
-}
-
-/* 「公式」ボタン */
-.filter-button.official {
-  color: #ef4444; /* 文字色を赤に */
-  border-color: #ef4444; /* 枠線も赤に */
-}
-.filter-button.official:hover {
-  background-color: #fee2e2; /* ホバー時に薄い赤背景 */
-}
-.filter-button.official.active {
-  background-color: #ef4444; /* アクティブ時に赤背景 */
-  color: #fff;
-}
-
-/* 「非公式」ボタン */
-.filter-button.unofficial {
-  color: #3b82f6; /* 文字色を青に */
-  border-color: #3b82f6; /* 枠線も青に */
-}
-.filter-button.unofficial:hover {
-  background-color: #dbeafe; /* ホバー時に薄い青背景 */
-}
-.filter-button.unofficial.active {
-  background-color: #3b82f6; /* アクティブ時に青背景 */
-  color: #fff;
+/* --- スマホ対応 (レスポンシブ) --- */
+@media (max-width: 600px) {
+  .filters-sort-row {
+    flex-direction: column; /* 縦並びにする */
+    align-items: stretch;   /* 横幅いっぱいに */
+    gap: 12px;
+  }
+  
+  .filter-buttons-group {
+    justify-content: space-between;
+  }
+  
+  .filter-tab {
+    flex: 1; /* 3等分して均等配置 */
+    padding: 8px 0; /* 横幅が狭いのでパディング調整 */
+    text-align: center;
+  }
+  
+  .sort-group {
+    justify-content: space-between; /* 左右に広げる */
+  }
+  
+  .sort-select {
+    flex-grow: 1; /* セレクトボックスを広げる */
+  }
 }
