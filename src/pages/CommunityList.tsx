@@ -292,7 +292,7 @@ export default function CommunitiesList() {
               onChange={(e) => setSortKey(e.target.value as SortKey)}
               className="sort-select"
             >
-              <option value="default">おすすめ順</option>
+              <option value="default">デフォルト順</option>
               <option value="createdAt">新着順</option>
               <option value="memberCount">人数順</option>
             </select>
