@@ -35,7 +35,6 @@ export const signUpWithUniversityEmail = async (
     email: user.email,
     // username は今は未設定でOK（後でプロフィール編集で入れられる）
     username: username.trim(),
-    emailVerified: user.emailVerified, // 初回はたぶん false
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

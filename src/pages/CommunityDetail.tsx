@@ -718,66 +718,20 @@ export default function CommunityDetail() {
           </div>
           )}
 
-          {/* 参加ボタン & パネル */}
-            {community.joinUrls && community.joinUrls.length > 0 && (
-              <>
-                <button
-                  onClick={() => setShowJoinPanel(true)}
-                  className="join-fab-button"
-                >
-                  参加する
-                </button>
-
-                {/* 参加パネル */}
-                {showJoinPanel && (
-                  <div className="slide-up-panel join-panel">
-                    {/* 閉じるボタン */}
-                    <button
-                      onClick={() => setShowJoinPanel(false)}
-                      className="panel-close-button"
-                    >
-                      ×
-                    </button>
-
-                    <h2 className="panel-title">参加先リンク</h2>
-                    <p className="panel-description">
-                      好きな参加先を選んでください。
-                    </p>
-
-                    <div className="join-links-container">
-                      {community.joinUrls.map((item, idx) => (
-                        <a
-                          key={idx}
-                          href={item.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="join-link-card"
-                        >
-                          <div className="join-link-info">
-                            <span className="join-link-label">
-                              {item.label || "参加先リンク"}
-                            </span>
-                            <span className="join-link-url">
-                              {item.url}
-                            </span>
-                          </div>
-                          <span className="join-link-arrow">↗</span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+          
           {/* 参加ボタン */}
-          {(community.joinDescription || community.contact || (community.joinUrls && community.joinUrls.length > 0)) && (
-            <button
-              onClick={() => setShowJoinPanel(true)}
-              className="join-fab-button"
-            >
-              参加する
-            </button>
-          )}
+          {currentUser &&
+            (community.joinDescription ||
+              community.contact ||
+              (community.joinUrls && community.joinUrls.length > 0)) && (
+              <button
+                onClick={() => setShowJoinPanel(true)}
+                className="join-fab-button"
+              >
+                参加する
+              </button>
+            )}
+
 
           {/* 参加パネル（内容を SNS＋連絡先と同一イメージに） */}
           {showJoinPanel && (

@@ -1,5 +1,5 @@
 // CommunitiesList.tsx
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, getDoc, doc, } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
 import { db, auth } from '../firebase/config'
 import { useEffect, useState } from 'react'
@@ -41,6 +41,7 @@ export default function CommunitiesList() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [username, setUsername] = useState<string>("（読み込み中…）");
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -76,6 +77,24 @@ export default function CommunitiesList() {
 
     fetchCommunities()
   }, [])
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!currentUser) return;
+  
+      const ref = doc(db, "users", currentUser.uid);
+      const snap = await getDoc(ref);
+  
+      if (snap.exists()) {
+        const data = snap.data() as any;
+        setUsername(data.username ?? "（ユーザー名未設定）");
+      } else {
+        setUsername("（ユーザー名未設定）");
+      }
+    };
+  
+    fetchProfile();
+  }, [currentUser]);
 
   const sortedCommunities = [...communities].sort((a, b) => {
     if (sortKey === 'default') {
@@ -191,6 +210,7 @@ export default function CommunitiesList() {
 
             <div className="user-menu-body">
               <div className="user-menu-user">
+                <div className="user-menu-name">{ username || "名無しユーザー"}</div>
                 <div className="user-menu-email">{currentUser.email}</div>
                 <div className="user-menu-verified">
                   {currentUser.emailVerified ? "✅ メール認証済み" : "❌ メール未認証"}
@@ -228,16 +248,14 @@ export default function CommunitiesList() {
         <Link to="/about" className="header-link">
           <h2>TCCについて</h2>
         </Link>
-        <Link to="/mypage" className="header-link">
-          <h2>マイページ</h2>
-        </Link>
         <Link to="/signup" className="signUp header-link">
           <h2>新規登録</h2>
         </Link>
-        <Link to="/login" className="login header-link">
-          <h2>ログイン</h2>
-        </Link>
-        
+        {!currentUser &&
+          <Link to="/login" className="login header-link">
+            <h2>ログイン</h2>
+          </Link>
+        }
       </div>
 
       <div className="controls-container">
