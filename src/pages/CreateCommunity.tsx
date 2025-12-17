@@ -6,6 +6,14 @@ import "./CreateCommunity.css";
 import { TagSelector, Tag } from "./TagSelector";
 import { Link, useNavigate } from "react-router-dom";
 
+const MEMBER_COUNT_OPTIONS = [
+  "1~5人",
+  "6~10人",
+  "11~20人",
+  "21~50人",
+  "51人以上"
+];
+
 export const CreateCommunity = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -70,13 +78,44 @@ export const CreateCommunity = () => {
     return response.data.secure_url;
   };
 
-  const normalizeNumberString = (s: string) =>
-    s.replace(/[０-９]/g, (c) =>
-      String.fromCharCode(c.charCodeAt(0) - 0xfee0)
-    );
+  const isValidUrl = (url: string) => {
+    if (!url) return true; // 空文字はOK（任意項目の場合）
+    try {
+      new URL(url);
+      return url.startsWith("http");
+    } catch (_) {
+      return false;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // 1. 必須項目のチェック
+    if (!formData.name.trim() || !formData.activityDescription.trim()) {
+      alert("コミュニティ名と活動内容は必須です。");
+      return;
+    }
+
+    // 2. 文字数チェック (一言メッセージ)
+    if (formData.message.length > 30) {
+      alert("一言メッセージは30文字以内で入力してください。");
+      return;
+    }
+    // 3. メンバー数が選択されているか
+    if (!formData.memberCount) {
+      alert("メンバー数を選択してください。");
+      return;
+    }
+
+    // 4. URLの形式チェック
+    const allUrls = [...snsUrlList, ...joinUrlList];
+    for (const item of allUrls) {
+      if (item.url && !isValidUrl(item.url)) {
+        alert(`URLの形式が正しくありません: ${item.url}\n(http:// または https:// で始めてください)`);
+        return;
+      }
+    }
+
     try {
       const user = auth.currentUser;
       if (!user) {
@@ -95,11 +134,9 @@ export const CreateCommunity = () => {
         thumbnailUrl = uploadedImageUrls[thumbnailIndex] || uploadedImageUrls[0];
       }
 
-      const normalizedMemberCount = normalizeNumberString(formData.memberCount);
-
       await addDoc(collection(db, "communities"), {
         ...formData,
-        memberCount: normalizedMemberCount,
+        memberCount: formData.memberCount,
         snsUrls: snsUrlList,
         joinUrls: joinUrlList,
         imageUrls: uploadedImageUrls,
@@ -139,25 +176,30 @@ export const CreateCommunity = () => {
           />
         </div>
         
-        <div className="form-note">
-          一覧表示用の短いキャッチコピーです
-        </div>
 
         {/* テキストエリアなので align-top を追加 */}
         <div className="item align-top">
           <p className="label-text">一言メッセージ:</p>
-          <textarea
-            name="message"
-            placeholder="楽しく活動しています！"
-            value={formData.message}
-            onChange={handleChange}
-            className="textarea-field"
-          />
+          <div style={{ width: "100%" }}>
+            <textarea
+              name="message"
+              placeholder="楽しく活動しています！（30文字以内）"
+              value={formData.message}
+              onChange={handleChange}
+              maxLength={30} // ★ ここで制限
+              className="textarea-field"
+              style={{ minHeight: "60px" }}
+            />
+            {/* 文字数カウンター */}
+            <p className={`char-counter ${formData.message.length >= 30 ? "limit" : ""}`}>
+              {formData.message.length} / 30
+            </p>
+          </div>
         </div>
 
         {/* テキストエリアなので align-top を追加 */}
         <div className="item align-top">
-          <p className="label-text">活動内容:</p>
+          <p className="label-text">活動内容<span className="required">*</span>:</p>
           <textarea
             name="activityDescription"
             placeholder="活動の具体的な内容を書いてください"
@@ -313,20 +355,21 @@ export const CreateCommunity = () => {
         </div>
 
         <div className="item">
-          <p className="label-text">メンバー数:</p>
-          <input
-            type="text"
+          <p className="label-text">メンバー数<span className="required">*</span>:</p>
+          <select
             name="memberCount"
-            placeholder="例: 15"
             value={formData.memberCount}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (/^[0-9０-９]*$/.test(value)) {
-                setFormData({ ...formData, memberCount: value });
-              }
-            }}
-            className="input-field"
-          />
+            onChange={handleChange}
+            className="input-field select-field"
+            required
+          >
+            <option value="">選択してください</option>
+            {MEMBER_COUNT_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="form-note">公式とは筑波大学に認可された学生団体を指します</div>
