@@ -219,7 +219,7 @@ export default function CommunitiesList() {
 
               <nav className="user-menu-nav">
                 {/* マイページは“置いておく”だけ。不要なら消してOK */}
-                <Link to="/mypage" onClick={() => setIsOpen(false)} className="user-menu-link">
+                <Link to="/mypage/${auth.currentUser.uid}`}" onClick={() => setIsOpen(false)} className="user-menu-link">
                   マイページ
                 </Link>
               </nav>

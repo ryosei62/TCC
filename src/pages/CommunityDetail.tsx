@@ -9,6 +9,10 @@ import {
   updateDoc,
   deleteDoc,
   getDocs,
+  limit,
+  startAt,
+  endAt,
+  where,
 } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -41,6 +45,7 @@ type Community = {
   snsUrls?: { label: string; url: string }[];
   joinUrls?: { label: string; url: string }[];
   createdBy?: string;
+  ownerId?: string;
   joinDescription?: string;  
 };
 
@@ -72,6 +77,18 @@ export default function CommunityDetail() {
   const [joinUrls, setJoinUrls] = useState<{ label: string; url: string }[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [ownerSearch, setOwnerSearch] = useState("");
+  const [ownerCandidates, setOwnerCandidates] = useState<
+    { uid: string; username: string; email: string; photoURL?: string }[]
+  >([]);
+  const [ownerSearching, setOwnerSearching] = useState(false);
+  const [ownerError, setOwnerError] = useState<string | null>(null);
+  const [owner, setOwner] = useState<{
+    uid: string;
+    username: string;
+    photoURL?: string;
+  } | null>(null);
+  
   const [editingPostForm, setEditingPostForm] = useState({
     title: "",
     body: "",
@@ -88,6 +105,109 @@ export default function CommunityDetail() {
       minute: "2-digit",
     });
   };
+
+  const DEFAULT_USER_ICON =
+  "https://www.gravatar.com/avatar/?d=mp&s=64";
+
+
+  const ownerUid = community?.ownerId ?? community?.createdBy;
+
+  useEffect(() => {
+    const fetchOwner = async () => {
+      if (!ownerUid) {
+        setOwner(null);
+        return;
+      }
+      const snap = await getDoc(doc(db, "users", ownerUid));
+      if (snap.exists()) {
+        const data = snap.data() as any;
+        setOwner({
+          uid: ownerUid,
+          username: data.username ?? "（未設定）",
+          photoURL: data.photoURL,
+        });
+      } else {
+        setOwner({ uid: ownerUid, username: "（ユーザー不明）" });
+      }
+    };
+    fetchOwner();
+  }, [ownerUid]);
+
+const searchUsersForOwner = async (term: string) => {
+  const t = term.trim();
+  if (!t) {
+    setOwnerCandidates([]);
+    return;
+  }
+
+  setOwnerSearching(true);
+  setOwnerError(null);
+
+  try {
+    const usersRef = collection(db, "users");
+
+    // email検索（完全一致）
+    if (t.includes("@")) {
+      const q = query(usersRef, where("email", "==", t), limit(10));
+      const snap = await getDocs(q);
+      const list = snap.docs.map((d) => {
+        const data = d.data() as any;
+        return {
+          uid: d.id,
+          username: data.username ?? "（未設定）",
+          email: data.email ?? "",
+          photoURL: data.photoURL,
+        };
+      });
+      setOwnerCandidates(list);
+      return;
+    }
+
+    // username検索（前方一致）
+    // ※ orderBy が必要
+    const q = query(
+      usersRef,
+      orderBy("username"),
+      startAt(t),
+      endAt(t + "\uf8ff"),
+      limit(10)
+    );
+
+    const snap = await getDocs(q);
+    const list = snap.docs.map((d) => {
+      const data = d.data() as any;
+      return {
+        uid: d.id,
+        username: data.username ?? "（未設定）",
+        email: data.email ?? "",
+        photoURL: data.photoURL,
+      };
+    });
+    setOwnerCandidates(list);
+  } catch (e: any) {
+    console.error("ユーザー検索失敗:", e);
+    setOwnerError("検索に失敗しました（usernameにorderByできない/インデックス不足の可能性）");
+  } finally {
+    setOwnerSearching(false);
+  }
+};
+
+const handleSelectOwner = async (uid: string) => {
+  if (!id) return;
+
+  try {
+    await updateDoc(doc(db, "communities", id), { ownerId: uid });
+    setCommunity((prev) => (prev ? { ...prev, ownerId: uid } : prev));
+
+    setOwnerSearch("");
+    setOwnerCandidates([]);
+    alert("代表者を変更しました");
+  } catch (e) {
+    console.error(e);
+    alert("代表者変更に失敗しました");
+  }
+};
+
 
 
   // ------- Firestore リアルタイム取得 -------
@@ -446,9 +566,49 @@ export default function CommunityDetail() {
                     </a>
                   </li>
                 ))}
+                {community.contact && (
+                  <li className="sns-item">
+                    <span className="sns-badge">メール</span>
+                    <a href={`mailto:${community.contact}`}>
+                      {community.contact}
+                    </a>
+                  </li>
+                )}
               </ul>
             </div>
           )}
+          
+          {owner && (
+            <div
+              style={{
+                marginTop: 16,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <img
+                src={owner.photoURL || DEFAULT_USER_ICON}
+                alt="代表者アイコン"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  background: "#eee",
+                }}
+              />
+
+              <Link
+                to={`/mypage/${owner.uid}`}
+                style={{ textDecoration: "underline", fontWeight: 600 }}
+              >
+                代表者：{owner.username}
+              </Link>
+            </div>
+          )}
+
+
 
           {/* 管理者用編集セクション */}
           {canEditCommunity && (
@@ -576,6 +736,7 @@ export default function CommunityDetail() {
                   {/* 6. 連絡先（複数追加・削除可能） */}
                   <div className="admin-form-field">
                     <span>SNSリンク</span>
+                    
                     <div className="multi-input-column">
                       {snsUrls.map((item, index) => (
                         <div key={index} className="multi-input-row">
@@ -689,6 +850,52 @@ export default function CommunityDetail() {
                       }}
                     />
                   </label>
+
+                  <div className="admin-form-field">
+                    <span>代表者を変更（ユーザー検索）</span>
+
+                    <input
+                      type="text"
+                      placeholder="username か email を入力"
+                      value={ownerSearch}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setOwnerSearch(v);
+                        // 入力のたびに検索（重いなら debounce にできる）
+                        searchUsersForOwner(v);
+                      }}
+                    />
+
+                    {ownerSearching && <div style={{ fontSize: 12, opacity: 0.7 }}>検索中...</div>}
+                    {ownerError && <div style={{ fontSize: 12, color: "red" }}>{ownerError}</div>}
+
+                    {ownerCandidates.length > 0 && (
+                      <div style={{ border: "1px solid #eee", borderRadius: 8, marginTop: 8 }}>
+                        {ownerCandidates.map((u) => (
+                          <button
+                            key={u.uid}
+                            type="button"
+                            onClick={() => handleSelectOwner(u.uid)}
+                            style={{
+                              display: "flex",
+                              width: "100%",
+                              gap: 10,
+                              alignItems: "center",
+                              padding: "10px 12px",
+                              border: "none",
+                              background: "transparent",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <div style={{ fontWeight: 700 }}>{u.username}</div>
+                            <div style={{ fontSize: 12, opacity: 0.7 }}>{u.email}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+
 
                   <div className="admin-form-buttons">
                     <button

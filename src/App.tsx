@@ -22,7 +22,7 @@ const App: React.FC = () => {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/communities/:id/create-blog" element={<CreateBlog communityId={""} />} />
         <Route path="/login" element={<LoginForm />} />
-        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/mypage/:uid" element={<MyPage />} />
       </Routes>
     </BrowserRouter>
   );
