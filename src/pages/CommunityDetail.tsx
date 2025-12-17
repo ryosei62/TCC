@@ -58,6 +58,14 @@ type Post = {
   isPinned?: boolean;
 };
 
+const MEMBER_COUNT_OPTIONS = [
+  "1~5人",
+  "6~10人",
+  "11~20人",
+  "21~50人",
+  "51人以上"
+];
+
 type TabType = "info" | "blog";
 
 export default function CommunityDetail() {
@@ -512,7 +520,7 @@ const handleSelectOwner = async (uid: string) => {
               </div>
               <div className="info-text-wrapper">
                 <span className="info-label">構成人数</span>
-                <span className="info-value">{community.memberCount}名</span>
+                <span className="info-value">{community.memberCount}</span>
               </div>
             </div>
 
@@ -839,16 +847,20 @@ const handleSelectOwner = async (uid: string) => {
                   {/* 8. 構成人数 */}
                   <label className="admin-form-field">
                     構成人数
-                    <input
-                      type="text"
+                    <select
                       value={communityForm.memberCount ?? ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^[0-9０-９]*$/.test(value)) {
-                          handleCommunityInputChange("memberCount", value);
-                        }
-                      }}
-                    />
+                      onChange={(e) =>
+                        handleCommunityInputChange("memberCount", e.target.value)
+                      }
+                      style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                    >
+                      <option value="">選択してください</option>
+                      {MEMBER_COUNT_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
                   </label>
 
                   <div className="admin-form-field">
