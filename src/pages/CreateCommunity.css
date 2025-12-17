@@ -1,122 +1,336 @@
+/* CreateCommunity.css */
+
 body {
-    font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+/* --- メインコンテナ --- */
+.create-container {
+  width: 95%;          /* スマホでもギリギリまで使う */
+  max-width: 900px;    /* PCでは広めに確保 (600px -> 900px) */
+  margin: 40px auto;
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .title {
-    text-align: center;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: #1f2937;
+}
+
+.return-link-wrapper {
+  margin-bottom: 20px;
 }
 
 .returnList {
-    color: #555;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+.returnList:hover {
+  text-decoration: underline;
 }
 
+/* --- フォーム全体 --- */
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* 項目ごとの間隔を広げてゆったりさせる */
+}
+
+/* --- 入力項目の行 --- */
 .item {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start; /* space-between → flex-start */
-    gap: 12px;
+  display: flex;
+  /* ★重要: デフォルトは中央揃え（inputとラベルの高さを合わせるため） */
+  align-items: center; 
+  justify-content: flex-start;
+  gap: 20px;
 }
 
-.item p {
-    flex-shrink: 0;
-    width: 140px;
-    font-weight: 500;
-    color: #333;
+/* ★重要: textareaなど縦に長い要素がある場合は上揃えにする */
+.item.align-top {
+  align-items: flex-start;
 }
 
-  /* 入力欄と同じ揃え方に */
-.item input,
-.item textarea,
-.item select {
-    flex: 1; /* 横に広がって他と左端が揃う */
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 0.95rem;
+/* ラベル部分 */
+.label-text {
+  flex-shrink: 0;
+  width: 160px; /* ラベル幅を少し広げて改行しにくくする */
+  font-weight: 600;
+  color: #4b5563;
+  margin: 0;
+  /* padding-top を削除して中央揃えを効かせる */
 }
 
-.item select {
-    width: auto; /* ←固定幅を解除して、自然なサイズに */
-    max-width: 150px; /* 必要なら上限を設定 */
-    text-align: left;
+/* 必須マーク */
+.required {
+  color: #ef4444;
+  margin-left: 4px;
 }
 
-.item textarea {
-    resize: vertical;
-    min-height: 60px;
+/* 入力欄共通 */
+.input-field,
+.textarea-field,
+.select-field {
+  flex: 1; /* 横幅いっぱいに広げる */
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+/* フォーカス時のデザイン */
+.input-field:focus,
+.textarea-field:focus,
+.select-field:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  outline: none;
+}
+
+.textarea-field {
+  resize: vertical;
+  min-height: 100px; /* 少し高く */
+  line-height: 1.5;
+}
+
+/* セレクトボックスの調整 */
+.select-field {
+  cursor: pointer;
+  background-color: #fff;
+}
+
+/* 注釈テキスト */
+.form-note {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: -16px; /* 上の項目に近づける */
+  margin-left: 180px; /* ラベル幅+ギャップ分ずらす */
+  line-height: 1.5;
+}
+
+/* --- URLリスト部分 --- */
+.url-list-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.url-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.url-label-input {
+  flex: 1; 
+}
+
+.url-value-input {
+  flex: 2; 
+}
+
+/* --- ボタン類 --- */
+.btn-delete {
+  background-color: #f3f4f6;
+  color: #ef4444;
+  border: 1px solid #e5e7eb;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-delete:hover {
+  background-color: #fee2e2;
+  border-color: #fecaca;
+}
+
+.btn-add {
+  align-self: flex-start;
+  background-color: transparent;
+  color: #2563eb;
+  border: 1px dashed #2563eb;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 4px;
+  transition: all 0.2s;
+}
+
+.btn-add:hover {
+  background-color: #eff6ff;
+}
+
+/* --- 画像エリア --- */
+.image-upload-section {
+  margin-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+}
+
+.image-label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.file-input {
+  border: none;
+  padding: 0;
 }
 
 .preview-area {
-  margin-top: 10px;
-  margin-bottom: 20px;
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
 }
+
+.preview-note {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
 .preview-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
 }
+
 .preview-item {
   position: relative;
-  width: 100px;
-  height: 100px;
-  border: 2px solid #ddd;
-  border-radius: 4px;
+  width: 120px;
+  height: 120px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
+  transition: all 0.2s;
 }
+
+.preview-item:hover {
+  border-color: #9ca3af;
+  transform: translateY(-2px);
+}
+
 .preview-item.selected {
-  border: 3px solid #007bff; /* 選択時の青枠 */
+  border: 3px solid #2563eb;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 }
+
 .preview-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .thumbnail-badge {
   position: absolute;
-  top: 0; left: 0;
-  background-color: #007bff;
+  top: 0;
+  left: 0;
+  background-color: #2563eb;
   color: white;
-  font-size: 10px;
-  padding: 2px 4px;
+  font-size: 11px;
+  padding: 4px 8px;
+  font-weight: bold;
+  border-bottom-right-radius: 6px;
 }
+
 .remove-btn {
   position: absolute;
-  top: 0; right: 0;
-  background: rgba(0,0,0,0.5);
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
-  width: 20px; height: 20px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   cursor: pointer;
-  display: flex; justify-content: center; align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+.remove-btn:hover {
+  background: rgba(239, 68, 68, 0.9);
 }
 
-  /* 作成ボタン全体の配置 */
-.createButton[type="submit"] {
-    display: block;              /* 幅を指定できるように */
-    margin: 30px auto 0;         /* 上に余白をとって中央寄せ */
-    padding: 14px 60px;          /* ボタンを大きく */
-    font-size: 1.1rem;           /* 文字を少し大きく */
-    font-weight: 600;
-    background-color: #909090;   /* 青色（Vercelっぽい） */
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+/* --- 送信ボタン --- */
+.createButton {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 40px auto 0;
+  padding: 16px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+  transition: all 0.2s;
 }
 
-  /* ホバー時 */
-.createButton[type="submit"]:hover {
-    background-color: #909090;
-    transform: translateY(-2px); /* 少し浮く感じに */
+.createButton:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
 }
 
-  /* スマホでも見やすく */
-@media (max-width: 640px) {
-    .createButton[type="submit"] {
-        width: 100%;
-        padding: 20px 0;
-        margin: 20px 20px 20px 0;
-    }
+/* スマホレスポンシブ対応 */
+@media (max-width: 768px) {
+  .create-container {
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .item, .item.align-top {
+    flex-direction: column; /* 縦並びにする */
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .label-text {
+    width: 100%;
+  }
+
+  .form-note {
+    margin-left: 0;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
+  .url-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

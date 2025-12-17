@@ -25,8 +25,7 @@ export const CreateCommunity = () => {
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [thumbnailIndex, setThumbnailIndex] = useState<number>(0); // 何番目の画像をサムネイルにするか
-  // const [loading, setLoading] = useState(false);
+  const [thumbnailIndex, setThumbnailIndex] = useState<number>(0);
 
   const [snsUrlList, setSnsUrlList] = useState<{ label: string; url: string }[]>([
     { label: "", url: "" },
@@ -48,8 +47,6 @@ export const CreateCommunity = () => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       const newPreviews = files.map((file) => URL.createObjectURL(file));
-
-      // 既存リストに追加
       setImageFiles((prev) => [...prev, ...files]);
       setPreviewUrls((prev) => [...prev, ...newPreviews]);
     }
@@ -58,7 +55,6 @@ export const CreateCommunity = () => {
   const handleRemoveImage = (index: number) => {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
-    // インデックスずれの修正
     if (index === thumbnailIndex) setThumbnailIndex(0);
     else if (index < thumbnailIndex) setThumbnailIndex((prev) => prev - 1);
   };
@@ -67,16 +63,11 @@ export const CreateCommunity = () => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", UPLOAD_PRESET);
-
-    console.log("file:", file);
-    console.log("upload_preset:", UPLOAD_PRESET);
-
     const response = await axios.post(
       `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
       formData
     );
-
-    return response.data.secure_url; // Cloudinary上の画像URL
+    return response.data.secure_url;
   };
 
   const normalizeNumberString = (s: string) =>
@@ -86,9 +77,7 @@ export const CreateCommunity = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      // ★ ここで現在ログイン中のユーザーを取得
       const user = auth.currentUser;
       if (!user) {
         alert("コミュニティを作成するにはログインが必要です。");
@@ -99,54 +88,29 @@ export const CreateCommunity = () => {
       let uploadedImageUrls: string[] = [];
       let thumbnailUrl = "";
 
-      // 画像がある場合、並列アップロード
       if (imageFiles.length > 0) {
         uploadedImageUrls = await Promise.all(
           imageFiles.map((file) => uploadImageToCloudinary(file))
         );
-        // 指定されたインデックスの画像をサムネイルURLとする（なければ0番目）
         thumbnailUrl = uploadedImageUrls[thumbnailIndex] || uploadedImageUrls[0];
       }
 
       const normalizedMemberCount = normalizeNumberString(formData.memberCount);
 
-      // Firestoreへ保存
       await addDoc(collection(db, "communities"), {
         ...formData,
-
         memberCount: normalizedMemberCount,
         snsUrls: snsUrlList,
         joinUrls: joinUrlList,
-        imageUrls: uploadedImageUrls,// 画像URLを追加
+        imageUrls: uploadedImageUrls,
         thumbnailUrl: thumbnailUrl,
         createdBy: user.uid,
         createdByEmail: user.email ?? null,
-        // ログインしないと登録できなかったため createdBy: user.uid,
         tags: selectedTags.map((tag) => tag.name),
-        createdAt: serverTimestamp(), // Firestoreのサーバー時刻を使う
+        createdAt: serverTimestamp(),
       });
       alert("コミュニティを作成しました！");
-
       navigate("/");
-
-      setFormData({
-        name: "",
-        message: "",
-        activityDescription: "",
-        activityLocation: "",
-        activityTime: "",
-        contact: "",
-        url: "",
-        memberCount: "",
-        official: 0,
-        joinDescription: "", 
-        tags: [],
-      });
-      setImageFiles([]);
-      setPreviewUrls([]);
-      setThumbnailIndex(0);
-      navigate("/");
-
     } catch (error) {
       console.error("コミュニティ作成エラー:", error);
       alert("作成に失敗しました");
@@ -154,107 +118,119 @@ export const CreateCommunity = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-      <h2 className="text-2xl font-bold mb-4 title">新しいコミュニティを作る</h2>
+    <div className="create-container">
+      <h2 className="title">新しいコミュニティを作る</h2>
 
-      <Link to="/" className="returnList">← 一覧に戻る</Link>
+      <div className="return-link-wrapper">
+        <Link to="/" className="returnList">← 一覧に戻る</Link>
+      </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="create-form">
         <div className="item">
-          <p className="name">コミュニティ名:</p>
+          <p className="label-text">コミュニティ名<span className="required">*</span>:</p>
           <input
             type="text"
             name="name"
             placeholder="筑波散歩会"
             value={formData.name}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="input-field"
             required
           />
         </div>
-        <h4>一言メッセージは一覧表示の際に表示される短いキャッチコピー<br/>活動内容は具体的に何をするかを書いてください</h4>
-        <div className="item">
-          <p className="message">一言メッセージ:</p>
+        
+        <div className="form-note">
+          一覧表示用の短いキャッチコピーです
+        </div>
+
+        {/* テキストエリアなので align-top を追加 */}
+        <div className="item align-top">
+          <p className="label-text">一言メッセージ:</p>
           <textarea
             name="message"
             placeholder="楽しく活動しています！"
             value={formData.message}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="textarea-field"
           />
         </div>
-        <div className="item">
-          <p className="activityDescription">活動内容:</p>
+
+        {/* テキストエリアなので align-top を追加 */}
+        <div className="item align-top">
+          <p className="label-text">活動内容:</p>
           <textarea
             name="activityDescription"
-            placeholder="つくばを練り歩きます"
+            placeholder="活動の具体的な内容を書いてください"
             value={formData.activityDescription}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="textarea-field"
           />
         </div>
+
         <div className="item">
-          <p className="activityLocation">活動場所:</p>
+          <p className="label-text">活動場所:</p>
           <input
             type="text"
             name="activityLocation"
             placeholder="つくば市内"
             value={formData.activityLocation}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="input-field"
           />
         </div>
+
         <div className="item">
-          <p className="activityTime">活動頻度:</p>
+          <p className="label-text">活動頻度:</p>
           <input
             type="text"
             name="activityTime"
             placeholder="気が向いた時"
             value={formData.activityTime}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="input-field"
           />
         </div>
+
         <div className="item">
-          <p className="contact">連絡先:</p>
+          <p className="label-text">連絡先:</p>
           <input
             type="text"
             name="contact"
             placeholder="XXX@YYY.ZZZ"
             value={formData.contact}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="input-field"
           />
         </div>
 
-        {/* ★ 参加方法（自由記述） */}
-        <div className="item">
-          <p className="joinDescription">コミュニティへの参加方法:</p>
+        {/* テキストエリアなので align-top を追加 */}
+        <div className="item align-top">
+          <p className="label-text">参加方法:</p>
           <textarea
             name="joinDescription"
             placeholder="まずはTwitterのDMでお気軽にご連絡ください"
             value={formData.joinDescription}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="textarea-field"
           />
         </div>
 
-        <div className="item">
-          <p className="url">リンク一覧(SNS):</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-
+        {/* リスト系なので align-top を追加 */}
+        <div className="item align-top">
+          <p className="label-text">リンク一覧(SNS):</p>
+          <div className="url-list-container">
             {snsUrlList.map((item, index) => (
-              <div key={index} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+              <div key={index} className="url-row">
                 <input
                   type="text"
-                  placeholder="サービス名 (例: Instagram)"
+                  placeholder="サービス名"
                   value={item.label}
                   onChange={(e) => {
                     const newList = [...snsUrlList];
                     newList[index].label = e.target.value;
                     setSnsUrlList(newList);
                   }}
-                  className="border p-2 rounded w-1/3"
+                  className="input-field url-label-input"
                 />
                 <input
                   type="url"
@@ -265,51 +241,44 @@ export const CreateCommunity = () => {
                     newList[index].url = e.target.value;
                     setSnsUrlList(newList);
                   }}
-                  className="border p-2 rounded w-2/3"
+                  className="input-field url-value-input"
                 />
-
-                {/* 削除ボタン */}
                 {snsUrlList.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setSnsUrlList(snsUrlList.filter((_, i) => i !== index));
-                    }}
-                    className="bg-red-500 text-white px-2 rounded"
+                    onClick={() => setSnsUrlList(snsUrlList.filter((_, i) => i !== index))}
+                    className="btn-delete"
                   >
                     −
                   </button>
                 )}
               </div>
             ))}
-
-            {/* 追加ボタン */}
             <button
               type="button"
               onClick={() => setSnsUrlList([...snsUrlList, { label: "", url: "" }])}
-              className="bg-green-500 text-white px-3 py-1 rounded"
+              className="btn-add"
             >
               ＋ URLを追加
             </button>
           </div>
         </div>
 
-        <div className="item">
-          <p className="url">リンク一覧(参加先):</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-
+        <div className="item align-top">
+          <p className="label-text">リンク一覧(参加先):</p>
+          <div className="url-list-container">
             {joinUrlList.map((item, index) => (
-              <div key={index} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+              <div key={index} className="url-row">
                 <input
                   type="text"
-                  placeholder="サービス名 (例: Discord)"
+                  placeholder="サービス名"
                   value={item.label}
                   onChange={(e) => {
                     const newList = [...joinUrlList];
                     newList[index].label = e.target.value;
                     setJoinUrlList(newList);
                   }}
-                  className="border p-2 rounded w-1/3"
+                  className="input-field url-label-input"
                 />
                 <input
                   type="url"
@@ -320,29 +289,23 @@ export const CreateCommunity = () => {
                     newList[index].url = e.target.value;
                     setJoinUrlList(newList);
                   }}
-                  className="border p-2 rounded w-2/3"
+                  className="input-field url-value-input"
                 />
-
-                {/* 削除ボタン */}
                 {joinUrlList.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setJoinUrlList(joinUrlList.filter((_, i) => i !== index));
-                    }}
-                    className="bg-red-500 text-white px-2 rounded"
+                    onClick={() => setJoinUrlList(joinUrlList.filter((_, i) => i !== index))}
+                    className="btn-delete"
                   >
                     −
                   </button>
                 )}
               </div>
             ))}
-
-            {/* 追加ボタン */}
             <button
               type="button"
               onClick={() => setJoinUrlList([...joinUrlList, { label: "", url: "" }])}
-              className="bg-green-500 text-white px-3 py-1 rounded"
+              className="btn-add"
             >
               ＋ URLを追加
             </button>
@@ -350,7 +313,7 @@ export const CreateCommunity = () => {
         </div>
 
         <div className="item">
-          <p className="memberCount">メンバー数:</p>
+          <p className="label-text">メンバー数:</p>
           <input
             type="text"
             name="memberCount"
@@ -358,78 +321,72 @@ export const CreateCommunity = () => {
             value={formData.memberCount}
             onChange={(e) => {
               const value = e.target.value;
-
-              // ★ 全角・半角どちらの数字も許可（それ以外は無視）
               if (/^[0-9０-９]*$/.test(value)) {
-                setFormData({
-                  ...formData,
-                  memberCount: value,  // ★ まだ全角のまま持っておく
-                });
+                setFormData({ ...formData, memberCount: value });
               }
             }}
-            className="border p-2 rounded w-full"
+            className="input-field"
           />
         </div>
 
-        <h4>公式とは筑波大学に認可された学生団体を指します</h4>
+        <div className="form-note">公式とは筑波大学に認可された学生団体を指します</div>
 
         <div className="item">
-          <p className="official">公式・非公式:</p>
+          <p className="label-text">公式・非公式:</p>
           <select
             name="official"
             value={formData.official}
             onChange={handleChange}
-            className="border p-2 rounded w-full"
+            className="input-field select-field"
           >
             <option value={0}>非公式</option>
             <option value={1}>公式</option>
           </select>
         </div>
         
-        <div className="item">
-          <p className="tags">タグ:</p>
-          <TagSelector
-            selectedTags={selectedTags}
-            setSelectedTags={setSelectedTags}
-          />
+        {/* タグは縦に長くなるので align-top */}
+        <div className="item align-top">
+          <p className="label-text">タグ:</p>
+          <div style={{ flex: 1 }}>
+            <TagSelector
+              selectedTags={selectedTags}
+              setSelectedTags={setSelectedTags}
+            />
+          </div>
         </div>
 
-        {/* 画像アップロード部分 */}
-        <div>
-          <label className="block mb-2 font-medium">コミュニティ画像 (複数可):</label>
+        {/* 画像エリア */}
+        <div className="image-upload-section">
+          <label className="image-label">コミュニティ画像 (複数可):</label>
           <input
             type="file"
             accept="image/*"
             multiple
             onChange={handleImageChange}
-            className="border p-2 rounded w-full"
+            className="input-field file-input"
           />
    
           {previewUrls.length > 0 && (
             <div className="preview-area">
-              <p style={{fontSize: '0.8rem', color: '#666', marginBottom: '5px'}}>
+              <p className="preview-note">
                 ※画像をクリックして一覧に表示する「サムネイル」を選択してください
               </p>
-              
               <div className="preview-grid">
                 {previewUrls.map((url, index) => (
                   <div
                     key={index}
-                    // サムネイルに選ばれている画像には枠をつけるクラス(selected)を付与
                     className={`preview-item ${thumbnailIndex === index ? "selected" : ""}`}
                     onClick={() => setThumbnailIndex(index)}
                   >
                     <img src={url} alt="プレビュー" />
-                    
                     {thumbnailIndex === index && (
                       <span className="thumbnail-badge">サムネイル</span>
                     )}
-                    
                     <button
                       type="button"
                       className="remove-btn"
                       onClick={(e) => {
-                        e.stopPropagation(); // 親のonClick(サムネイル選択)をキャンセル
+                        e.stopPropagation();
                         handleRemoveImage(index);
                       }}
                     >
@@ -444,7 +401,7 @@ export const CreateCommunity = () => {
 
         <button
           type="submit"
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 createButton"
+          className="createButton"
         >
           作成する
         </button>
@@ -452,4 +409,3 @@ export const CreateCommunity = () => {
     </div>
   );
 };
-
