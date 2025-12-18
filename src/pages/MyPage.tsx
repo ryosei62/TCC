@@ -1,6 +1,6 @@
 // src/pages/MyPage.tsx
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { collection, getDocs, getDoc, doc, query, where } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
@@ -13,38 +13,80 @@ type Community = {
   createdAt?: any;
 };
 
+type Profile = {
+  username?: string;
+  email?: string;
+  photoURL?: string;
+};
+
 export const MyPage = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState<string>("（読み込み中…）");
+  const { uid } = useParams<{ uid: string }>(); // ★ URLのuid
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ① ログイン状態を監視
+  // ① ログイン状態を監視（「ログイン中の自分」を知るため）
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        // 未ログインならログイン画面へ
-        navigate("/login");
-        return;
+      if (user) {
+        await user.reload();
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
       }
-      // 最新状態を取得（emailVerified 反映漏れ対策）
-      await user.reload();
-      setCurrentUser(user);
     });
     return () => unsub();
-  }, [navigate]);
+  }, []);
 
-  // ② 自分が作ったコミュニティ一覧を取得
+  // uid が無いURLなら、自分のページに飛ばす（ログインしてる時だけ）
   useEffect(() => {
-    const fetchMyCommunities = async () => {
-      if (!currentUser) return;
+    if (!uid) {
+      if (currentUser) navigate(`/mypage/${currentUser.uid}`);
+      else navigate("/login");
+    }
+  }, [uid, currentUser, navigate]);
+
+  const targetUid = uid || currentUser?.uid; // 表示対象
+
+  // ② users/{uid} を取ってプロフィール表示
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!targetUid) return;
+
+      const ref = doc(db, "users", targetUid);
+      const snap = await getDoc(ref);
+
+      if (snap.exists()) {
+        const data = snap.data() as any;
+        setProfile({
+          username: data.username ?? "（ユーザー名未設定）",
+          email: data.email ?? "",
+          photoURL: data.photoURL,
+        });
+      } else {
+        setProfile({
+          username: "（ユーザー不明）",
+          email: "",
+        });
+      }
+    };
+
+    fetchProfile();
+  }, [targetUid]);
+
+  // ③ 表示対象(uid)が作ったコミュニティを取得
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      if (!targetUid) return;
 
       setLoading(true);
       try {
         const q = query(
           collection(db, "communities"),
-          where("createdBy", "==", currentUser.uid)
+          where("createdBy", "==", targetUid)
         );
         const snap = await getDocs(q);
 
@@ -65,41 +107,29 @@ export const MyPage = () => {
       }
     };
 
-    fetchMyCommunities();
-  }, [currentUser]);
+    fetchCommunities();
+  }, [targetUid]);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!currentUser) return;
-  
-      const ref = doc(db, "users", currentUser.uid);
-      const snap = await getDoc(ref);
-  
-      if (snap.exists()) {
-        const data = snap.data() as any;
-        setUsername(data.username ?? "（ユーザー名未設定）");
-      } else {
-        setUsername("（ユーザー名未設定）");
-      }
-    };
-  
-    fetchProfile();
-  }, [currentUser]);
+  if (!targetUid) return null;
 
-  if (!currentUser) return null;
+  const isMyPage = currentUser?.uid === targetUid;
 
   return (
     <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
-      <h1>マイページ</h1>
+      <h1>{isMyPage ? "マイページ" : "ユーザーページ"}</h1>
 
       <section style={{ marginTop: 16 }}>
         <h2 style={{ fontSize: 18 }}>アカウント情報</h2>
         <div style={{ marginTop: 8, lineHeight: 1.8 }}>
-          <div><b>ユーザー名：</b>{username}</div>
-          <div><b>メール：</b>{currentUser.email}</div>
-          <div>
-            <b>メール認証：</b>{currentUser.emailVerified ? "✅ 済" : "❌ 未"}
-          </div>
+          <div><b>ユーザー名：</b>{profile?.username ?? "（読み込み中…）"}</div>
+          <div><b>メール：</b>{profile?.email || "（非公開）"}</div>
+
+          {/* emailVerified は Auth の情報で、他人のは取れないので「自分の時だけ」表示 */}
+          {isMyPage && (
+            <div>
+              <b>メール認証：</b>{currentUser?.emailVerified ? "✅ 済" : "❌ 未"}
+            </div>
+          )}
         </div>
       </section>
 
@@ -117,7 +147,9 @@ export const MyPage = () => {
                 <Link to={`/communities/${c.id}`} style={{ textDecoration: "underline" }}>
                   {c.name}
                 </Link>
-                {c.message ? <div style={{ fontSize: 12, opacity: 0.8 }}>{c.message}</div> : null}
+                {c.message ? (
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>{c.message}</div>
+                ) : null}
               </li>
             ))}
           </ul>

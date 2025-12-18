@@ -16,7 +16,7 @@ type Community = {
   /** コミュニティの紹介文または説明 */
   message: string
   /** メンバーの数 */
-  memberCount: number
+  memberCount: string
   /** コミュニティの主な活動時間や頻度 */
   activityTime: string
   /** 画像のURL (省略可能) */
@@ -61,7 +61,7 @@ export default function CommunitiesList() {
           id: doc.id,
           name: data.name,
           message: data.message,
-          memberCount: data.memberCount,
+          memberCount: data.memberCount || "",
           activityTime: data.activityTime,
           thubmnailUrl: data.thumbnailUrl,
           imageUrl: data.imageUrl || "",
@@ -96,9 +96,16 @@ export default function CommunitiesList() {
     fetchProfile();
   }, [currentUser]);
 
+  const getMemberCountValue = (str: string) => {
+    // 数字以外の文字を除去して、先頭の数字を取得する簡易ロジック
+    // 例: "1~5人" -> matchは["1", "5"] -> 1を採用
+    // 例: "51人以上" -> matchは["51"] -> 51を採用
+    const match = str.match(/\d+/); 
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
   const sortedCommunities = [...communities].sort((a, b) => {
     if (sortKey === 'default') {
-      // デフォルトは「元の順番」を保つためソートしない
       return 0
     }
 
@@ -109,9 +116,9 @@ export default function CommunitiesList() {
       aVal = a.createdAt ?? 0
       bVal = b.createdAt ?? 0
     } else {
-      // memberCount
-      aVal = a.memberCount ?? 0
-      bVal = b.memberCount ?? 0
+      // memberCount (文字列から数値を抽出して比較)
+      aVal = getMemberCountValue(a.memberCount);
+      bVal = getMemberCountValue(b.memberCount);
     }
 
     const diff = aVal - bVal
@@ -219,7 +226,7 @@ export default function CommunitiesList() {
 
               <nav className="user-menu-nav">
                 {/* マイページは“置いておく”だけ。不要なら消してOK */}
-                <Link to="/mypage" onClick={() => setIsOpen(false)} className="user-menu-link">
+                <Link to="/mypage/${auth.currentUser.uid}`}" onClick={() => setIsOpen(false)} className="user-menu-link">
                   マイページ
                 </Link>
               </nav>
@@ -355,7 +362,7 @@ export default function CommunitiesList() {
               <h2>{c.name}</h2>
               <p>{c.message}</p>
               <p className="meta-item">
-                <FaUsers className="meta-icon" /> {c.memberCount}人
+                <FaUsers className="meta-icon" /> {c.memberCount}
               </p>
               <p className="meta-item">
                 <FaClock className="meta-icon" /> {c.activityTime}
