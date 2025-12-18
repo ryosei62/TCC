@@ -1,8 +1,7 @@
 // src/pages/CreateBlog.tsx
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, getDoc, doc, collection, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
 import { db } from "../firebase/config";
 
@@ -56,30 +55,43 @@ export const CreateBlog: React.FC<Props> = ({ communityId, onPosted }) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
-
+  
     try {
+      // ★ コミュニティ名を取得
+      const communityRef = doc(db, "communities", communityId);
+      const communitySnap = await getDoc(communityRef);
+  
+      if (!communitySnap.exists()) {
+        throw new Error("コミュニティが存在しません");
+      }
+  
+      const communityData = communitySnap.data() as any;
+  
       const postsRef = collection(db, "communities", communityId, "posts");
-
+  
       await addDoc(postsRef, {
         title,
         body,
         imageUrl: imageUrl || "",
-        createdAt: new Date().toISOString(),
-        isPinned: false, 
+        createdAt: serverTimestamp(), // ★ Timestampで保存
+        isPinned: false,
+  
+        // ★ 追加
+        communityId,
+        communityName: communityData.name,
       });
-
-      if (onPosted) onPosted(); // 親に知らせる
+  
+      if (onPosted) onPosted();
       alert("ブログを投稿しました！");
-
-      // 投稿後コミュニティページへ
       navigate(`/communities/${communityId}`);
     } catch (err) {
       console.error("ブログ投稿中にエラー:", err);
-      setError("投稿の作成に失敗しました。時間をおいて再度お試しください。");
+      setError("投稿の作成に失敗しました。");
     } finally {
       setSubmitting(false);
     }
   };
+  
 
   return (
     <div

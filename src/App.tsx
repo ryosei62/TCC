@@ -9,7 +9,7 @@ import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { CreateBlog } from "./pages/CreateBlog";
 import { LoginForm } from "./pages/LoginForm";
 import { MyPage } from "./pages/MyPage";
-import Timeline from "./pages/Timeline";
+import { TimelinePage } from "./pages/TimelinePage";
 
 const App: React.FC = () => {
   return (
@@ -24,7 +24,7 @@ const App: React.FC = () => {
         <Route path="/communities/:id/create-blog" element={<CreateBlog communityId={""} />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/mypage" element={<MyPage />} />
-        <Route path="/timeline" element={<Timeline />} />
+        <Route path="/timeline" element={<TimelinePage />} />
       </Routes>
     </BrowserRouter>
   );
