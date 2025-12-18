@@ -27,7 +27,7 @@ type Community = {
   createdAt?: number
 }
 
-type SortKey = 'default' | 'createdAt' | 'memberCount'
+type SortKey = 'createdAt' | 'memberCount'
 type SortOrder = 'asc' | 'desc'
 
 // コミュニティ要素をDBから取得
@@ -36,7 +36,7 @@ export default function CommunitiesList() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<number | null>(null); //フィルタリングの状態を管理 (null:すべて, 0:公式, 1:非公式)
-  const [sortKey, setSortKey] = useState<SortKey>('default')
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -105,25 +105,21 @@ export default function CommunitiesList() {
   };
 
   const sortedCommunities = [...communities].sort((a, b) => {
-    if (sortKey === 'default') {
-      return 0
-    }
-
-    let aVal: number
-    let bVal: number
-
+    let aVal = 0;
+    let bVal = 0;
+  
     if (sortKey === 'createdAt') {
-      aVal = a.createdAt ?? 0
-      bVal = b.createdAt ?? 0
+      aVal = a.createdAt ?? 0;
+      bVal = b.createdAt ?? 0;
     } else {
-      // memberCount (文字列から数値を抽出して比較)
       aVal = getMemberCountValue(a.memberCount);
       bVal = getMemberCountValue(b.memberCount);
     }
-
-    const diff = aVal - bVal
-    return sortOrder === 'asc' ? diff : -diff
-  })
+  
+    const diff = aVal - bVal;
+    return sortOrder === 'asc' ? diff : -diff;
+  });
+  
 
   // 検索処理：漢字・カタカナ・ひらがなの完全一致ベースで部分一致
 
@@ -320,7 +316,6 @@ export default function CommunitiesList() {
               onChange={(e) => setSortKey(e.target.value as SortKey)}
               className="sort-select"
             >
-              <option value="default">デフォルト順</option>
               <option value="createdAt">新着順</option>
               <option value="memberCount">人数順</option>
             </select>
