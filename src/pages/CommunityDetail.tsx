@@ -13,6 +13,7 @@ import {
   startAt,
   endAt,
   where,
+  Timestamp,
 } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -53,7 +54,7 @@ type Post = {
   id: string;
   title: string;
   body: string;
-  createdAt: string;
+  createdAt: Timestamp;
   imageUrl: string;
   isPinned?: boolean;
 };
@@ -65,6 +66,18 @@ const MEMBER_COUNT_OPTIONS = [
   "21~50人",
   "51人以上"
 ];
+
+const formatDate = (ts?: Timestamp) => {
+  if (!ts) return "";
+  const date = ts.toDate(); // ★ ここがポイント
+  return date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 type TabType = "info" | "blog";
 
@@ -102,17 +115,7 @@ export default function CommunityDetail() {
     body: "",
     imageUrl: "",
   });
-  const formatDate = (isoString: string) => {
-    if (!isoString) return "";
-    const date = new Date(isoString);
-    return date.toLocaleDateString("ja-jp", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  
 
   const DEFAULT_USER_ICON =
   "https://www.gravatar.com/avatar/?d=mp&s=64";
