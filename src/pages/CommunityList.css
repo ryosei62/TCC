@@ -475,9 +475,46 @@
 
 /* --- スマホ対応 (レスポンシブ) --- */
 @media (max-width: 600px) {
+
+  .community-list-container {
+    padding: 20px 16px; /* 左右の余白を少し確保 */
+  }
+
+  .community-list-container h1 {
+    font-size: 1.3rem; /* PCの2.2remから縮小 */
+    line-height: 1.4;
+  }
+
+  .main-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2列で均等配置 */
+    gap: 10px;
+    margin-bottom: 25px;
+  }
+
+  .header-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f3f4f6; /* ボタンっぽく背景色をつける */
+    padding: 12px 0;
+    border-radius: 8px;
+    border-bottom: none; /* 下線は消す */
+    text-align: center;
+  }
+  
+  .header-link h2 {
+    font-size: 0.9rem; /* 文字サイズ調整 */
+  }
+
   .filters-sort-row {
-    flex-direction: column; /* 縦並びにする */
-    align-items: stretch;   /* 横幅いっぱいに */
+    flex-direction: column; /* 縦に積む */
+    align-items: stretch;   /* 横幅いっぱい */
     gap: 12px;
   }
   
@@ -486,8 +523,8 @@
   }
   
   .filter-tab {
-    flex: 1; /* 3等分して均等配置 */
-    padding: 8px 0; /* 横幅が狭いのでパディング調整 */
+    flex: 1; /* 3等分 */
+    padding: 8px 0;
     text-align: center;
   }
   
@@ -497,5 +534,22 @@
   
   .sort-select {
     flex-grow: 1; /* セレクトボックスを広げる */
+  }
+
+  .community-ul {
+    display: grid;
+    grid-template-columns: 1fr; /* 強制的に1カラム */
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .community-list-item {
+    width: 100%; /* 横幅いっぱい */
+    box-sizing: border-box;
+  }
+
+  /* 画像を少し大きく見せてリッチにする */
+  .community-thumbnail {
+    height: 180px; 
   }
 }
