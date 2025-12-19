@@ -1075,9 +1075,6 @@ const handleSelectOwner = async (uid: string) => {
                     >
                       削除
                     </button>
-                    <span style={{ fontSize: "0.8rem", color: "#888" }}>
-                      {formatDate(post.createdAt)}
-                    </span>
                   </div>
                   )}
 
