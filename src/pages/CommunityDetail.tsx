@@ -57,6 +57,7 @@ type Post = {
   createdAt: Timestamp;
   imageUrl: string;
   isPinned?: boolean;
+  timeline?: boolean;
 };
 
 const MEMBER_COUNT_OPTIONS = [
@@ -114,6 +115,7 @@ export default function CommunityDetail() {
     title: "",
     body: "",
     imageUrl: "",
+    timeline: false,
   });
   
 
@@ -391,22 +393,25 @@ const handleSelectOwner = async (uid: string) => {
       title: post.title,
       body: post.body,
       imageUrl: post.imageUrl || "",
+      timeline: post.timeline ?? false, // ★追加
     });
     setTimeout(() => {
       editingPostRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 50);
   };
+  
 
   // ブログ編集フォームの入力変更
   const handleEditPostChange = (
-    field: "title" | "body" | "imageUrl",
-    value: string
+    field: "title" | "body" | "imageUrl" | "timeline",
+    value: string | boolean
   ) => {
     setEditingPostForm((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
+  
 
   // ブログ編集を保存
   const handleSavePostEdit = async () => {
@@ -418,6 +423,7 @@ const handleSelectOwner = async (uid: string) => {
         title: editingPostForm.title,
         body: editingPostForm.body,
         imageUrl: editingPostForm.imageUrl,
+        timeline: editingPostForm.timeline,
       });
       
       setEditingPost(null);
@@ -1129,6 +1135,16 @@ const handleSelectOwner = async (uid: string) => {
                     rows={5}
                   />
                 </label>
+
+                <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={editingPostForm.timeline}
+                    onChange={(e) => handleEditPostChange("timeline", e.target.checked)}
+                  />
+                  タイムラインにも投稿する
+                </label>
+
 
                 {/* 保存／キャンセル */}
                 <div className="admin-form-buttons">

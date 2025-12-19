@@ -15,7 +15,7 @@ export const CreateBlog: React.FC<Props> = ({ communityId, onPosted }) => {
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-
+  const [postToTimeline, setPostToTimeline] = useState(false);
   const [imageUrl, setImageUrl] = useState(""); // Firestore に保存する URL
   const [previewUrl, setPreviewUrl] = useState(""); // プレビュー用
 
@@ -75,6 +75,7 @@ export const CreateBlog: React.FC<Props> = ({ communityId, onPosted }) => {
         imageUrl: imageUrl || "",
         createdAt: serverTimestamp(), // ★ Timestampで保存
         isPinned: false,
+        timeline: postToTimeline,
   
         // ★ 追加
         communityId,
@@ -184,6 +185,25 @@ export const CreateBlog: React.FC<Props> = ({ communityId, onPosted }) => {
             </div>
           )}
         </div>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "8px 10px",
+            border: "1px solid #e5e7eb",
+            borderRadius: 8,
+            background: "#f9fafb",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={postToTimeline}
+            onChange={(e) => setPostToTimeline(e.target.checked)}
+          />
+          タイムラインにも投稿する
+        </label>
+
 
         <button
           type="submit"

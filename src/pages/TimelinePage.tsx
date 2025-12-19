@@ -9,6 +9,7 @@ import {
   getDoc,
   doc as fsDoc,
   Timestamp,
+  where,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 
@@ -19,6 +20,7 @@ type TimelinePost = {
   imageUrl?: string;
   createdAt?: Timestamp | null;
   isPinned?: boolean;
+  timeline?: boolean;
 
   // 追加情報（パスから復元）
   communityId: string;
@@ -45,11 +47,14 @@ export const TimelinePage = () => {
 
   // ① 全 posts を createdAt 降順で取得（最新が上）
   useEffect(() => {
+
     const q = query(
-      collectionGroup(db, "posts"),
-      orderBy("createdAt", "desc"),
-      limit(50)
-    );
+        collectionGroup(db, "posts"),
+        where("timeline", "==", true),      // ★追加
+        orderBy("createdAt", "desc"),
+        limit(50)
+      );
+      
 
     const unsub = onSnapshot(
       q,
@@ -66,6 +71,7 @@ export const TimelinePage = () => {
             imageUrl: data.imageUrl,
             createdAt: data.createdAt ?? null,
             isPinned: data.isPinned ?? false,
+            timeline: data.timeline ?? false,
             communityId,
           };
         });
