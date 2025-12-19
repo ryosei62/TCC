@@ -347,10 +347,11 @@ export default function CommunitiesList() {
             key={c.id}
             className="community-list-item"
           >
-            {/* ★追加: 公式・非公式バッジ */}
-            <div className={`status-badge ${c.official === 1 ? 'official' : 'unofficial'}`}>
-              {c.official === 1 ? '公式' : '非公式'}
-            </div>
+            {c.official === 1 && (
+              <div className="status-badge official">
+                公式
+              </div>
+            )}
             
             <Link to={`/communities/${c.id}`} className="community-link" >
               <img
