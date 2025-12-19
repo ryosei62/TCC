@@ -9,21 +9,27 @@ import {
   updateDoc,
   deleteDoc,
   getDocs,
+  limit,
+  startAt,
+  endAt,
+  where,
+  Timestamp,
 } from "firebase/firestore";
-import { db } from "../firebase/config";
-import { useEffect, useState, useRef } from "react";
+import { db, auth } from "../firebase/config";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
-import axios from "axios";
-
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import {
-  FaUsers,
-  FaClock,
-  FaMapMarkerAlt,
-  FaGlobe,
+import { 
+  FaUsers, 
+  FaClock, 
+  FaMapMarkerAlt,  
+  FaGlobe, 
   FaInfoCircle,
+  FaThumbtack,
 } from "react-icons/fa";
+import { useRef } from "react";
 import "./CommunityDetail.css";
 
 type Community = {
@@ -35,45 +41,46 @@ type Community = {
   activityLocation: string;
   contact: string;
   url: string;
-
   thumbnailUrl?: string;
   imageUrls?: string[];
-
   snsUrls?: { label: string; url: string }[];
   joinUrls?: { label: string; url: string }[];
-
-  // ★参加方法の説明（追加済み前提）
-  joinDescription?: string;
-
-  // 代表者など（チーム側の実装に合わせて増減してOK）
-  ownerUid?: string;
+  createdBy?: string;
+  ownerId?: string;
+  joinDescription?: string;  
 };
 
 type Post = {
   id: string;
   title: string;
   body: string;
-  createdAt: string;
+  createdAt: Timestamp;
   imageUrl: string;
+  isPinned?: boolean;
+  timeline?: boolean;
+};
+
+const MEMBER_COUNT_OPTIONS = [
+  "1~5人",
+  "6~10人",
+  "11~20人",
+  "21~50人",
+  "51人以上"
+];
+
+const formatDate = (ts?: Timestamp) => {
+  if (!ts) return "";
+  const date = ts.toDate(); // ★ ここがポイント
+  return date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 type TabType = "info" | "blog";
-
-const MEMBER_COUNT_OPTIONS = [
-  "1-5",
-  "6-10",
-  "11-20",
-  "21-30",
-  "31-50",
-  "51-100",
-  "101+",
-];
-
-type OwnerCandidate = {
-  uid: string;
-  username: string;
-  email: string;
-};
 
 export default function CommunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -84,43 +91,137 @@ export default function CommunityDetail() {
   const [activeTab, setActiveTab] = useState<TabType>("info");
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showJoinPanel, setShowJoinPanel] = useState(false);
-
   const [isEditingCommunity, setIsEditingCommunity] = useState(false);
   const [communityForm, setCommunityForm] = useState<Community | null>(null);
-
   const [snsUrls, setSnsUrls] = useState<{ label: string; url: string }[]>([]);
   const [joinUrls, setJoinUrls] = useState<{ label: string; url: string }[]>([]);
-
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [ownerSearch, setOwnerSearch] = useState("");
+  const [ownerCandidates, setOwnerCandidates] = useState<
+    { uid: string; username: string; email: string; photoURL?: string }[]
+  >([]);
+  const [ownerSearching, setOwnerSearching] = useState(false);
+  const [ownerError, setOwnerError] = useState<string | null>(null);
+  const [owner, setOwner] = useState<{
+    uid: string;
+    username: string;
+    photoURL?: string;
+  } | null>(null);
+  
   const [editingPostForm, setEditingPostForm] = useState({
     title: "",
     body: "",
     imageUrl: "",
+    timeline: false,
   });
+  
 
-  // ------- 画像編集（コミュニティ画像） -------
-  const [editImageUrls, setEditImageUrls] = useState<string[]>([]);
-  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
-  const [newPreviewUrls, setNewPreviewUrls] = useState<string[]>([]);
-  // サムネイルとして選択されている画像（既存＋新規プレビューを通しで数える）
-  const [thumbnailIndex, setThumbnailIndex] = useState<number>(0);
+  const DEFAULT_USER_ICON =
+  "https://www.gravatar.com/avatar/?d=mp&s=64";
 
-  // Cloudinary 設定（CreateCommunity と同じ）
-  const CLOUD_NAME = "dvc15z98t";
-  const UPLOAD_PRESET = "community_images";
 
-  // ------- 代表者変更（ユーザー検索）関連（既存実装に合わせて） -------
-  const [ownerSearch, setOwnerSearch] = useState("");
-  const [ownerSearching, setOwnerSearching] = useState(false);
-  const [ownerError, setOwnerError] = useState<string | null>(null);
-  const [ownerCandidates, setOwnerCandidates] = useState<OwnerCandidate[]>([]);
+  const ownerUid = community?.ownerId ?? community?.createdBy;
 
-  // ★ここはあなたの権限判定に合わせて（例：ownerUid === currentUser.uid）
-  // 既にチーム側で実装されている想定
-  const canEditCommunity = true;
+  useEffect(() => {
+    const fetchOwner = async () => {
+      if (!ownerUid) {
+        setOwner(null);
+        return;
+      }
+      const snap = await getDoc(doc(db, "users", ownerUid));
+      if (snap.exists()) {
+        const data = snap.data() as any;
+        setOwner({
+          uid: ownerUid,
+          username: data.username ?? "（未設定）",
+          photoURL: data.photoURL,
+        });
+      } else {
+        setOwner({ uid: ownerUid, username: "（ユーザー不明）" });
+      }
+    };
+    fetchOwner();
+  }, [ownerUid]);
+
+const searchUsersForOwner = async (term: string) => {
+  const t = term.trim();
+  if (!t) {
+    setOwnerCandidates([]);
+    return;
+  }
+
+  setOwnerSearching(true);
+  setOwnerError(null);
+
+  try {
+    const usersRef = collection(db, "users");
+
+    // email検索（完全一致）
+    if (t.includes("@")) {
+      const q = query(usersRef, where("email", "==", t), limit(10));
+      const snap = await getDocs(q);
+      const list = snap.docs.map((d) => {
+        const data = d.data() as any;
+        return {
+          uid: d.id,
+          username: data.username ?? "（未設定）",
+          email: data.email ?? "",
+          photoURL: data.photoURL,
+        };
+      });
+      setOwnerCandidates(list);
+      return;
+    }
+
+    // username検索（前方一致）
+    // ※ orderBy が必要
+    const q = query(
+      usersRef,
+      orderBy("username"),
+      startAt(t),
+      endAt(t + "\uf8ff"),
+      limit(10)
+    );
+
+    const snap = await getDocs(q);
+    const list = snap.docs.map((d) => {
+      const data = d.data() as any;
+      return {
+        uid: d.id,
+        username: data.username ?? "（未設定）",
+        email: data.email ?? "",
+        photoURL: data.photoURL,
+      };
+    });
+    setOwnerCandidates(list);
+  } catch (e: any) {
+    console.error("ユーザー検索失敗:", e);
+    setOwnerError("検索に失敗しました（usernameにorderByできない/インデックス不足の可能性）");
+  } finally {
+    setOwnerSearching(false);
+  }
+};
+
+const handleSelectOwner = async (uid: string) => {
+  if (!id) return;
+
+  try {
+    await updateDoc(doc(db, "communities", id), { ownerId: uid });
+    setCommunity((prev) => (prev ? { ...prev, ownerId: uid } : prev));
+
+    setOwnerSearch("");
+    setOwnerCandidates([]);
+    alert("代表者を変更しました");
+  } catch (e) {
+    console.error(e);
+    alert("代表者変更に失敗しました");
+  }
+};
+
+
 
   // ------- Firestore リアルタイム取得 -------
   useEffect(() => {
@@ -138,20 +239,11 @@ export default function CommunityDetail() {
           setCommunityForm(data);
           setSnsUrls(data.snsUrls ?? [{ label: "", url: "" }]);
           setJoinUrls(data.joinUrls ?? [{ label: "", url: "" }]);
-
-          // 画像編集用 state 初期化
-          const urls = data.imageUrls ?? [];
-          setEditImageUrls(urls);
-          const initialThumb = data.thumbnailUrl || urls[0] || "";
-          const idx = initialThumb ? urls.indexOf(initialThumb) : 0;
-          setThumbnailIndex(idx >= 0 ? idx : 0);
-          setNewImageFiles([]);
-          setNewPreviewUrls([]);
         }
 
         // ブログ一覧（リアルタイム）
         const postsRef = collection(db, "communities", id, "posts");
-        const q = query(postsRef, orderBy("createdAt", "desc"));
+        const q = query(postsRef, orderBy("isPinned","desc"),orderBy("createdAt", "desc"));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
           const postsData: Post[] = snapshot.docs.map((d) => ({
@@ -172,30 +264,44 @@ export default function CommunityDetail() {
     fetchData();
   }, [id]);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+  
+
   if (loading) return <p>読み込み中...</p>;
   if (!community) return <p>コミュニティが見つかりません。</p>;
 
+  const canEditCommunity =
+  currentUser != null && community.createdBy === currentUser.uid;
+
   const displayImages = community.imageUrls || [];
   const mainImage = selectedImage || community.thumbnailUrl || displayImages[0];
+
   const currentIndex = displayImages.indexOf(mainImage);
 
   // 前へボタンの処理
   const handlePrev = () => {
     if (displayImages.length === 0) return;
+    // 現在が0番目なら最後の画像へ、それ以外なら一つ前へ
     const validIndex = currentIndex === -1 ? 0 : currentIndex;
-    const prevIndex =
-      validIndex === 0 ? displayImages.length - 1 : validIndex - 1;
-    setSelectedImage(displayImages[prevIndex]);
-  };
+    const prevIndex = validIndex === 0 ? displayImages.length - 1 : validIndex - 1;
 
-  // 次へボタン
+    setSelectedImage(displayImages[prevIndex]);
+  }
+
+  // 次へボタンの実装
   const handleNext = () => {
     if (displayImages.length === 0) return;
+
     const validIndex = currentIndex === -1 ? 0 : currentIndex;
-    const nextIndex =
-      validIndex === displayImages.length - 1 ? 0 : validIndex + 1;
+    const nextIndex = validIndex === displayImages.length - 1 ? 0 : validIndex + 1;
+
     setSelectedImage(displayImages[nextIndex]);
-  };
+  }
 
   // コミュニティ編集フォームの入力変更
   const handleCommunityInputChange = (
@@ -209,54 +315,7 @@ export default function CommunityDetail() {
     });
   };
 
-  // 画像追加（編集フォーム内）
-  const handleAddNewImages = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files ? Array.from(e.target.files) : [];
-    if (files.length === 0) return;
-
-    const previews = files.map((f) => URL.createObjectURL(f));
-    setNewImageFiles((prev) => [...prev, ...files]);
-    setNewPreviewUrls((prev) => [...prev, ...previews]);
-  };
-
-  const handleRemoveExistingImage = (index: number) => {
-    setEditImageUrls((prev) => prev.filter((_, i) => i !== index));
-    // サムネ選択のズレ補正（既存側）
-    setThumbnailIndex((prev) => {
-      if (prev === index) return 0;
-      if (index < prev) return prev - 1;
-      return prev;
-    });
-  };
-
-  const handleRemoveNewImage = (index: number) => {
-    // newPreviewUrls/newImageFiles の index は「新規側」の index
-    const existingCount = editImageUrls.length;
-    const combinedIndex = existingCount + index;
-
-    setNewImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setNewPreviewUrls((prev) => prev.filter((_, i) => i !== index));
-
-    setThumbnailIndex((prev) => {
-      if (prev === combinedIndex) return 0;
-      if (combinedIndex < prev) return prev - 1;
-      return prev;
-    });
-  };
-
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    const form = new FormData();
-    form.append("file", file);
-    form.append("upload_preset", UPLOAD_PRESET);
-
-    const res = await axios.post(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-      form
-    );
-
-    return res.data.secure_url as string;
-  };
-
+  // コミュニティ情報を保存
   const handleSaveCommunity = async () => {
     if (!id || !communityForm) return;
 
@@ -266,42 +325,19 @@ export default function CommunityDetail() {
       const trimmedSns = snsUrls.filter((v) => v.label || v.url);
       const trimmedJoin = joinUrls.filter((v) => v.label || v.url);
 
-      // 画像：新規追加分だけ Cloudinary にアップロードして既存URLと結合
-      const uploadedNewUrls =
-        newImageFiles.length > 0
-          ? await Promise.all(newImageFiles.map((f) => uploadImageToCloudinary(f)))
-          : [];
-
-      const mergedImageUrls = [...editImageUrls, ...uploadedNewUrls];
-      const nextThumbnailUrl =
-        mergedImageUrls[thumbnailIndex] || mergedImageUrls[0] || "";
-
-      await updateDoc(docRef, {
+      await updateDoc(docRef, { 
         ...communityForm,
         snsUrls: trimmedSns,
         joinUrls: trimmedJoin,
-        imageUrls: mergedImageUrls,
-        thumbnailUrl: nextThumbnailUrl,
       });
-
       setCommunity({
         ...communityForm,
         snsUrls: trimmedSns,
         joinUrls: trimmedJoin,
-        imageUrls: mergedImageUrls,
-        thumbnailUrl: nextThumbnailUrl,
       });
-
-      // 編集状態をリセット
-      setEditImageUrls(mergedImageUrls);
-      setNewImageFiles([]);
-      setNewPreviewUrls([]);
-      setThumbnailIndex(
-        nextThumbnailUrl ? Math.max(0, mergedImageUrls.indexOf(nextThumbnailUrl)) : 0
-      );
-
       setIsEditingCommunity(false);
       alert("コミュニティ情報を更新しました");
+
     } catch (e) {
       console.error(e);
       alert("更新に失敗しました");
@@ -327,6 +363,7 @@ export default function CommunityDetail() {
       await deleteDoc(doc(db, "communities", id));
 
       alert("削除しました");
+      // 一覧へ
       window.location.href = "/";
     } catch (e) {
       console.error(e);
@@ -356,25 +393,25 @@ export default function CommunityDetail() {
       title: post.title,
       body: post.body,
       imageUrl: post.imageUrl || "",
+      timeline: post.timeline ?? false, // ★追加
     });
     setTimeout(() => {
-      editingPostRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      editingPostRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 50);
   };
+  
 
   // ブログ編集フォームの入力変更
   const handleEditPostChange = (
-    field: "title" | "body" | "imageUrl",
-    value: string
+    field: "title" | "body" | "imageUrl" | "timeline",
+    value: string | boolean
   ) => {
     setEditingPostForm((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
+  
 
   // ブログ編集を保存
   const handleSavePostEdit = async () => {
@@ -386,8 +423,9 @@ export default function CommunityDetail() {
         title: editingPostForm.title,
         body: editingPostForm.body,
         imageUrl: editingPostForm.imageUrl,
+        timeline: editingPostForm.timeline,
       });
-
+      
       setEditingPost(null);
       alert("ブログ記事を更新しました");
     } catch (e) {
@@ -396,44 +434,26 @@ export default function CommunityDetail() {
     }
   };
 
-  // ------- 代表者検索（仮実装：チーム側の users コレクションに合わせて要調整） -------
-  const searchUsersForOwner = async (q: string) => {
-    if (!q) {
-      setOwnerCandidates([]);
-      setOwnerError(null);
-      return;
-    }
-    try {
-      setOwnerSearching(true);
-      setOwnerError(null);
 
-      // TODO: チーム側の users 検索に合わせて実装してください
-      // ここはダミー（空）にしています
-      setOwnerCandidates([]);
+  // ★追加: ピン留め切り替え関数
+  const handleTogglePin = async (post: Post) => {
+    if (!id) return;
+    try {
+      const postRef = doc(db, "communities", id, "posts", post.id);
+      // isPinned の状態を反転させる (trueならfalseへ、falseならtrueへ)
+      await updateDoc(postRef, {
+        isPinned: !post.isPinned
+      });
     } catch (e) {
-      console.error(e);
-      setOwnerError("検索に失敗しました");
-    } finally {
-      setOwnerSearching(false);
+      console.error("ピン留めエラー", e);
+      alert("操作に失敗しました");
     }
   };
 
-  const handleSelectOwner = async (uid: string) => {
-    if (!id || !communityForm) return;
-    try {
-      handleCommunityInputChange("ownerUid", uid);
-      alert("代表者を選択しました（保存で確定）");
-    } catch (e) {
-      console.error(e);
-      alert("代表者の変更に失敗しました");
-    }
-  };
 
   return (
     <div className="community-detail-container">
-      <Link to="/" className="back-link">
-        ← 一覧へ戻る
-      </Link>
+      <Link to="/" className="back-link">← 一覧へ戻る</Link>
       <h1 className="detail-title">{community.name}</h1>
 
       {/* ---------- メイン画像とサムネイル ---------- */}
@@ -441,12 +461,18 @@ export default function CommunityDetail() {
         <div className="images-section">
           <div className="main-image-wrapper">
             <div className="slider-container">
+              {/* 左ボタン（画像が２枚以上あるとき） */}
               {displayImages.length > 1 && (
                 <button onClick={handlePrev} className="slider-button prev">
                   <FaChevronLeft />
                 </button>
               )}
-              <img src={mainImage} alt={community.name} className="main-image" />
+              <img
+                src={mainImage}
+                alt={community.name}
+                className="main-image"
+              />
+              {/* 右ボタン(画像が２枚以上あるとき) */}
               {displayImages.length > 1 && (
                 <button onClick={handleNext} className="slider-button next">
                   <FaChevronRight />
@@ -455,6 +481,7 @@ export default function CommunityDetail() {
             </div>
           </div>
 
+          {/* サムネイル */}
           {displayImages.length > 1 && (
             <div className="thumbnail-list">
               {displayImages.map((img, idx) => (
@@ -494,16 +521,19 @@ export default function CommunityDetail() {
       {activeTab === "info" && (
         <div className="tab-content">
           <div className="info-section basic-info-section">
+            
+            {/* 構成人数 */}
             <div className="info-row">
               <div className="info-icon-wrapper">
                 <FaUsers className="info-icon-main" />
               </div>
               <div className="info-text-wrapper">
                 <span className="info-label">構成人数</span>
-                <span className="info-value">{community.memberCount}名</span>
+                <span className="info-value">{community.memberCount}</span>
               </div>
             </div>
 
+            {/* 活動時間 */}
             <div className="info-row">
               <div className="info-icon-wrapper">
                 <FaClock className="info-icon-main" />
@@ -514,6 +544,7 @@ export default function CommunityDetail() {
               </div>
             </div>
 
+            {/* 活動場所 */}
             <div className="info-row">
               <div className="info-icon-wrapper">
                 <FaMapMarkerAlt className="info-icon-main" />
@@ -525,6 +556,7 @@ export default function CommunityDetail() {
             </div>
           </div>
 
+          {/* 活動内容 */}
           <div className="info-section">
             <div className="section-title-row">
               <FaInfoCircle className="section-icon" />
@@ -532,7 +564,8 @@ export default function CommunityDetail() {
             </div>
             <p className="info-long-text">{community.activityDescription}</p>
           </div>
-
+          
+          {/* SNSリンク */}
           {community.snsUrls && community.snsUrls.length > 0 && (
             <div className="info-section sns-section-wrapper">
               <div className="section-title-row">
@@ -542,467 +575,413 @@ export default function CommunityDetail() {
               <ul className="sns-list">
                 {community.snsUrls.map((item, idx) => (
                   <li key={idx} className="sns-item">
-                    {item.label && <span className="sns-badge">{item.label}</span>}
+                    {item.label && (
+                      <span className="sns-badge">{item.label}</span>
+                    )}
                     <a href={item.url} target="_blank" rel="noreferrer">
                       {item.url}
                     </a>
                   </li>
                 ))}
+                {community.contact && (
+                  <li className="sns-item">
+                    <span className="sns-badge">メール</span>
+                    <a href={`mailto:${community.contact}`}>
+                      {community.contact}
+                    </a>
+                  </li>
+                )}
               </ul>
             </div>
           )}
+          
+          {owner && (
+            <div
+              style={{
+                marginTop: 16,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <img
+                src={owner.photoURL || DEFAULT_USER_ICON}
+                alt="代表者アイコン"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  background: "#eee",
+                }}
+              />
 
-          {/* 管理者用編集セクション */}
-          {canEditCommunity && (
-            <div className="info-section admin-section">
-              <div className="section-title-row">
-                <h3 className="section-title">コミュニティ編集</h3>
-              </div>
-
-              {!isEditingCommunity ? (
-                <div className="admin-buttons-row">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditingCommunity(true);
-
-                      setSnsUrls(community.snsUrls ?? [{ label: "", url: "" }]);
-                      setJoinUrls(community.joinUrls ?? [{ label: "", url: "" }]);
-
-                      // 画像編集の初期化
-                      const urls = community.imageUrls ?? [];
-                      setEditImageUrls(urls);
-                      const thumb = community.thumbnailUrl || urls[0] || "";
-                      const idx = thumb ? urls.indexOf(thumb) : 0;
-                      setThumbnailIndex(idx >= 0 ? idx : 0);
-                      setNewImageFiles([]);
-                      setNewPreviewUrls([]);
-                    }}
-                    className="admin-edit-button"
-                  >
-                    コミュニティ情報を編集
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeleteCommunity}
-                    className="admin-delete-button"
-                  >
-                    コミュニティを削除
-                  </button>
-                </div>
-              ) : (
-                communityForm && (
-                  <div className="admin-form">
-                    <label className="admin-form-field">
-                      コミュニティ名
-                      <input
-                        type="text"
-                        value={communityForm.name}
-                        onChange={(e) =>
-                          handleCommunityInputChange("name", e.target.value)
-                        }
-                      />
-                    </label>
-
-                    <label className="admin-form-field">
-                      一言メッセージ
-                      <textarea
-                        value={communityForm.message}
-                        onChange={(e) =>
-                          handleCommunityInputChange("message", e.target.value)
-                        }
-                      />
-                    </label>
-
-                    <label className="admin-form-field">
-                      活動内容
-                      <textarea
-                        value={communityForm.activityDescription}
-                        onChange={(e) =>
-                          handleCommunityInputChange(
-                            "activityDescription",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </label>
-
-                    {/* ★参加方法の説明 */}
-                    <label className="admin-form-field">
-                      参加方法の説明
-                      <textarea
-                        value={communityForm.joinDescription ?? ""}
-                        onChange={(e) =>
-                          handleCommunityInputChange("joinDescription", e.target.value)
-                        }
-                      />
-                    </label>
-
-                    <label className="admin-form-field">
-                      連絡先
-                      <textarea
-                        value={communityForm.contact ?? ""}
-                        onChange={(e) =>
-                          handleCommunityInputChange("contact", e.target.value)
-                        }
-                      />
-                    </label>
-
-                    <label className="admin-form-field">
-                      活動場所
-                      <input
-                        type="text"
-                        value={communityForm.activityLocation}
-                        onChange={(e) =>
-                          handleCommunityInputChange(
-                            "activityLocation",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </label>
-
-                    <label className="admin-form-field">
-                      活動頻度
-                      <input
-                        type="text"
-                        value={communityForm.activityTime}
-                        onChange={(e) =>
-                          handleCommunityInputChange("activityTime", e.target.value)
-                        }
-                      />
-                    </label>
-
-                    <div className="admin-form-field">
-                      <span>SNSリンク</span>
-
-                      <div className="multi-input-column">
-                        {snsUrls.map((item, index) => (
-                          <div key={index} className="multi-input-row">
-                            <input
-                              type="text"
-                              placeholder="サービス名 (例: Instagram)"
-                              value={item.label}
-                              onChange={(e) => {
-                                const copy = [...snsUrls];
-                                copy[index].label = e.target.value;
-                                setSnsUrls(copy);
-                              }}
-                            />
-                            <input
-                              type="text"
-                              placeholder="https://example.com"
-                              value={item.url}
-                              onChange={(e) => {
-                                const copy = [...snsUrls];
-                                copy[index].url = e.target.value;
-                                setSnsUrls(copy);
-                              }}
-                            />
-                            {snsUrls.length > 1 && (
-                              <button
-                                type="button"
-                                className="small-remove-button"
-                                onClick={() =>
-                                  setSnsUrls(snsUrls.filter((_, i) => i !== index))
-                                }
-                              >
-                                −
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          className="small-add-button"
-                          onClick={() => setSnsUrls([...snsUrls, { label: "", url: "" }])}
-                        >
-                          ＋ SNSを追加
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="admin-form-field">
-                      <span>参加先リンク</span>
-                      <div className="multi-input-column">
-                        {joinUrls.map((item, index) => (
-                          <div key={index} className="multi-input-row">
-                            <input
-                              type="text"
-                              placeholder="サービス名 (例: Discord)"
-                              value={item.label}
-                              onChange={(e) => {
-                                const copy = [...joinUrls];
-                                copy[index].label = e.target.value;
-                                setJoinUrls(copy);
-                              }}
-                            />
-                            <input
-                              type="text"
-                              placeholder="https://example.com"
-                              value={item.url}
-                              onChange={(e) => {
-                                const copy = [...joinUrls];
-                                copy[index].url = e.target.value;
-                                setJoinUrls(copy);
-                              }}
-                            />
-                            {joinUrls.length > 1 && (
-                              <button
-                                type="button"
-                                className="small-remove-button"
-                                onClick={() =>
-                                  setJoinUrls(joinUrls.filter((_, i) => i !== index))
-                                }
-                              >
-                                −
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          className="small-add-button"
-                          onClick={() => setJoinUrls([...joinUrls, { label: "", url: "" }])}
-                        >
-                          ＋ 参加URLを追加
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* 画像（追加・削除・サムネ選択） */}
-                    <div className="admin-form-field">
-                      <span>コミュニティ画像（クリックでサムネイル選択）</span>
-
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleAddNewImages}
-                        style={{ marginTop: 8 }}
-                      />
-
-                      {(editImageUrls.length > 0 || newPreviewUrls.length > 0) && (
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
-                            gap: 10,
-                            marginTop: 12,
-                          }}
-                        >
-                          {[...editImageUrls, ...newPreviewUrls].map((src, idx) => {
-                            const isSelected = thumbnailIndex === idx;
-                            const isExisting = idx < editImageUrls.length;
-                            const newIdx = idx - editImageUrls.length;
-
-                            return (
-                              <div
-                                key={`${src}-${idx}`}
-                                onClick={() => setThumbnailIndex(idx)}
-                                style={{
-                                  position: "relative",
-                                  borderRadius: 10,
-                                  overflow: "hidden",
-                                  cursor: "pointer",
-                                  border: isSelected ? "3px solid #2563eb" : "1px solid #ddd",
-                                }}
-                              >
-                                <img
-                                  src={src}
-                                  alt={`community-img-${idx}`}
-                                  style={{
-                                    width: "100%",
-                                    height: 110,
-                                    objectFit: "cover",
-                                    display: "block",
-                                  }}
-                                />
-
-                                {isSelected && (
-                                  <div
-                                    style={{
-                                      position: "absolute",
-                                      left: 6,
-                                      bottom: 6,
-                                      background: "rgba(37, 99, 235, 0.9)",
-                                      color: "white",
-                                      fontSize: 12,
-                                      padding: "2px 6px",
-                                      borderRadius: 999,
-                                    }}
-                                  >
-                                    サムネイル
-                                  </div>
-                                )}
-
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (isExisting) handleRemoveExistingImage(idx);
-                                    else handleRemoveNewImage(newIdx);
-                                  }}
-                                  style={{
-                                    position: "absolute",
-                                    top: 6,
-                                    right: 6,
-                                    width: 24,
-                                    height: 24,
-                                    borderRadius: 999,
-                                    border: "none",
-                                    background: "rgba(0,0,0,0.6)",
-                                    color: "white",
-                                    cursor: "pointer",
-                                    lineHeight: "24px",
-                                  }}
-                                  aria-label="remove image"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
-                        ※ 画像の追加は「保存」を押したタイミングでアップロードされます。
-                      </div>
-                    </div>
-
-                    {/* 8. 構成人数 */}
-                    <label className="admin-form-field">
-                      構成人数
-                      <select
-                        value={communityForm.memberCount ?? ""}
-                        onChange={(e) =>
-                          handleCommunityInputChange("memberCount", e.target.value)
-                        }
-                        style={{
-                          padding: "8px",
-                          borderRadius: "4px",
-                          border: "1px solid #ccc",
-                        }}
-                      >
-                        <option value="">選択してください</option>
-                        {MEMBER_COUNT_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <div className="admin-form-field">
-                      <span>代表者を変更（ユーザー検索）</span>
-
-                      <input
-                        type="text"
-                        placeholder="username か email を入力"
-                        value={ownerSearch}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setOwnerSearch(v);
-                          searchUsersForOwner(v);
-                        }}
-                      />
-
-                      {ownerSearching && (
-                        <div style={{ fontSize: 12, opacity: 0.7 }}>検索中...</div>
-                      )}
-                      {ownerError && (
-                        <div style={{ fontSize: 12, color: "red" }}>{ownerError}</div>
-                      )}
-
-                      {ownerCandidates.length > 0 && (
-                        <div
-                          style={{
-                            border: "1px solid #eee",
-                            borderRadius: 8,
-                            marginTop: 8,
-                          }}
-                        >
-                          {ownerCandidates.map((u) => (
-                            <button
-                              key={u.uid}
-                              type="button"
-                              onClick={() => handleSelectOwner(u.uid)}
-                              style={{
-                                display: "flex",
-                                width: "100%",
-                                gap: 10,
-                                alignItems: "center",
-                                padding: "10px 12px",
-                                border: "none",
-                                background: "transparent",
-                                cursor: "pointer",
-                              }}
-                            >
-                              <div style={{ fontWeight: 700 }}>{u.username}</div>
-                              <div style={{ fontSize: 12, opacity: 0.7 }}>{u.email}</div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="admin-form-buttons">
-                      <button
-                        type="button"
-                        onClick={handleSaveCommunity}
-                        className="admin-save-button"
-                      >
-                        保存
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsEditingCommunity(false);
-                          setCommunityForm(community);
-
-                          // 画像編集の状態も元に戻す
-                          const urls = community.imageUrls ?? [];
-                          setEditImageUrls(urls);
-                          const thumb = community.thumbnailUrl || urls[0] || "";
-                          const idx = thumb ? urls.indexOf(thumb) : 0;
-                          setThumbnailIndex(idx >= 0 ? idx : 0);
-                          setNewImageFiles([]);
-                          setNewPreviewUrls([]);
-                        }}
-                        className="admin-cancel-button"
-                      >
-                        キャンセル
-                      </button>
-                    </div>
-                  </div>
-                )
-              )}
+              <Link
+                to={`/mypage/${owner.uid}`}
+                style={{ textDecoration: "underline", fontWeight: 600 }}
+              >
+                代表者：{owner.username}
+              </Link>
             </div>
           )}
 
-          {/* 参加ボタン & パネル */}
-          {community.joinUrls && community.joinUrls.length > 0 && (
-            <>
-              <button onClick={() => setShowJoinPanel(true)} className="join-fab-button">
+
+
+          {/* 管理者用編集セクション */}
+          {canEditCommunity && (
+          <div className="info-section admin-section">
+            <div className="section-title-row">
+              <h3 className="section-title">コミュニティ編集</h3>
+            </div>
+
+            {!isEditingCommunity ? (
+              <div className="admin-buttons-row">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditingCommunity(true);
+
+                    setSnsUrls(community.snsUrls ?? [{ label: "", url: "" }]);
+                    setJoinUrls(community.joinUrls ?? [{ label: "", url: "" }]);
+                  }}
+                  className="admin-edit-button"
+                >
+                  コミュニティ情報を編集
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteCommunity}
+                  className="admin-delete-button"
+                >
+                  コミュニティを削除
+                </button>
+              </div>
+            ) : (
+              communityForm && (
+                <div className="admin-form">
+                  {/* 1. コミュニティ名 */}
+                  <label className="admin-form-field">
+                    コミュニティ名
+                    <input
+                      type="text"
+                      value={communityForm.name}
+                      onChange={(e) =>
+                        handleCommunityInputChange("name", e.target.value)
+                      }
+                    />
+                  </label>
+
+                  {/* 2. 一言メッセージ */}
+                  <label className="admin-form-field">
+                    一言メッセージ
+                    <textarea
+                      value={communityForm.message}
+                      onChange={(e) =>
+                        handleCommunityInputChange("message", e.target.value)
+                      }
+                    />
+                  </label>
+
+                  {/* 3. 活動内容 */}
+                  <label className="admin-form-field">
+                    活動内容
+                    <textarea
+                      value={communityForm.activityDescription}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityDescription",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* ★ここに参加方法の説明を追加する */}
+                  <label className="admin-form-field">
+                    参加方法の説明
+                    <textarea
+                      value={communityForm.joinDescription ?? ""}
+                      onChange={(e) =>
+                        handleCommunityInputChange("joinDescription", e.target.value)
+                      }
+                    />
+                  </label>
+
+                  <label className="admin-form-field">
+                    連絡先
+                    <textarea
+                      value={communityForm.contact ?? ""}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "contact",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* 4. 活動場所 */}
+                  <label className="admin-form-field">
+                    活動場所
+                    <input
+                      type="text"
+                      value={communityForm.activityLocation}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityLocation",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* 5. 活動頻度 */}
+                  <label className="admin-form-field">
+                    活動頻度
+                    <input
+                      type="text"
+                      value={communityForm.activityTime}
+                      onChange={(e) =>
+                        handleCommunityInputChange(
+                          "activityTime",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </label>
+
+                  {/* 6. 連絡先（複数追加・削除可能） */}
+                  <div className="admin-form-field">
+                    <span>SNSリンク</span>
+                    
+                    <div className="multi-input-column">
+                      {snsUrls.map((item, index) => (
+                        <div key={index} className="multi-input-row">
+                          <input
+                            type="text"
+                            placeholder="サービス名 (例: Instagram)"
+                            value={item.label}
+                            onChange={(e) => {
+                              const copy = [...snsUrls];
+                              copy[index].label = e.target.value;
+                              setSnsUrls(copy);
+                            }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="https://example.com"
+                            value={item.url}
+                            onChange={(e) => {
+                              const copy = [...snsUrls];
+                              copy[index].url = e.target.value;
+                              setSnsUrls(copy);
+                            }}
+                          />
+                          {snsUrls.length > 1 && (
+                            <button
+                              type="button"
+                              className="small-remove-button"
+                              onClick={() =>
+                                setSnsUrls(snsUrls.filter((_, i) => i !== index))
+                              }
+                            >
+                              −
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="small-add-button"
+                        onClick={() =>
+                          setSnsUrls([...snsUrls, { label: "", url: "" }])
+                        }
+                      >
+                        ＋ SNSを追加
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 7. 参加先リンク */}
+                  <div className="admin-form-field">
+                    <span>参加先リンク</span>
+                    <div className="multi-input-column">
+                      {joinUrls.map((item, index) => (
+                        <div key={index} className="multi-input-row">
+                          <input
+                            type="text"
+                            placeholder="サービス名 (例: Discord)"
+                            value={item.label}
+                            onChange={(e) => {
+                              const copy = [...joinUrls];
+                              copy[index].label = e.target.value;
+                              setJoinUrls(copy);
+                            }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="https://example.com"
+                            value={item.url}
+                            onChange={(e) => {
+                              const copy = [...joinUrls];
+                              copy[index].url = e.target.value;
+                              setJoinUrls(copy);
+                            }}
+                          />
+                          {joinUrls.length > 1 && (
+                            <button
+                              type="button"
+                              className="small-remove-button"
+                              onClick={() =>
+                                setJoinUrls(joinUrls.filter((_, i) => i !== index))
+                              }
+                            >
+                              −
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="small-add-button"
+                        onClick={() =>
+                          setJoinUrls([...joinUrls, { label: "", url: "" }])
+                        }
+                      >
+                        ＋ 参加URLを追加
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 8. 構成人数 */}
+                  <label className="admin-form-field">
+                    構成人数
+                    <select
+                      value={communityForm.memberCount ?? ""}
+                      onChange={(e) =>
+                        handleCommunityInputChange("memberCount", e.target.value)
+                      }
+                      style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                    >
+                      <option value="">選択してください</option>
+                      {MEMBER_COUNT_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <div className="admin-form-field">
+                    <span>代表者を変更（ユーザー検索）</span>
+
+                    <input
+                      type="text"
+                      placeholder="username か email を入力"
+                      value={ownerSearch}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setOwnerSearch(v);
+                        // 入力のたびに検索（重いなら debounce にできる）
+                        searchUsersForOwner(v);
+                      }}
+                    />
+
+                    {ownerSearching && <div style={{ fontSize: 12, opacity: 0.7 }}>検索中...</div>}
+                    {ownerError && <div style={{ fontSize: 12, color: "red" }}>{ownerError}</div>}
+
+                    {ownerCandidates.length > 0 && (
+                      <div style={{ border: "1px solid #eee", borderRadius: 8, marginTop: 8 }}>
+                        {ownerCandidates.map((u) => (
+                          <button
+                            key={u.uid}
+                            type="button"
+                            onClick={() => handleSelectOwner(u.uid)}
+                            style={{
+                              display: "flex",
+                              width: "100%",
+                              gap: 10,
+                              alignItems: "center",
+                              padding: "10px 12px",
+                              border: "none",
+                              background: "transparent",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <div style={{ fontWeight: 700 }}>{u.username}</div>
+                            <div style={{ fontSize: 12, opacity: 0.7 }}>{u.email}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+
+
+                  <div className="admin-form-buttons">
+                    <button
+                      type="button"
+                      onClick={handleSaveCommunity}
+                      className="admin-save-button"
+                    >
+                      保存
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingCommunity(false);
+                        setCommunityForm(community);
+                      }}
+                      className="admin-cancel-button"
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                </div>
+              )
+            )}
+            
+
+
+          </div>
+          )}
+
+          
+          {/* 参加ボタン */}
+          {currentUser &&
+            (community.joinDescription ||
+              community.contact ||
+              (community.joinUrls && community.joinUrls.length > 0)) && (
+              <button
+                onClick={() => setShowJoinPanel(true)}
+                className="join-fab-button"
+              >
                 参加する
               </button>
+            )}
 
-              {showJoinPanel && (
-                <div className="slide-up-panel join-panel">
-                  <button
-                    onClick={() => setShowJoinPanel(false)}
-                    className="panel-close-button"
-                  >
-                    ×
-                  </button>
 
-                  <h2 className="panel-title">参加先リンク</h2>
+          {/* 参加パネル（内容を SNS＋連絡先と同一イメージに） */}
+          {showJoinPanel && (
+            <div className="slide-up-panel join-panel">
+              <button
+                onClick={() => setShowJoinPanel(false)}
+                className="panel-close-button"
+              >
+                ×
+              </button>
 
-                  {community.joinDescription && (
-                    <p className="panel-description">{community.joinDescription}</p>
-                  )}
+              <h2 className="panel-title">参加方法</h2>
 
+              {community.joinDescription && (
+                <p className="panel-description">
+                  {community.joinDescription}
+                </p>
+              )}
+
+              {community.joinUrls && community.joinUrls.length > 0 && (
+                <div className="panel-section">
+                  <h3 className="panel-subtitle">参加先リンク</h3>
                   <div className="join-links-container">
                     {community.joinUrls.map((item, idx) => (
                       <a
@@ -1016,7 +995,9 @@ export default function CommunityDetail() {
                           <span className="join-link-label">
                             {item.label || "参加先リンク"}
                           </span>
-                          <span className="join-link-url">{item.url}</span>
+                          <span className="join-link-url">
+                            {item.url}
+                          </span>
                         </div>
                         <span className="join-link-arrow">↗</span>
                       </a>
@@ -1024,39 +1005,65 @@ export default function CommunityDetail() {
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       )}
 
+
       {/* ---------- blog タブ ---------- */}
       {activeTab === "blog" && (
         <>
-          <button onClick={() => setShowBlogForm(true)} className="blog-fab-button">
+          {/* 右下の＋ボタン */}
+          {canEditCommunity && (
+          <button
+            onClick={() => setShowBlogForm(true)}
+            className="blog-fab-button"
+          >
             ＋
           </button>
+          )}
 
+          {/* ブログ一覧 */}
           <div className="tab-content">
             {posts.length === 0 ? (
               <p>まだブログ記事がありません。</p>
             ) : (
               posts.map((post) => (
-                <article key={post.id} className="blog-post">
-                  <h3>{post.title}</h3>
-
+                <article key={post.id} className={`blog-post ${post.isPinned ? "pinned-post" : ""}`}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                    {post.isPinned && (
+                      <FaThumbtack style={{ color: "#2563eb", transform: "rotate(45deg)" }} />
+                    )}
+                    <h3 style={{ margin: 0, fontSize: "1.2rem" }}>{post.title}</h3>
+                  </div>
                   {post.imageUrl && (
-                    <img src={post.imageUrl} alt={post.title} className="blog-image" />
+                    <img
+                      src={post.imageUrl}
+                      alt={post.title}
+                      className="blog-image"
+                    />
                   )}
-                  <span style={{ fontSize: "0.8rem", color: "#888" }}>
-                    {formatDate(post.createdAt)}
-                  </span>
 
                   <p className="blog-body">{post.body}</p>
-
+                  <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                      {formatDate(post.createdAt)}
+                  </span>
+                  {/* ★ 追加: ブログ記事の編集・削除ボタン */}
+                  {canEditCommunity && (
                   <div className="blog-post-actions">
                     <button
+                        type="button"
+                        onClick={() => handleTogglePin(post)}
+                        className={`blog-action-button ${post.isPinned ? "active-pin" : ""}`}
+                        title={post.isPinned ? "固定を解除" : "トップに固定"}
+                      >
+                        <FaThumbtack />
+                      </button>
+
+                    <button
                       type="button"
-                      onClick={() => openEditPost(post)}
+                      onClick={() => openEditPost(post)}  // ★ ここが変更
                       className="blog-edit-button"
                     >
                       編集
@@ -1068,15 +1075,21 @@ export default function CommunityDetail() {
                     >
                       削除
                     </button>
-                    
+                    <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                      {formatDate(post.createdAt)}
+                    </span>
                   </div>
+                  )}
+
                 </article>
               ))
             )}
           </div>
 
+          {/* ▼ スライド表示されるブログ投稿フォーム ▼ */}
           {showBlogForm && (
-            <div className="slide-up-panel blog-form-panel">
+            <div className="blog-modal-panel">
+              {/* × ボタン */}
               <button
                 onClick={() => setShowBlogForm(false)}
                 className="panel-close-button"
@@ -1084,18 +1097,20 @@ export default function CommunityDetail() {
                 ×
               </button>
 
+              {/* 投稿フォーム */}
               <CreateBlog
                 communityId={id!}
                 onPosted={() => {
-                  setShowBlogForm(false);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  setShowBlogForm(false); // フォーム閉じる
+                  window.scrollTo({ top: 0, behavior: "smooth" }); // 上に戻る
                 }}
               />
             </div>
           )}
-
+          {/* ▼ ブログ編集フォーム（スライド表示） ▼ */}
           {editingPost && (
-            <div className="slide-up-panel blog-form-panel" ref={editingPostRef}>
+            <div className="blog-modal-panel" ref={editingPostRef}>
+              {/* × ボタン */}
               <button
                 onClick={() => setEditingPost(null)}
                 className="panel-close-button"
@@ -1104,6 +1119,7 @@ export default function CommunityDetail() {
               </button>
 
               <div className="admin-form">
+                {/* タイトル */}
                 <label className="admin-form-field">
                   タイトル
                   <input
@@ -1113,6 +1129,7 @@ export default function CommunityDetail() {
                   />
                 </label>
 
+                {/* 内容 */}
                 <label className="admin-form-field">
                   内容
                   <textarea
@@ -1122,6 +1139,17 @@ export default function CommunityDetail() {
                   />
                 </label>
 
+                <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={editingPostForm.timeline}
+                    onChange={(e) => handleEditPostChange("timeline", e.target.checked)}
+                  />
+                  タイムラインにも投稿する
+                </label>
+
+
+                {/* 保存／キャンセル */}
                 <div className="admin-form-buttons">
                   <button
                     type="button"
@@ -1141,6 +1169,7 @@ export default function CommunityDetail() {
               </div>
             </div>
           )}
+
         </>
       )}
     </div>
