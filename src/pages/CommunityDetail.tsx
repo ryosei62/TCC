@@ -1044,6 +1044,9 @@ const handleSelectOwner = async (uid: string) => {
                       className="blog-image"
                     />
                   )}
+                  <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                    {formatDate(post.createdAt)}
+                  </span>
 
                   <p className="blog-body">{post.body}</p>
                   {/* ★ 追加: ブログ記事の編集・削除ボタン */}
@@ -1072,9 +1075,7 @@ const handleSelectOwner = async (uid: string) => {
                     >
                       削除
                     </button>
-                    <span style={{ fontSize: "0.8rem", color: "#888" }}>
-                      {formatDate(post.createdAt)}
-                    </span>
+                    
                   </div>
                   )}
 
