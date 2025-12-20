@@ -110,6 +110,8 @@ export default function CommunityDetail() {
     username: string;
     photoURL?: string;
   } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   
   const [editingPostForm, setEditingPostForm] = useState({
     title: "",
@@ -122,6 +124,33 @@ export default function CommunityDetail() {
   const DEFAULT_USER_ICON =
   "https://www.gravatar.com/avatar/?d=mp&s=64";
 
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      if (!currentUser) {
+        setIsAdmin(false);
+        return;
+      }
+  
+      try {
+        const snap = await getDoc(doc(db, "users", currentUser.uid));
+        if (!snap.exists()) {
+          setIsAdmin(false);
+          return;
+        }
+        const data = snap.data() as any;
+  
+        // どっちの方式でも対応できるように（role or isAdmin）
+        const admin = data.role === "admin" || data.isAdmin === true;
+        setIsAdmin(admin);
+      } catch (e) {
+        console.error("admin判定の取得に失敗:", e);
+        setIsAdmin(false);
+      }
+    };
+  
+    fetchAdmin();
+  }, [currentUser]);
+  
 
   const ownerUid = community?.ownerId ?? community?.createdBy;
 
@@ -275,8 +304,16 @@ const handleSelectOwner = async (uid: string) => {
   if (loading) return <p>読み込み中...</p>;
   if (!community) return <p>コミュニティが見つかりません。</p>;
 
+  const uid = currentUser?.uid;
+
   const canEditCommunity =
-  currentUser != null && community.createdBy === currentUser.uid;
+    !!uid &&
+    (
+      isAdmin ||
+      community.createdBy === uid ||
+      community.ownerId === uid
+    );
+
 
   const displayImages = community.imageUrls || [];
   const mainImage = selectedImage || community.thumbnailUrl || displayImages[0];
