@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { toggleLike } from "../component/LikeButton";
 import {
   collectionGroup,
   query,
@@ -10,8 +11,11 @@ import {
   doc as fsDoc,
   Timestamp,
   where,
+  doc,
 } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../firebase/config";
+import "./Timeline.css";
 
 type TimelinePost = {
   id: string;
@@ -21,14 +25,24 @@ type TimelinePost = {
   createdAt?: Timestamp | null;
   isPinned?: boolean;
   timeline?: boolean;
-
-  // 追加情報（パスから復元）
+  likesCount?: number;
   communityId: string;
 };
+
+type SortType = "new" | "like";
 
 export const TimelinePage = () => {
   const [posts, setPosts] = useState<TimelinePost[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ログインユーザー（uidを安定して取る）
+  const [uid, setUid] = useState<string | null>(null);
+
+  // いいね状態: key = `${communityId}_${postId}`
+  const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
+
+  // ソート状態（★コンポーネント内に置く）
+  const [sortType, setSortType] = useState<SortType>("new");
 
   // communityId -> communityName のキャッシュ
   const [communityNameMap, setCommunityNameMap] = useState<Record<string, string>>({});
@@ -45,25 +59,30 @@ export const TimelinePage = () => {
     });
   };
 
-  // ① 全 posts を createdAt 降順で取得（最新が上）
+  // Auth購読（uidをstateに）
   useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setUid(user?.uid ?? null);
+    });
+    return () => unsub();
+  }, []);
 
+  // ① timeline==true の posts を createdAt 降順で取得
+  useEffect(() => {
     const q = query(
-        collectionGroup(db, "posts"),
-        where("timeline", "==", true),      // ★追加
-        orderBy("createdAt", "desc"),
-        limit(50)
-      );
-      
+      collectionGroup(db, "posts"),
+      where("timeline", "==", true),
+      orderBy("createdAt", "desc"),
+      limit(50)
+    );
 
     const unsub = onSnapshot(
       q,
       (snapshot) => {
         const list: TimelinePost[] = snapshot.docs.map((d) => {
-          // communities/{communityId}/posts/{postId} なので、親の親が communities/{communityId}
           const communityId = d.ref.parent.parent?.id ?? "";
-
           const data = d.data() as any;
+
           return {
             id: d.id,
             title: data.title,
@@ -72,6 +91,7 @@ export const TimelinePage = () => {
             createdAt: data.createdAt ?? null,
             isPinned: data.isPinned ?? false,
             timeline: data.timeline ?? false,
+            likesCount: data.likesCount ?? 0,
             communityId,
           };
         });
@@ -88,11 +108,34 @@ export const TimelinePage = () => {
     return () => unsub();
   }, []);
 
-  // ② 表示に必要なコミュニティ名をまとめて引く（キャッシュ）
+  // ② 各投稿の like 状態を購読（uidがいる時だけ）
   useEffect(() => {
-    const uniqueCommunityIds = Array.from(
-      new Set(posts.map((p) => p.communityId).filter(Boolean))
-    );
+    if (!uid) {
+      setLikedMap({});
+      return;
+    }
+
+    const unsubs: Array<() => void> = [];
+
+    posts.forEach((p) => {
+      if (!p.communityId) return;
+
+      const likeRef = doc(db, "communities", p.communityId, "posts", p.id, "likes", uid);
+
+      const unsub = onSnapshot(likeRef, (snap) => {
+        const key = `${p.communityId}_${p.id}`;
+        setLikedMap((prev) => ({ ...prev, [key]: snap.exists() }));
+      });
+
+      unsubs.push(unsub);
+    });
+
+    return () => unsubs.forEach((u) => u());
+  }, [posts, uid]);
+
+  // ③ 表示に必要なコミュニティ名をまとめて引く（キャッシュ）
+  useEffect(() => {
+    const uniqueCommunityIds = Array.from(new Set(posts.map((p) => p.communityId).filter(Boolean)));
 
     const fetchNeeded = async () => {
       const toFetch = uniqueCommunityIds.filter(
@@ -100,14 +143,15 @@ export const TimelinePage = () => {
       );
       if (toFetch.length === 0) return;
 
-      // fetch中フラグ
       toFetch.forEach((cid) => fetchingSetRef.current.add(cid));
 
       try {
         const results = await Promise.all(
           toFetch.map(async (cid) => {
             const snap = await getDoc(fsDoc(db, "communities", cid));
-            const name = snap.exists() ? (snap.data() as any).name ?? "（無名コミュニティ）" : "（削除済み）";
+            const name = snap.exists()
+              ? (snap.data() as any).name ?? "（無名コミュニティ）"
+              : "（削除済み）";
             return [cid, name] as const;
           })
         );
@@ -118,7 +162,6 @@ export const TimelinePage = () => {
           return next;
         });
       } finally {
-        // fetch中フラグ解除
         toFetch.forEach((cid) => fetchingSetRef.current.delete(cid));
       }
     };
@@ -126,13 +169,40 @@ export const TimelinePage = () => {
     fetchNeeded();
   }, [posts, communityNameMap]);
 
-  const hasPosts = useMemo(() => posts.length > 0, [posts]);
+  // ★ 並び替え（表示用は sortedPosts を使う）
+  const sortedPosts = useMemo(() => {
+    const copy = [...posts];
+
+    if (sortType === "like") {
+      return copy.sort((a, b) => (b.likesCount ?? 0) - (a.likesCount ?? 0));
+    }
+
+    return copy.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() ?? 0;
+      const bTime = b.createdAt?.toMillis?.() ?? 0;
+      return bTime - aTime;
+    });
+  }, [posts, sortType]);
+
+  const hasPosts = sortedPosts.length > 0;
 
   return (
     <div style={{ maxWidth: 860, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <h1 style={{ margin: 0 }}>タイムライン</h1>
-        <Link to="/" style={{ textDecoration: "underline" }}>← 一覧へ戻る</Link>
+        <Link to="/" style={{ textDecoration: "underline" }}>
+          ← 一覧へ戻る
+        </Link>
+      </div>
+
+      {/* ソート切り替え */}
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <button onClick={() => setSortType("new")} className={sortType === "new" ? "active-sort" : ""}>
+          新着順
+        </button>
+        <button onClick={() => setSortType("like")} className={sortType === "like" ? "active-sort" : ""}>
+          ❤️ いいね順
+        </button>
       </div>
 
       {loading ? (
@@ -141,11 +211,17 @@ export const TimelinePage = () => {
         <p style={{ marginTop: 16 }}>まだ投稿がありません。</p>
       ) : (
         <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-          {posts.map((p) => {
-            const communityName = p.communityId ? (communityNameMap[p.communityId] ?? "（読み込み中…）") : "（不明）";
+          {sortedPosts.map((p) => {
+            const communityName = p.communityId
+              ? communityNameMap[p.communityId] ?? "（読み込み中…）"
+              : "（不明）";
+
+            const likeKey = `${p.communityId}_${p.id}`;
+            const liked = likedMap[likeKey] ?? false;
+
             return (
               <article
-                key={`${p.communityId}_${p.id}`}
+                key={likeKey}
                 style={{
                   border: "1px solid #eee",
                   borderRadius: 12,
@@ -155,12 +231,18 @@ export const TimelinePage = () => {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 12, opacity: 0.75 }}>
-                      <Link to={`/communities/${p.communityId}`} style={{ textDecoration: "underline" }}>
-                        {communityName}
-                      </Link>
-                      {p.createdAt ? <span> ・ {formatDate(p.createdAt)}</span> : null}
-                    </div>
+                  <div className="meta-row">
+                    <Link
+                      to={`/communities/${p.communityId}`}
+                      className="community-pill"
+                      title={communityName}
+                    >
+                      {communityName}
+                    </Link>
+
+                    {p.createdAt ? <span className="meta-sep">・</span> : null}
+                    {p.createdAt ? <span className="meta-date">{formatDate(p.createdAt)}</span> : null}
+                  </div>
 
                     <h3 style={{ margin: "6px 0 6px", fontSize: 18, lineHeight: 1.3 }}>
                       {p.title ?? "（タイトルなし）"}
@@ -187,6 +269,18 @@ export const TimelinePage = () => {
                     />
                   ) : null}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!uid) return;
+                    toggleLike({ communityId: p.communityId, postId: p.id, uid });
+                  }}
+                  disabled={!uid}
+                  className={`like-button ${liked ? "liked" : ""}`}
+                >
+                  {liked ? "❤️" : "🤍"} {p.likesCount ?? 0}
+                </button>
               </article>
             );
           })}

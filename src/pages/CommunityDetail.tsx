@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { toggleLike } from "../component/LikeButton";
 import { 
   FaUsers, 
   FaClock, 
@@ -58,6 +59,7 @@ type Post = {
   imageUrl: string;
   isPinned?: boolean;
   timeline?: boolean;
+  likesCount?: number;
 };
 
 const MEMBER_COUNT_OPTIONS = [
@@ -111,6 +113,8 @@ export default function CommunityDetail() {
     photoURL?: string;
   } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
+
 
   
   const [editingPostForm, setEditingPostForm] = useState({
@@ -174,6 +178,26 @@ export default function CommunityDetail() {
     };
     fetchOwner();
   }, [ownerUid]);
+
+  useEffect(() => {
+    if (!id || !currentUser) {
+      setLikedMap({});
+      return;
+    }
+  
+    const unsubs: (() => void)[] = [];
+  
+    posts.forEach((p) => {
+      const likeRef = doc(db, "communities", id, "posts", p.id, "likes", currentUser.uid);
+      const unsub = onSnapshot(likeRef, (snap) => {
+        setLikedMap((prev) => ({ ...prev, [p.id]: snap.exists() }));
+      });
+      unsubs.push(unsub);
+    });
+  
+    return () => unsubs.forEach((u) => u());
+  }, [id, currentUser, posts]);
+  
 
 const searchUsersForOwner = async (term: string) => {
   const t = term.trim();
@@ -275,12 +299,23 @@ const handleSelectOwner = async (uid: string) => {
         const q = query(postsRef, orderBy("isPinned","desc"),orderBy("createdAt", "desc"));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-          const postsData: Post[] = snapshot.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as Omit<Post, "id">),
-          }));
-          setPosts(postsData);
-        });
+          const postsData: Post[] = snapshot.docs.map((d) => {
+            const data = d.data() as any;
+            return {
+              id: d.id,
+              title: data.title ?? "",
+              body: data.body ?? "",
+              createdAt: data.createdAt,        // Timestamp想定
+              imageUrl: data.imageUrl ?? "",
+              isPinned: data.isPinned ?? false,
+              timeline: data.timeline ?? false,
+              likesCount: data.likesCount ?? 0, // ★ここ追加
+            };
+          });
+
+  setPosts(postsData);
+});
+
 
         return () => unsubscribe();
       } catch (e) {
@@ -1072,7 +1107,11 @@ const handleSelectOwner = async (uid: string) => {
                     {post.isPinned && (
                       <FaThumbtack style={{ color: "#2563eb", transform: "rotate(45deg)" }} />
                     )}
+                    
                     <h3 style={{ margin: 0, fontSize: "1.2rem" }}>{post.title}</h3>
+                    <span style={{ fontSize: "0.8rem", color: "#888" }}>
+                      {formatDate(post.createdAt)}
+                    </span>
                   </div>
                   {post.imageUrl && (
                     <img
@@ -1083,9 +1122,20 @@ const handleSelectOwner = async (uid: string) => {
                   )}
 
                   <p className="blog-body">{post.body}</p>
-                  <span style={{ fontSize: "0.8rem", color: "#888" }}>
-                      {formatDate(post.createdAt)}
-                  </span>
+                  
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!currentUser || !id) return;
+                      toggleLike({ communityId: id, postId: post.id, uid: currentUser.uid });
+                    }}
+                    disabled={!currentUser}
+                    className={`like-button ${likedMap[post.id] ? "liked" : ""}`}
+                  >
+                    {likedMap[post.id] ? "❤️" : "🤍"} {post.likesCount ?? 0}
+                  </button>
+
                   {/* ★ 追加: ブログ記事の編集・削除ボタン */}
                   {canEditCommunity && (
                   <div className="blog-post-actions">

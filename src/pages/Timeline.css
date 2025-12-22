@@ -183,3 +183,116 @@
   margin-bottom: 8px;
   line-height: 1.6;
 }
+
+/* ===== Like Button ===== */
+.like-button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  background: #fff;
+  color: #374151; /* gray-700 */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  transition: 
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.05s ease;
+}
+
+.like-button:hover {
+  background-color: #f9fafb; /* gray-50 */
+}
+
+.like-button:active {
+  transform: scale(0.96);
+}
+
+.like-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 押している状態 */
+.like-button.liked {
+  background-color: #fee2e2; /* red-100 */
+  border-color: #fecaca;     /* red-200 */
+  color: #dc2626;            /* red-600 */
+}
+
+/* ハートだけ少し強調 */
+.like-button.liked::before {
+  content: "♥";
+  margin-right: 2px;
+}
+
+/* ===== 小さめ表示にしたい場合（タイムライン用） ===== */
+.like-button.small {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.active-sort {
+  background: #2563eb;
+  color: #fff;
+  border-radius: 6px;
+}
+
+/* 上のメタ情報（コミュニティ＋日付） */
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+/* コミュニティ名を“ピル（バッジ）”にする */
+.community-pill {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.2;
+  text-decoration: none;
+
+  /* 長い名前を省略 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ホバーで強調 */
+.community-pill:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #1d4ed8;
+}
+
+/* 押した感 */
+.community-pill:active {
+  transform: translateY(1px);
+}
+
+/* 区切りと日付 */
+.meta-sep {
+  opacity: 0.55;
+  font-size: 12px;
+}
+
+.meta-date {
+  opacity: 0.7;
+  font-size: 12px;
+}
