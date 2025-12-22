@@ -472,6 +472,10 @@
   border: 2px solid #fff;
 }
 
+.form {
+  margin-top: 20px;
+}
+
 
 /* --- スマホ対応 (レスポンシブ) --- */
 @media (max-width: 600px) {

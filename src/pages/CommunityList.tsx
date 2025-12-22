@@ -385,6 +385,8 @@ export default function CommunitiesList() {
           </li>
         )))}
       </ul>
+      <a href="https://forms.gle/47FQGmhbneiYNm47A" target="_blank" rel="noopener noreferrer" className="form"><h3>通報・不具合報告フォーム</h3></a>
     </div>
+    
   )
 }

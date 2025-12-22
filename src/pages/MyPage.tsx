@@ -78,37 +78,51 @@ export const MyPage = () => {
   }, [targetUid]);
 
   // ③ 表示対象(uid)が作ったコミュニティを取得
-  useEffect(() => {
-    const fetchCommunities = async () => {
-      if (!targetUid) return;
+  // ③ 表示対象(uid)が「代表」のコミュニティを取得
+useEffect(() => {
+  const fetchCommunities = async () => {
+    if (!targetUid) return;
 
-      setLoading(true);
-      try {
-        const q = query(
-          collection(db, "communities"),
-          where("createdBy", "==", targetUid)
-        );
-        const snap = await getDocs(q);
+    setLoading(true);
+    try {
+      const communitiesRef = collection(db, "communities");
 
-        const list: Community[] = snap.docs.map((d) => {
+      // 代表（ownerId）
+      const qOwner = query(communitiesRef, where("ownerId", "==", targetUid));
+      const ownerSnap = await getDocs(qOwner);
+
+      // フォールバック：古いデータで ownerId が無い場合に備えて createdBy も拾う
+      const qCreated = query(communitiesRef, where("createdBy", "==", targetUid));
+      const createdSnap = await getDocs(qCreated);
+
+      // 重複排除してマージ
+      const map = new Map<string, Community>();
+
+      const addToMap = (snap: any) => {
+        snap.docs.forEach((d: any) => {
           const data = d.data() as any;
-          return {
+          map.set(d.id, {
             id: d.id,
             name: data.name,
             message: data.message,
             thumbnailUrl: data.thumbnailUrl,
             createdAt: data.createdAt,
-          };
+          });
         });
+      };
 
-        setCommunities(list);
-      } finally {
-        setLoading(false);
-      }
-    };
+      addToMap(ownerSnap);
+      addToMap(createdSnap);
 
-    fetchCommunities();
-  }, [targetUid]);
+      setCommunities(Array.from(map.values()));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCommunities();
+}, [targetUid]);
+
 
   if (!targetUid) return null;
 
@@ -134,12 +148,12 @@ export const MyPage = () => {
       </section>
 
       <section style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 18 }}>作成したコミュニティ</h2>
+        <h2 style={{ fontSize: 18 }}>運営しているコミュニティ</h2>
 
         {loading ? (
           <p>読み込み中...</p>
         ) : communities.length === 0 ? (
-          <p>まだ作成したコミュニティがありません。</p>
+          <p>まだ運営しているコミュニティがありません。</p>
         ) : (
           <ul style={{ marginTop: 12, paddingLeft: 16 }}>
             {communities.map((c) => (
