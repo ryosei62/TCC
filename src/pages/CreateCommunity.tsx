@@ -373,19 +373,6 @@ export const CreateCommunity = () => {
         </div>
 
         <div className="form-note">公式とは筑波大学に認可された学生団体を指します</div>
-
-        <div className="item">
-          <p className="label-text">公式・非公式:</p>
-          <select
-            name="official"
-            value={formData.official}
-            onChange={handleChange}
-            className="input-field select-field"
-          >
-            <option value={0}>非公式</option>
-            <option value={1}>公式</option>
-          </select>
-        </div>
         
         {/* タグは縦に長くなるので align-top */}
         <div className="item align-top">
