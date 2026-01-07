@@ -1,4 +1,3 @@
-// auth.ts
 // src/firebase/auth.ts
 import {
   createUserWithEmailAndPassword,
@@ -7,11 +6,15 @@ import {
   signOut,
   User,
 } from "firebase/auth";
-import { auth, db } from "./config"; // ★ ここがポイント：initializeAppしない
+import { auth, db } from "./config";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 // 大学ドメイン
 const ALLOWED_DOMAIN = "@u.tsukuba.ac.jp";
+
+// ★ 認証後に飛ばすURL（本番に固定）
+const VERIFY_CONTINUE_URL =
+  "https://vite-react-green-seven-vmevmu4imf.vercel.app";
 
 const isAllowedUniversityEmail = (email: string) => {
   return email.endsWith(ALLOWED_DOMAIN);
@@ -33,21 +36,20 @@ export const signUpWithUniversityEmail = async (
   await setDoc(doc(db, "users", user.uid), {
     uid: user.uid,
     email: user.email,
-    // username は今は未設定でOK（後でプロフィール編集で入れられる）
     username: username.trim(),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
 
-  // ここで確認メール送信（URLも明示しておくのがおすすめ）
-  if (cred.user && !cred.user.emailVerified) {
-    await sendEmailVerification(cred.user, {
-      url: `${window.location.origin}/verify-email`,
+  // ★ ここで確認メール送信（URLは本番に固定）
+  if (!user.emailVerified) {
+    await sendEmailVerification(user, {
+      url: VERIFY_CONTINUE_URL,
       handleCodeInApp: true,
     });
   }
 
-  return cred.user;
+  return user;
 };
 
 // ログイン
@@ -58,16 +60,13 @@ export const signInWithUniversityEmail = async (
   const cred = await signInWithEmailAndPassword(auth, email, password);
   const user = cred.user;
 
-  // 大学ドメインのチェック
   if (!isAllowedUniversityEmail(user.email || "")) {
     await signOut(auth);
     throw new Error(`このサービスは ${ALLOWED_DOMAIN} のメールアドレスのみ利用できます。`);
   }
 
-  // 最新状態を取得（メール認証直後のキャッシュ問題対策）
   await user.reload();
 
-  // メール未確認なら弾く
   if (!user.emailVerified) {
     await signOut(auth);
     throw new Error(
@@ -76,4 +75,20 @@ export const signInWithUniversityEmail = async (
   }
 
   return user;
+};
+
+// 確認メールの再送
+export const resendVerificationForCurrentUser = async () => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("再送するにはログイン状態が必要です。");
+
+  await user.reload();
+  if (user.emailVerified) {
+    throw new Error("すでにメール確認が完了しています。ログインしてください。");
+  }
+
+  await sendEmailVerification(user, {
+    url: VERIFY_CONTINUE_URL,
+    handleCodeInApp: true,
+  });
 };

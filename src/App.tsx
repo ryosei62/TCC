@@ -8,7 +8,6 @@ import CommunitiesDetail from "./pages/CommunityDetail";
 import { CreateCommunity } from "./pages/CreateCommunity";
 import { About } from "./pages/About";
 import { SignupForm } from "./pages/SignupForm";
-import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { CreateBlog } from "./pages/CreateBlog";
 import { LoginForm } from "./pages/LoginForm";
 import { MyPage } from "./pages/MyPage";
@@ -53,7 +52,6 @@ const App: React.FC = () => {
             <PublicRoute><SignupForm /></PublicRoute>
           } />
           
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
