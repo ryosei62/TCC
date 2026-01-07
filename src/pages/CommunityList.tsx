@@ -258,15 +258,7 @@ export default function CommunitiesList() {
         <Link to="/about" className="header-link">
           <h2>TCCについて</h2>
         </Link>
-        <Link to="/signup" className="signUp header-link">
-          <h2>新規登録</h2>
-        </Link>
-        
-        {!currentUser &&
-          <Link to="/login" className="login header-link">
-            <h2>ログイン</h2>
-          </Link>
-        }
+      
       </div>
 
       <div className="controls-container">
