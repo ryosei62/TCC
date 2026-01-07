@@ -49,6 +49,7 @@ type Community = {
   snsUrls?: { label: string; url: string }[];
   joinUrls?: { label: string; url: string }[];
   createdBy?: string;
+  official?: number;
   ownerId?: string;
   joinDescription?: string;  
 };
@@ -109,11 +110,6 @@ export default function CommunityDetail() {
   >([]);
   const [ownerSearching, setOwnerSearching] = useState(false);
   const [ownerError, setOwnerError] = useState<string | null>(null);
-  const [owner, setOwner] = useState<{
-    uid: string;
-    username: string;
-    photoURL?: string;
-  } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
   const [isFavorite, setIsFavorite] = useState(false);
@@ -129,10 +125,6 @@ export default function CommunityDetail() {
     timeline: false,
   });
   
-
-  const DEFAULT_USER_ICON =
-  "https://www.gravatar.com/avatar/?d=mp&s=64";
-
   useEffect(() => {
     const fetchAdmin = async () => {
       if (!currentUser) {
@@ -159,30 +151,6 @@ export default function CommunityDetail() {
   
     fetchAdmin();
   }, [currentUser]);
-  
-
-  const ownerUid = community?.ownerId ?? community?.createdBy;
-
-  useEffect(() => {
-    const fetchOwner = async () => {
-      if (!ownerUid) {
-        setOwner(null);
-        return;
-      }
-      const snap = await getDoc(doc(db, "users", ownerUid));
-      if (snap.exists()) {
-        const data = snap.data() as any;
-        setOwner({
-          uid: ownerUid,
-          username: data.username ?? "（未設定）",
-          photoURL: data.photoURL,
-        });
-      } else {
-        setOwner({ uid: ownerUid, username: "（ユーザー不明）" });
-      }
-    };
-    fetchOwner();
-  }, [ownerUid]);
 
   useEffect(() => {
     if (!id || !currentUser) {
@@ -729,38 +697,6 @@ const handleSelectOwner = async (uid: string) => {
               </ul>
             </div>
           )}
-          
-          {owner && (
-            <div
-              style={{
-                marginTop: 16,
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <img
-                src={owner.photoURL || DEFAULT_USER_ICON}
-                alt="代表者アイコン"
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  background: "#eee",
-                }}
-              />
-
-              <Link
-                to={`/mypage/${owner.uid}`}
-                style={{ textDecoration: "underline", fontWeight: 600 }}
-              >
-                代表者：{owner.username}
-              </Link>
-            </div>
-          )}
-
-
 
           {/* 管理者用編集セクション */}
           {canEditCommunity && (
@@ -1006,6 +942,24 @@ const handleSelectOwner = async (uid: string) => {
                       ))}
                     </select>
                   </label>
+
+                  {/* ★ adminだけが変更できる */}
+                  {isAdmin && (
+                    <label className="admin-form-field">
+                      公式/非公式
+                      <select
+                        value={Number(communityForm.official ?? 0)}
+                        onChange={(e) =>
+                          handleCommunityInputChange("official", Number(e.target.value))
+                        }
+                        style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                      >
+                        <option value={1}>公式</option>
+                        <option value={0}>非公式</option>
+                      </select>
+                    </label>
+                  )}
+
 
                   <div className="admin-form-field">
                     <span>代表者を変更（ユーザー検索）</span>
