@@ -31,6 +31,8 @@ import {
   FaThumbtack,
 } from "react-icons/fa";
 import { useRef } from "react";
+import { addFavorite, removeFavorite, favoriteDocRef } from "../component/favorite";
+
 import "./CommunityDetail.css";
 
 type Community = {
@@ -114,6 +116,9 @@ export default function CommunityDetail() {
   } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(true);
+
 
 
   
@@ -197,6 +202,24 @@ export default function CommunityDetail() {
   
     return () => unsubs.forEach((u) => u());
   }, [id, currentUser, posts]);
+
+  useEffect(() => {
+    if (!id || !currentUser) {
+      setIsFavorite(false);
+      setFavoriteLoading(false);
+      return;
+    }
+
+    setFavoriteLoading(true);
+    const ref = favoriteDocRef(currentUser.uid, id);
+    const unsub = onSnapshot(ref, (snap) => {
+      setIsFavorite(snap.exists());
+      setFavoriteLoading(false);
+    });
+
+    return () => unsub();
+  }, [id, currentUser]);
+
   
 
 const searchUsersForOwner = async (term: string) => {
@@ -522,11 +545,51 @@ const handleSelectOwner = async (uid: string) => {
     }
   };
 
+  const handleToggleFavorite = async () => {
+    if (!id || !currentUser) return;
+
+    // 体感良くするために楽観更新
+    const next = !isFavorite;
+    setIsFavorite(next);
+
+    try {
+      if (next) await addFavorite(currentUser.uid, id);
+      else await removeFavorite(currentUser.uid, id);
+    } catch (e) {
+      // 失敗したら戻す
+      setIsFavorite(!next);
+      console.error("favorite toggle error:", e);
+      alert("お気に入りの更新に失敗しました");
+    }
+  };
+
+
 
   return (
     <div className="community-detail-container">
       <Link to="/" className="back-link">← 一覧へ戻る</Link>
       <h1 className="detail-title">{community.name}</h1>
+
+        {/* ★ ここ追加 */}
+        {currentUser && (
+          <button
+            type="button"
+            onClick={handleToggleFavorite}
+            disabled={favoriteLoading}
+            style={{
+              marginTop: 8,
+              padding: "8px 12px",
+              borderRadius: 999,
+              border: "1px solid #ddd",
+              background: "#fff",
+              cursor: "pointer",
+              fontWeight: 700,
+            }}
+          >
+            {isFavorite ? "★ お気に入り解除" : "☆ お気に入り"}
+          </button>
+        )}
+
 
       {/* ---------- メイン画像とサムネイル ---------- */}
       {displayImages.length > 0 && (
