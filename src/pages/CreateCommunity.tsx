@@ -372,8 +372,6 @@ export const CreateCommunity = () => {
           </select>
         </div>
 
-        <div className="form-note">公式とは筑波大学に認可された学生団体を指します</div>
-        
         {/* タグは縦に長くなるので align-top */}
         <div className="item align-top">
           <p className="label-text">タグ:</p>
@@ -395,7 +393,7 @@ export const CreateCommunity = () => {
             onChange={handleImageChange}
             className="input-field file-input"
           />
-   
+
           {previewUrls.length > 0 && (
             <div className="preview-area">
               <p className="preview-note">
