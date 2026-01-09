@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom"; 
-import { signUpWithUniversityEmail, resendVerificationForCurrentUser } from "../firebase/auth";
+import { signUpWithUniversityEmail } from "../firebase/auth";
 
 // ▼ CSSファイルを読み込み
 import "./SignupForm.css";
@@ -13,19 +13,6 @@ export const SignupForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // ★ 再送用タイマー管理（mainブランチの機能）
-  const [canResendAt, setCanResendAt] = useState<number | null>(null);
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    if (!canResendAt) return;
-    const t = setInterval(() => setNow(Date.now()), 250);
-    return () => clearInterval(t);
-  }, [canResendAt]);
-
-  const secondsLeft = canResendAt ? Math.max(0, Math.ceil((canResendAt - now) / 1000)) : 0;
-  const canResend = canResendAt ? Date.now() >= canResendAt : false;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,26 +29,10 @@ export const SignupForm = () => {
       setUsername("");
       setEmail("");
       setPassword("");
-
-      // 再送ボタンを表示するためにタイマーセット（mainブランチの機能）
-      setCanResendAt(Date.now() + 60_000); 
-
     } catch (e: any) {
       setError(e.message ?? "登録に失敗しました");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    setError(null);
-    setMessage(null);
-    try {
-      await resendVerificationForCurrentUser();
-      setMessage("確認メールを再送しました。\n受信トレイ以外（迷惑メール/その他）も確認してください。");
-      setCanResendAt(Date.now() + 60_000); // 再度クールダウン
-    } catch (e: any) {
-      setError(e.message ?? "再送に失敗しました");
     }
   };
 
@@ -82,7 +53,7 @@ export const SignupForm = () => {
           />
           <input
             type="email"
-            placeholder="大学メールアドレス"
+            placeholder="大学メールアドレス（@u.tsukuba.ac.jp）"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -100,33 +71,6 @@ export const SignupForm = () => {
           <button type="submit" disabled={loading} className="signup-button">
             {loading ? "登録中..." : "登録"}
           </button>
-
-          {/* ▼▼▼ 追加：再送UI（mainブランチの機能）をデザインの中に組み込み ▼▼▼ */}
-          {canResendAt && (
-            <div style={{ marginTop: 16, padding: 10, backgroundColor: "#f9f9f9", borderRadius: 8 }}>
-              <p style={{ fontSize: 13, marginBottom: 8, color: "#555" }}>
-                メールが届きませんか？<br/>
-                Microsoft 365 は数分遅れることがあります。
-              </p>
-              <button 
-                type="button" 
-                onClick={handleResend} 
-                disabled={!canResend}
-                style={{
-                  fontSize: 12,
-                  padding: "4px 8px",
-                  cursor: canResend ? "pointer" : "not-allowed",
-                  backgroundColor: canResend ? "#6c757d" : "#ccc",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px"
-                }}
-              >
-                {canResend ? "確認メールを再送" : `再送まで ${secondsLeft}秒`}
-              </button>
-            </div>
-          )}
-          {/* ▲▲▲ 追加ここまで ▲▲▲ */}
 
           {error && <p className="signup-error">{error}</p>}
           {message && <p className="signup-success">{message}</p>}
