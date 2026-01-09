@@ -35,29 +35,6 @@ import { addFavorite, removeFavorite, favoriteDocRef } from "../component/favori
 
 import "./CommunityDetail.css";
 
-import axios from "axios";
-import { getAuth } from "firebase/auth";
-
-/**
- * Cloudinary の画像削除をサーバレス経由で呼び出す
- * Firestore を削除する「前」に必ず呼ぶ
- */
-const callCloudinaryDelete = async (payload: {
-  type: "post" | "community";
-  communityId: string;
-  postId?: string;
-}) => {
-  const user = getAuth().currentUser;
-  if (!user) throw new Error("not logged in");
-
-  const idToken = await user.getIdToken();
-  await axios.post("/api/cloudinary-delete", payload, {
-    headers: {
-      Authorization: `Bearer ${idToken}`,
-    },
-  });
-};
-
 type Community = {
   name: string;
   message: string;
@@ -440,13 +417,6 @@ const handleSelectOwner = async (uid: string) => {
     if (!ok) return;
 
     try {
-      // ① Cloudinary の画像をすべて削除
-      // （community画像 + thumbnail + 全ブログ画像）
-      await callCloudinaryDelete({
-        type: "community",
-        communityId: id,
-      });
-
       // posts サブコレクション削除
       const postsRef = collection(db, "communities", id, "posts");
       const snap = await getDocs(postsRef);
@@ -471,13 +441,6 @@ const handleSelectOwner = async (uid: string) => {
     if (!ok) return;
 
     try {
-      // ① Cloudinary の画像を削除（public_id はサーバ側で取得）
-      await callCloudinaryDelete({
-        type: "post",
-        communityId: id,
-        postId,
-      });
-
       const postRef = doc(db, "communities", id, "posts", postId);
       await deleteDoc(postRef);
     } catch (e) {
