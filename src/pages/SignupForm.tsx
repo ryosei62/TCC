@@ -90,7 +90,7 @@ export const SignupForm = () => {
           />
           <input
             type="password"
-            placeholder="パスワード"
+            placeholder="パスワード(半角6~10文字)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

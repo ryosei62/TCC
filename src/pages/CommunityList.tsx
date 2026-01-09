@@ -1,90 +1,105 @@
 // CommunitiesList.tsx
-import { collection, getDocs, getDoc, doc, } from 'firebase/firestore'
-import { Link, useNavigate } from 'react-router-dom'
-import { db, auth } from '../firebase/config'
-import { useEffect, useState } from 'react'
-import { FaUsers, FaClock } from "react-icons/fa";
+import {
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { Link, useNavigate } from "react-router-dom";
+import { db, auth } from "../firebase/config";
+import { useEffect, useMemo, useState } from "react";
+import { FaUsers, FaClock, FaUserCircle } from "react-icons/fa";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { FaUserCircle } from "react-icons/fa";
-import "./CommunityList.css"
+import "./CommunityList.css";
+
+// ★ 追加：お気に入り操作（CommunityDetailと同じもの）
+import { addFavorite, removeFavorite } from "../component/favorite";
 
 type Community = {
-  /** コミュニティID (FirestoreのドキュメントID) */
-  id: string
-  /** コミュニティ名 */
-  name: string
-  /** コミュニティの紹介文または説明 */
-  message: string
-  /** メンバーの数 */
-  memberCount: string
-  /** コミュニティの主な活動時間や頻度 */
-  activityTime: string
-  /** 画像のURL (省略可能) */
-  thubmnailUrl?:string
-  imageUrl?: string 
-  tags: string[] // 型定義にタグを追加
-  official:number //0=公式, 1=非公式
-  createdAt?: number
-}
+  id: string;
+  name: string;
+  message: string;
+  memberCount: string;
+  activityTime: string;
+  thubmnailUrl?: string;
+  imageUrl?: string;
+  tags: string[];
+  official: number; // 1=公式, 0=非公式（表示側と統一推奨）
+  createdAt?: number;
+};
 
-type SortKey = 'createdAt' | 'memberCount'
-type SortOrder = 'asc' | 'desc'
+type SortKey = "createdAt" | "memberCount";
+type SortOrder = "asc" | "desc";
 
-// コミュニティ要素をDBから取得
 export default function CommunitiesList() {
-  const [communities, setCommunities] = useState<Community[]>([])
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<number | null>(null); //フィルタリングの状態を管理 (null:すべて, 0:公式, 1:非公式)
-  const [sortKey, setSortKey] = useState<SortKey>('createdAt')
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<number | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("createdAt");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const navigate = useNavigate();
+  const [filterFavOnly, setFilterFavOnly] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState<string>("（読み込み中…）");
 
+  // ★ 追加：お気に入り状態（communityId の集合）
+  const [favoriteSet, setFavoriteSet] = useState<Set<string>>(new Set());
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  // ログイン監視
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      if (!user) setIsOpen(false); // ログアウトしたら閉じる
+      if (!user) {
+        setIsOpen(false);
+        setFavoriteSet(new Set());
+      }
     });
     return () => unsub();
   }, []);
 
+  // コミュニティ一覧取得
   useEffect(() => {
     const fetchCommunities = async () => {
-      const querySnapshot = await getDocs(collection(db, 'communities'))
-      const results: Community[] = []
-      querySnapshot.forEach((doc) => {
-        const data = doc.data()
+      const querySnapshot = await getDocs(collection(db, "communities"));
+      const results: Community[] = [];
+      querySnapshot.forEach((d) => {
+        const data = d.data() as any;
         results.push({
-          id: doc.id,
+          id: d.id,
           name: data.name,
           message: data.message,
           memberCount: data.memberCount || "",
           activityTime: data.activityTime,
           thubmnailUrl: data.thumbnailUrl,
           imageUrl: data.imageUrl || "",
-          tags:data.tags || [],
-          official: Number(data.official ?? 0), // ★追加: 未設定の場合はとりあえず非公式(1)扱いにする
+          tags: data.tags || [],
+          official: Number(data.official ?? 0),
           createdAt: data.createdAt
-            ? (data.createdAt.toMillis ? data.createdAt.toMillis() : data.createdAt)
+            ? data.createdAt.toMillis
+              ? data.createdAt.toMillis()
+              : data.createdAt
             : undefined,
-        })
-      })
-      setCommunities(results)
-    }
+        });
+      });
+      setCommunities(results);
+    };
 
-    fetchCommunities()
-  }, [])
+    fetchCommunities();
+  }, []);
 
+  // ユーザー名取得
   useEffect(() => {
     const fetchProfile = async () => {
       if (!currentUser) return;
-  
+
       const ref = doc(db, "users", currentUser.uid);
       const snap = await getDoc(ref);
-  
+
       if (snap.exists()) {
         const data = snap.data() as any;
         setUsername(data.username ?? "（ユーザー名未設定）");
@@ -92,91 +107,127 @@ export default function CommunitiesList() {
         setUsername("（ユーザー名未設定）");
       }
     };
-  
+
     fetchProfile();
   }, [currentUser]);
 
+  // ★ お気に入り一覧（IDだけ）を取得
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!currentUser) return;
+
+      setFavoriteLoading(true);
+      try {
+        const favRef = collection(db, "users", currentUser.uid, "favorites");
+        const favSnap = await getDocs(query(favRef, orderBy("createdAt", "desc")));
+        const ids = favSnap.docs
+          .map((d) => (d.data() as any).communityId as string)
+          .filter(Boolean);
+
+        setFavoriteSet(new Set(ids));
+      } finally {
+        setFavoriteLoading(false);
+      }
+    };
+
+    fetchFavorites();
+  }, [currentUser]);
+
+  // 人数ソート用
   const getMemberCountValue = (str: string) => {
-    // 数字以外の文字を除去して、先頭の数字を取得する簡易ロジック
-    // 例: "1~5人" -> matchは["1", "5"] -> 1を採用
-    // 例: "51人以上" -> matchは["51"] -> 51を採用
-    const match = str.match(/\d+/); 
+    const match = str.match(/\d+/);
     return match ? parseInt(match[0], 10) : 0;
   };
 
-  const sortedCommunities = [...communities].sort((a, b) => {
-    let aVal = 0;
-    let bVal = 0;
-  
-    if (sortKey === 'createdAt') {
-      aVal = a.createdAt ?? 0;
-      bVal = b.createdAt ?? 0;
-    } else {
-      aVal = getMemberCountValue(a.memberCount);
-      bVal = getMemberCountValue(b.memberCount);
-    }
-  
-    const diff = aVal - bVal;
-    return sortOrder === 'asc' ? diff : -diff;
-  });
-  
+  const sortedCommunities = useMemo(() => {
+    return [...communities].sort((a, b) => {
+      let aVal = 0;
+      let bVal = 0;
 
-  // 検索処理：漢字・カタカナ・ひらがなの完全一致ベースで部分一致
+      if (sortKey === "createdAt") {
+        aVal = a.createdAt ?? 0;
+        bVal = b.createdAt ?? 0;
+      } else {
+        aVal = getMemberCountValue(a.memberCount);
+        bVal = getMemberCountValue(b.memberCount);
+      }
 
-  const filteredCommunities = sortedCommunities.filter((c) => {
-      // 1. ステータスチェック
-      // filterStatusがnullなら常にtrue(チェック不要)。nullでなければ、c.officialと値が一致するか確認。
+      const diff = aVal - bVal;
+      return sortOrder === "asc" ? diff : -diff;
+    });
+  }, [communities, sortKey, sortOrder]);
+
+  const filteredCommunities = useMemo(() => {
+    return sortedCommunities.filter((c) => {
       const statusMatch = filterStatus === null || c.official === filterStatus;
 
-      // 2. キーワードチェック
-      let keywordMatch = true; // デフォルトはtrue（キーワード入力なしの場合）
+      let keywordMatch = true;
       if (searchQuery) {
-        // キーワード入力がある場合のみチェックを行う
         const normalizedQuery = searchQuery.toLowerCase();
         keywordMatch =
           c.name.toLowerCase().includes(normalizedQuery) ||
           c.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery));
       }
 
-      // 両方の条件を満たすコミュニティのみ表示 (AND条件)
-      return statusMatch && keywordMatch;
+      const favMatch = !filterFavOnly || favoriteSet.has(c.id);
+
+      return statusMatch && keywordMatch && favMatch;
+    });
+  }, [sortedCommunities, filterStatus, searchQuery, filterFavOnly, favoriteSet]);
+
+
+  const handleSearch = () => setSearchQuery(searchTerm.trim());
+  const handleTagClick = (tag: string) => {
+    setSearchQuery(tag);
+    setSearchTerm(tag);
+  };
+  const handleFilterClick = (status: number | null) => setFilterStatus(status);
+  const toggleSortOrder = () =>
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+
+  // ★ 一覧用：お気に入り切り替え（communityごと）
+  const handleToggleFavorite = async (communityId: string) => {
+    if (!currentUser) return;
+
+    const next = !favoriteSet.has(communityId);
+
+    // 楽観更新
+    setFavoriteSet((prev) => {
+      const copy = new Set(prev);
+      if (next) copy.add(communityId);
+      else copy.delete(communityId);
+      return copy;
     });
 
-  // 検索実行関数
-
-  const handleSearch = () => {
-
-    setSearchQuery(searchTerm.trim());
-
+    try {
+      if (next) await addFavorite(currentUser.uid, communityId);
+      else await removeFavorite(currentUser.uid, communityId);
+    } catch (e) {
+      // 失敗したら戻す
+      setFavoriteSet((prev) => {
+        const copy = new Set(prev);
+        if (next) copy.delete(communityId);
+        else copy.add(communityId);
+        return copy;
+      });
+      console.error("favorite toggle error:", e);
+      alert("お気に入りの更新に失敗しました");
+    }
   };
 
-  const handleTagClick = (tag: string) => {
-    setSearchQuery(tag)
-    setSearchTerm(tag)
-  }
-
-  const handleFilterClick = (status: number | null) => {
-    setFilterStatus(status);
-  }
-
-  const toggleSortOrder = () => {
-    setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))
-  }
-
-// コミュニティ一覧表示
   return (
-    
     <div className="community-list-container">
       <div className="main-title-area">
-        <img 
-            src="/favicon.png" 
-            alt="TCCロゴ" 
-            width="40" 
-            height="40" 
-            className="main-logo" 
-          />
+        <img
+          src="/favicon.png"
+          alt="TCCロゴ"
+          width="40"
+          height="40"
+          className="main-logo"
+        />
         <h1>つくばカジュアルコミュニティ</h1>
       </div>
+
       {/* 右上アイコン（ログイン中だけ） */}
       {currentUser && (
         <>
@@ -189,7 +240,6 @@ export default function CommunitiesList() {
             <FaUserCircle />
           </button>
 
-          {/* 背景の暗幕（開いてる時だけ） */}
           {isOpen && (
             <div
               className="user-menu-backdrop"
@@ -197,7 +247,6 @@ export default function CommunitiesList() {
             />
           )}
 
-          {/* 右から出るパネル */}
           <aside className={`user-menu-panel ${isOpen ? "open" : ""}`}>
             <div className="user-menu-header">
               <div className="user-menu-title">メニュー</div>
@@ -213,7 +262,7 @@ export default function CommunitiesList() {
 
             <div className="user-menu-body">
               <div className="user-menu-user">
-                <div className="user-menu-name">{ username || "名無しユーザー"}</div>
+                <div className="user-menu-name">{username || "名無しユーザー"}</div>
                 <div className="user-menu-email">{currentUser.email}</div>
                 <div className="user-menu-verified">
                   {currentUser.emailVerified ? "✅ メール認証済み" : "❌ メール未認証"}
@@ -222,7 +271,7 @@ export default function CommunitiesList() {
 
               <nav className="user-menu-nav">
                 <Link
-                  to={`/mypage/${currentUser?.uid}`}
+                  to={`/mypage/${currentUser.uid}`}
                   onClick={() => setIsOpen(false)}
                   className="user-menu-link"
                 >
@@ -230,14 +279,13 @@ export default function CommunitiesList() {
                 </Link>
               </nav>
 
-
               <button
                 type="button"
                 className="user-menu-logout"
                 onClick={async () => {
                   await auth.signOut();
                   setIsOpen(false);
-                  navigate("/"); // 一覧に戻す
+                  navigate("/");
                 }}
               >
                 ログアウト
@@ -247,66 +295,70 @@ export default function CommunitiesList() {
         </>
       )}
 
-
       <div className="header-links">
         <Link to="/CreateCommunity" className="header-link">
           <h2>コミュニティを作る</h2>
         </Link>
         <Link to="/timeline" className="timeline header-link">
-        <h2>タイムライン</h2>
+          <h2>タイムライン</h2>
         </Link>
         <Link to="/about" className="header-link">
           <h2>TCCについて</h2>
         </Link>
-      
       </div>
 
       <div className="controls-container">
-        
-        {/* 1. 検索エリア（上段） */}
         <div className="search-area">
-          <input 
+          <input
             type="text"
             placeholder="キーワードで探す"
             className="search-input"
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch();
+            }}
           />
           <button type="button" className="search-button" onClick={handleSearch}>
             検索
           </button>
         </div>
 
-        {/* 2. フィルタとソートを横並びにするエリア（下段） */}
         <div className="filters-sort-row">
-          
-          {/* 左側: フィルタボタン */}
           <div className="filter-buttons-group">
             <button
               type="button"
-              className={`filter-tab ${filterStatus === null ? 'active' : ''}`}
+              className={`filter-tab ${filterStatus === null ? "active" : ""}`}
               onClick={() => handleFilterClick(null)}
             >
               すべて
             </button>
             <button
               type="button"
-              className={`filter-tab ${filterStatus === 1 ? 'active' : ''}`}
+              className={`filter-tab ${filterStatus === 1 ? "active" : ""}`}
               onClick={() => handleFilterClick(1)}
             >
               公式
             </button>
             <button
               type="button"
-              className={`filter-tab ${filterStatus === 0 ? 'active' : ''}`}
+              className={`filter-tab ${filterStatus === 0 ? "active" : ""}`}
               onClick={() => handleFilterClick(0)}
             >
               非公式
             </button>
+            <button
+              type="button"
+              className={`filter-tab ${filterFavOnly ? "active" : ""}`}
+              onClick={() => setFilterFavOnly((v) => !v)}
+              disabled={!currentUser} // ログインしてないと使えない
+              title={!currentUser ? "ログインすると使えます" : ""}
+            >
+              ★お気に入り
+            </button>
+
           </div>
 
-          {/* 右側: ソート機能 */}
           <div className="sort-group">
             <select
               value={sortKey}
@@ -321,64 +373,94 @@ export default function CommunitiesList() {
               type="button"
               onClick={toggleSortOrder}
               className="sort-order-button"
-              title={sortOrder === 'asc' ? '昇順（少ない順/古い順）' : '降順（多い順/新しい順）'}
+              title={
+                sortOrder === "asc"
+                  ? "昇順（少ない順/古い順）"
+                  : "降順（多い順/新しい順）"
+              }
             >
-              {sortOrder === 'asc' ? '▲' : '▼'}
+              {sortOrder === "asc" ? "▲" : "▼"}
             </button>
           </div>
         </div>
       </div>
 
-
       <ul className="community-ul">
         {filteredCommunities.length === 0 ? (
           <p>該当するコミュニティはありません。</p>
         ) : (
-          filteredCommunities.map((c) => (
-          <li 
-            key={c.id}
-            className="community-list-item"
-          >
-            {c.official === 1 && (
-              <div className="status-badge official">
-                公式
-              </div>
-            )}
-            
-            <Link to={`/communities/${c.id}`} className="community-link" >
-              <img
-                src={c.thubmnailUrl || c.imageUrl || "/favicon.png"}
-                alt={c.name}
-                className="community-thumbnail"
-              />
-          
-              <h2>{c.name}</h2>
-              <p>{c.message}</p>
-              <p className="meta-item">
-                <FaUsers className="meta-icon" /> {c.memberCount}
-              </p>
-              <p className="meta-item">
-                <FaClock className="meta-icon" /> {c.activityTime}
-                </p>
-                
-            </Link>
-            <div className="community-tags-container">
-                {c.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="community-tag-pill"
-                    onClick={() => handleTagClick(tag)} 
-                    style={{ cursor: 'pointer' }}       
+          filteredCommunities.map((c) => {
+            const isFav = favoriteSet.has(c.id);
+
+            return (
+              <li key={c.id} className="community-list-item">
+                {c.official === 1 && (
+                  <div className="status-badge official">公式</div>
+                )}
+
+                <Link to={`/communities/${c.id}`} className="community-link">
+                  <img
+                    src={c.thubmnailUrl || c.imageUrl || "/favicon.png"}
+                    alt={c.name}
+                    className="community-thumbnail"
+                  />
+
+                  <h2>{c.name}</h2>
+                  <p>{c.message}</p>
+                  <p className="meta-item">
+                    <FaUsers className="meta-icon" /> {c.memberCount}
+                  </p>
+                  <p className="meta-item">
+                    <FaClock className="meta-icon" /> {c.activityTime}
+                  </p>
+                </Link>
+
+                {/* ★ 一覧でもお気に入り */}
+                {currentUser && (
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFavorite(c.id)}
+                    disabled={favoriteLoading}
+                    style={{
+                      marginTop: 8,
+                      padding: "8px 12px",
+                      borderRadius: 999,
+                      border: "1px solid #ddd",
+                      background: "#fff",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                    }}
                   >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-          </li>
-        )))}
+                    {isFav ? "★ お気に入り解除" : "☆ お気に入り"}
+                  </button>
+                )}
+
+                <div className="community-tags-container">
+                  {c.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="community-tag-pill"
+                      onClick={() => handleTagClick(tag)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </li>
+            );
+          })
+        )}
       </ul>
-      <a href="https://forms.gle/47FQGmhbneiYNm47A" target="_blank" rel="noopener noreferrer" className="form"><h3>通報・不具合報告フォーム</h3></a>
+
+      <a
+        href="https://forms.gle/47FQGmhbneiYNm47A"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="form"
+      >
+        <h3>通報・不具合報告フォーム</h3>
+      </a>
     </div>
-    
-  )
+  );
 }
