@@ -372,6 +372,25 @@ export const CreateCommunity = () => {
           </select>
         </div>
 
+        <div className="item">
+          <p className="label-text">公式申請<span className="required">*</span>:</p>
+          <label className="label-text">
+            <input
+              type="checkbox"
+              name="official"
+              checked={formData.official === 2}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  official: e.target.checked ? 2 : 0,
+                })
+              }
+            />
+            する
+          </label>
+        </div>
+
+
         {/* タグは縦に長くなるので align-top */}
         <div className="item align-top">
           <p className="label-text">タグ:</p>

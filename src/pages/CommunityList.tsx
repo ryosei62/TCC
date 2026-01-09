@@ -37,7 +37,7 @@ export default function CommunitiesList() {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filterStatus, setFilterStatus] = useState<number | null>(null);
+  const [filterStatus, setFilterStatus] = useState<number[] | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const navigate = useNavigate();
@@ -45,6 +45,8 @@ export default function CommunitiesList() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState<string>("（読み込み中…）");
+  const [isAdmin, setIsAdmin] = useState(false);
+
 
   // ★ 追加：お気に入り状態（communityId の集合）
   const [favoriteSet, setFavoriteSet] = useState<Set<string>>(new Set());
@@ -133,6 +135,29 @@ export default function CommunitiesList() {
     fetchFavorites();
   }, [currentUser]);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!currentUser) return;
+
+      const ref = doc(db, "users", currentUser.uid);
+      const snap = await getDoc(ref);
+
+      if (snap.exists()) {
+        const data = snap.data() as any;
+        setUsername(data.username ?? "（ユーザー名未設定）");
+
+        // ★ 管理者判定（例：role が admin）
+        setIsAdmin(data.role === "admin");
+      } else {
+        setUsername("（ユーザー名未設定）");
+        setIsAdmin(false);
+      }
+    };
+
+    fetchProfile();
+  }, [currentUser]);
+
+
   // 人数ソート用
   const getMemberCountValue = (str: string) => {
     const match = str.match(/\d+/);
@@ -159,7 +184,7 @@ export default function CommunitiesList() {
 
   const filteredCommunities = useMemo(() => {
     return sortedCommunities.filter((c) => {
-      const statusMatch = filterStatus === null || c.official === filterStatus;
+      const statusMatch = filterStatus === null || filterStatus.includes(c.official);
 
       let keywordMatch = true;
       if (searchQuery) {
@@ -175,13 +200,21 @@ export default function CommunitiesList() {
     });
   }, [sortedCommunities, filterStatus, searchQuery, filterFavOnly, favoriteSet]);
 
+  const sameArray = (a: number[] | null, b: number[]) => {
+    if (!a) return false;
+    if (a.length !== b.length) return false;
+    const sa = [...a].sort((x, y) => x - y);
+    const sb = [...b].sort((x, y) => x - y);
+    return sa.every((v, i) => v === sb[i]);
+  };
+
 
   const handleSearch = () => setSearchQuery(searchTerm.trim());
   const handleTagClick = (tag: string) => {
     setSearchQuery(tag);
     setSearchTerm(tag);
   };
-  const handleFilterClick = (status: number | null) => setFilterStatus(status);
+  const handleFilterClick = (status: number[] | null) => setFilterStatus(status);
   const toggleSortOrder = () =>
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
 
@@ -335,18 +368,30 @@ export default function CommunitiesList() {
             </button>
             <button
               type="button"
-              className={`filter-tab ${filterStatus === 1 ? "active" : ""}`}
-              onClick={() => handleFilterClick(1)}
+              className={`filter-tab ${sameArray(filterStatus, [1]) ? "active" : ""}`}
+              onClick={() => handleFilterClick([1])}
+
             >
               公式
             </button>
             <button
               type="button"
-              className={`filter-tab ${filterStatus === 0 ? "active" : ""}`}
-              onClick={() => handleFilterClick(0)}
+              className={`filter-tab ${sameArray(filterStatus, [0, 2]) ? "active" : ""}`}
+              onClick={() => handleFilterClick([0, 2])}
+
             >
               非公式
             </button>
+            {isAdmin && (
+              <button
+                type="button"
+                className={`filter-tab ${sameArray(filterStatus, [2]) ? "active" : ""}`}
+                onClick={() => handleFilterClick([2])}
+              >
+                申請中
+              </button>
+            )}
+
             <button
               type="button"
               className={`filter-tab ${filterFavOnly ? "active" : ""}`}

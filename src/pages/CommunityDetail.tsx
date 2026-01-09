@@ -954,6 +954,7 @@ const handleSelectOwner = async (uid: string) => {
                         }
                         style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
                       >
+                        <option value={2}>公式申請中</option>
                         <option value={1}>公式</option>
                         <option value={0}>非公式</option>
                       </select>
