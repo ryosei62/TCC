@@ -1,296 +1,188 @@
-import { useState } from 'react';
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 import './About.css';
 
+// 画像アセットのインポート
+import netsubenWomanImage from '../assets/AboutImage/netsuben_woman.png'; // 予備、または削除してもOK
+import sumahoWomanImage from '../assets/AboutImage/sumaho_woman.png';
+import universityWatyaImage from '../assets/AboutImage/university_watya.png'; // 背景用に追加
+
 export const About = () => {
-    // 現在表示しているセクションを管理するstate (デフォルトは 'about')
-    const [activeSection, setActiveSection] = useState<'about' | 'signup' | 'find' | 'create' | 'terms' | 'privacy'>('about');
+
+    const scrollToSection = (id: string) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <div className="about-container">
-            {/* 左側：サイドバーメニュー */}
-            <aside className="sidebar">
-                <nav className="sidebar-nav">
-                    <button 
-                        className={`sidebar-btn ${activeSection === 'about' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('about')}
-                    >
-                        このプロダクトについて
-                    </button>
-                    <button 
-                        className={`sidebar-btn ${activeSection === 'signup' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('signup')}
-                    >
-                        会員登録について
-                    </button>
-                    <button 
-                        className={`sidebar-btn ${activeSection === 'find' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('find')}
-                    >
-                        コミュニティの探し方
-                    </button>
-                    <button 
-                        className={`sidebar-btn ${activeSection === 'create' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('create')}
-                    >
-                        コミュニティの作り方
-                    </button>
-                    <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #e9ecef' }} />
-                    <button 
-                        className={`sidebar-btn ${activeSection === 'terms' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('terms')}
-                    >
-                        利用規約
-                    </button>
+            {/* --- Header Navigation --- */}
+            <header className="top-header">
+                <div className="header-left">
+                    <Link to="/" className="returnList">
+                        <span className="arrow">←</span> Back to List
+                    </Link>
+                </div>
 
-                    {/* ▼追加: プライバシーポリシーボタン */}
-                    <button 
-                        className={`sidebar-btn ${activeSection === 'privacy' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('privacy')}
-                    >
-                        プライバシーポリシー
+                <nav className="header-nav">
+                    <button className="nav-btn" onClick={() => scrollToSection('concept')}>
+                        CONCEPT
+                    </button>
+                    <button className="nav-btn" onClick={() => scrollToSection('find')}>
+                        FIND
+                    </button>
+                    <button className="nav-btn" onClick={() => scrollToSection('create')}>
+                        CREATE
                     </button>
                 </nav>
-                
-                <div className="sidebar-footer">
-                    <Link to="/" className="returnList">← 一覧に戻る</Link>
-                </div>
-            </aside>
+            </header>
 
-            {/* 右側：メインコンテンツエリア */}
+            {/* --- Main Content --- */}
             <main className="main-content">
                 
-                {/* 1. このプロダクトについて */}
-                {activeSection === 'about' && (
-                    <div className="content-fade-in">
-                        <div className="logo-container">
-                            <img 
-                                src="/favicon.png" 
-                                alt="TCCロゴ" 
-                                width="40" 
-                                height="40" 
-                                className="main-logo" 
-                            />
+                {/* 1. HERO / CONCEPT (ID: concept) */}
+                {/* 背景画像を style で直接指定することで、確実に表示させます */}
+                <section 
+                    id="concept" 
+                    className="section-block hero-section"
+                    style={{ backgroundImage: `url(${universityWatyaImage})` }}
+                >
+                    {/* CSSの ::before で黒いフィルターがかかります */}
+                    
+                    <div className="text-center fade-in-up">
+                        <h1 className="hero-title">
+                            <span className="en-title">CONNECT. CREATE. CASUAL.</span>
+                            <span className="jp-title">筑波大生の「好き」が、交差する場所。</span>
+                        </h1>
+                        
+                        <p className="hero-description">
+                            広いキャンパス、数え切れない学生。<br />
+                            すれ違うだけではもったいない。<br /><br />
+                            TCC（Tsukuba Casual Community）は、<br />
+                            既存の枠組みを超えて、<br />
+                            あなたの「好き」や「興味」でつながる<br />
+                            次世代のコミュニティ・プラットフォームです。
+                        </p>
+
+                        <p className="hero-message">
+                            同じ講義室にはいない、<br />
+                            最高の仲間がきっと見つかる。<br />
+                            あなたの大学生活に、新しい「居場所」を。
+                        </p>
+                    </div>
+                </section>
+
+                {/* --- Usage Steps --- */}
+                <section className="usage-section">
+                    <h2 className="section-sub-title">HOW TO USE</h2>
+                    <div className="steps-container">
+                        <div className="step-item">
+                            <span className="step-num">01</span>
+                            <h3>Join Us</h3>
+                            <p>筑波大学発行のメールアドレスで<br/>簡単アカウント登録。</p>
                         </div>
-                        <h1 className="about-title">What is TCC?</h1>
-                        <p className="about-description">
-                            TCCは筑波大生のためのコミュニティファインダーです。
-                            <br /><br />
-                            このアプリを使えば、あなたの興味や関心に合ったサークル、部活、
-                            勉強会、さらには非公式の趣味の集まりまで、
-                            筑波大学周辺のあらゆるコミュニティを簡単に見つけることができます。
-                            <br /><br />
-                            新しい友達を見つけたい、新しいことに挑戦したい、
-                            大学生活をもっと充実させたい。
-                            そんなあなたをTCCがサポートします。
-                        </p>
+                        <div className="step-item">
+                            <span className="step-num">02</span>
+                            <h3>Discovery</h3>
+                            <p>タグやキーワードから、<br/>共鳴するコミュニティを探す。</p>
+                        </div>
+                        <div className="step-item">
+                            <span className="step-num">03</span>
+                            <h3>Dive In</h3>
+                            <p>気になる活動へ参加リクエスト。<br/>新しい日常の始まり。</p>
+                        </div>
                     </div>
-                )}
+                </section>
 
-                {/* 2. 会員登録について (新規生成) */}
-                {activeSection === 'signup' && (
-                    <div className="content-fade-in">
-                        <h2 className="section-title">会員登録について</h2>
-                        <p className="about-description">
-                            TCCをフル活用するには、会員登録（無料）が必要です。
-                            <br /><br />
-                            <strong>1. 筑波大学メールアドレスで認証</strong><br />
-                            在学生限定の安全なコミュニティを維持するため、登録には `u.tsukuba.ac.jp` などの大学発行メールアドレスを使用します。
-                            <br /><br />
-                        </p>
+                {/* --- CTA 1 --- */}
+                <div className="cta-section">
+                    <div className="cta-content">
+                        <p className="cta-catch">さあ、その一歩を踏み出そう。</p>
+                        <Link to="/signup" className="cta-button primary-btn">
+                            無料で始める
+                        </Link>
+                        <p className="cta-note">※ @u.tsukuba.ac.jp 等のアドレスが必要です</p>
                     </div>
-                )}
+                </div>
 
-                {/* 3. コミュニティの探し方 (新規生成) */}
-                {activeSection === 'find' && (
-                    <div className="content-fade-in">
-                        <h2 className="section-title">コミュニティの探し方</h2>
-                        <p className="about-description">
-                            あなたにぴったりの場所を見つけるための3つの方法をご紹介します。
-                            <br /><br />
-                            <strong>・タグ検索</strong><br />
-                            「体育会」「文化系」「音楽」など、そのコミュニティが設定したタグから絞り込むことができます。
-                            <br /><br />
-                            <strong>・キーワード検索</strong><br />
-                            自分の興味を直接入力して、関連するコミュニティを探せます。
-                            <br /><br />
-                            <strong>・並び替え機能</strong><br />
-                            作成日時やメンバー数に応じて並び替えを行うことができます。
-                        </p>
+                {/* 2. FIND (ID: find) */}
+                <section id="find" className="section-block feature-section">
+                    <div className="feature-content">
+                        <h2 className="section-title">
+                            <span className="en-heading">FIND YOUR VIBE</span>
+                            <span className="jp-heading">共鳴する場所を探す</span>
+                        </h2>
+                        
+                        <div className="feature-grid">
+                            <div className="feature-text">
+                                <p>
+                                    ガチな部活から、ゆるい趣味の集まりまで。<br />
+                                    TCCには多種多様なコミュニティが存在します。
+                                </p>
+                                <ul className="feature-list">
+                                    <li><strong>TAG SEARCH</strong> - 「音楽」「プログラミング」「散歩」など直感的にタグで検索。</li>
+                                    <li><strong>KEYWORD</strong> - ニッチな趣味も、キーワード検索なら見つかるかもしれない。</li>
+                                    <li><strong>TREND</strong> - 今盛り上がっている新しいコミュニティをチェック。</li>
+                                </ul>
+                            </div>
+                            <div className="feature-img-box">
+                                <img 
+                                    src={sumahoWomanImage} 
+                                    alt="Searching on phone" 
+                                    className="feature-img"
+                                />
+                            </div>
+                        </div>
                     </div>
-                )}
+                </section>
 
-                {/* 4. コミュニティの作り方 (新規生成) */}
-                {activeSection === 'create' && (
-                    <div className="content-fade-in">
-                        <h2 className="section-title">コミュニティの作り方</h2>
-                        <p className="about-description">
-                            既存のサークルが見つからない？それなら、新しく作ってみましょう！
-                            <br /><br />
-                            ログイン後、「コミュニティを作る」ボタンから申請が可能です。
-                            <br /><br />
-                            必要なのは情報は
+                {/* 3. CREATE (ID: create) */}
+                <section id="create" className="section-block feature-section reverse">
+                    <div className="feature-content">
+                        <h2 className="section-title">
+                            <span className="en-heading">IGNITE PASSION</span>
+                            <span className="jp-heading">「好き」をカタチにする</span>
+                        </h2>
+
+                        <div className="feature-text-center">
+                            <p>
+                                探しても見つからないなら、作ればいい。<br />
+                                TCCなら、あなたの「やりたい」がすぐにコミュニティになります。
+                            </p>
                             <br />
-                            ・コミュニティ名<br />
-                            ・活動内容の説明<br />
-                            ・代表者の連絡先<br />
-                            などです。
-                            <br />
-                            公認団体だけでなく、期間限定のプロジェクトや、趣味の合う人を探すための非公式な集まりも大歓迎です。あなたの「やりたい」をTCCで形にしてください。
-                        </p>
-                    </div>
-                )}
-                {/* 5. 利用規約 (全文反映) */}
-                {activeSection === 'terms' && (
-                    <div className="content-fade-in">
-                        <h2 className="section-title">利用規約</h2>
-                        <div className="legal-content">
-                            <p>この利用規約（以下，「本規約」といいます。）は，つくばカジュアルコミュニティ（TCC）運営者（以下，「運営者」といいます。）が提供するサービス「つくばカジュアルコミュニティ」（以下，「本サービス」といいます。）の利用条件を定めるものです。登録ユーザーの皆さま（以下，「ユーザー」といいます。）には，本規約に従って，本サービスをご利用いただきます。</p>
-
-                            <h3>第1条（適用）</h3>
-                            <p>1. 本規約は，ユーザーと運営者との間の本サービスの利用に関わる一切の関係に適用されるものとします。</p>
-                            <p>2. 運営者は本サービスに関し，本規約のほか，ご利用にあたってのルール等，各種の定め（以下，「個別規定」といいます。）をすることがあります。これら個別規定はその名称にいかかわらず，本規約の一部を構成するものとします。</p>
-
-                            <h3>第2条（利用資格）</h3>
-                            <p>本サービスの利用資格は、筑波大学の学部生または大学院生（以下「学生等」といいます）に限るものとします。ユーザーは、登録時および本サービスの利用期間中において、学生等であることを保証するものとします。</p>
-
-                            <h3>第3条（利用登録）</h3>
-                            <p>1. 本サービスにおいては，登録希望者が本規約に同意の上，運営者の定める方法（筑波大学が学生等に発行するメールアドレスによる認証等）によって利用登録を申請し，運営者がこれを承認することによって，利用登録が完了するものとします。</p>
-                            <p>2. 運営者は，利用登録の申請者に以下の事由があると判断した場合，利用登録の申請を承認しないことがあり，その理由については一切の開示義務を負わないものとします。</p>
-                            <ul>
-                                <li>利用登録の申請に際して虚偽の事項を届け出た場合</li>
-                                <li>筑波大学の学生等ではないことが判明した場合</li>
-                                <li>過去に本規約に違反したことがある者からの申請である場合</li>
-                                <li>その他，運営者が利用登録を相当でないと判断した場合</li>
-                            </ul>
-
-                            <h3>第4条（利用資格の喪失）</h3>
-                            <p>ユーザーは、卒業、退学、除籍その他理由の如何を問わず、筑波大学の学生等の身分を喪失した場合、直ちに本サービスの利用を中止し、退会手続きを行うものとします。</p>
-
-                            <h3>第5条（ユーザーIDおよびパスワードの管理）</h3>
-                            <p>1. ユーザーは，自己の責任において，本サービスのユーザーIDおよびパスワードを適切に管理するものとします。</p>
-                            <p>2. ユーザーは，いかなる場合にも，ユーザーIDおよびパスワードを第三者に譲渡または貸与し，もしくは第三者と共用することはできません。</p>
-
-                            <h3>第6条（禁止事項）</h3>
-                            <p>ユーザーは，本サービスの利用にあたり，以下の行為をしてはなりません。</p>
-                            <ol>
-                                <li>法令または公序良俗に反する行為</li>
-                                <li>犯罪行為に関連する行為</li>
-                                <li>本サービスの内容等，本サービスに含まれる著作権，商標権ほか知的財産権を侵害する行為</li>
-                                <li>異性との交際、出会いを主な目的として本サービスを利用する行為</li>
-                                <li>他のユーザー、運営者または第三者を誹謗中傷、侮辱、差別し、または名誉・信用を毀損する行為</li>
-                                <li>他のユーザーまたは第三者に不利益，損害，不快感を与える行為</li>
-                                <li>運営者が許諾しない本サービス上での宣伝，広告，勧誘，または営業行為</li>
-                                <li>本サービスの運営を妨害するおそれのある行為</li>
-                                <li>不正アクセスをし，またはこれを試みる行為</li>
-                                <li>他のユーザーに関する個人情報等を収集または蓄積する行為</li>
-                                <li>不正な目的を持って本サービスを利用する行為</li>
-                                <li>他のユーザーに成りすます行為</li>
-                                <li>その他，運営者が不適切と判断する行為</li>
-                            </ol>
-
-                            <h3>第7条（本サービスの提供の停止等）</h3>
-                            <p>運営者は，以下のいずれかの事由があると判断した場合，ユーザーに事前に通知することなく本サービスの全部または一部の提供を停止または中断することができるものとします。</p>
-                            <ul>
-                                <li>本サービスにかかるコンピュータシステムの保守点検または更新を行う場合</li>
-                                <li>地震，落雷，火災，停電または天災などの不可抗力により，本サービスの提供が困難となった場合</li>
-                                <li>コンピュータまたは通信回線等が事故により停止した場合</li>
-                                <li>その他，運営者が本サービスの提供が困難と判断した場合</li>
-                            </ul>
-
-                            <h3>第8条（利用制限および登録抹消）</h3>
-                            <p>1. 運営者は，ユーザーが以下のいずれかに該当する場合には，事前の通知なく，ユーザーに対して，本サービスの全部もしくは一部の利用を制限し，またはユーザーとしての登録を抹消することができるものとします。</p>
-                            <ul>
-                                <li>本規約のいずれかの条項に違反した場合</li>
-                                <li>登録事項に虚偽の事実があることが判明した場合</li>
-                                <li>大学の学生等の身分を喪失したにもかかわらず利用を継続している場合</li>
-                                <li>その他，運営者が本サービスの利用を適当でないと判断した場合</li>
-                            </ul>
-                            <p>2. 運営者は，本条に基づき運営者が行った行為によりユーザーに生じた損害について，一切の責任を負いません。</p>
-
-                            <h3>第9条（免責事項）</h3>
-                            <p>1. 運営者は、本サービスがユーザーの特定の目的に適合すること、期待する機能・商品的価値・正確性・有用性を有することについて、何ら保証するものではありません。</p>
-                            <p>2. 本サービスは、ユーザー間のコミュニティ作成および交流を支援する場を提供するものであり、ユーザーが本サービスを通じて作成・参加したコミュニティ内での活動、ユーザー間のやり取り（金銭トラブル、人間関係のトラブルを含むがこれに限られない）については、ユーザー自身が責任を負うものとし、運営者はこれらに関して一切の責任を負わないものとします。</p>
-                            <p>3. 運営者は，本サービスの利用に関してユーザーが被った損害につき，運営者に故意または重過失がある場合を除き，賠償する責任を負わないものとします。</p>
-
-                            <h3>第10条（サービス内容の変更等）</h3>
-                            <p>運営者は，ユーザーに通知することなく，本サービスの内容を変更しまたは本サービスの提供を中止することができるものとし，これによってユーザーに生じた損害について一切の責任を負いません。</p>
-
-                            <h3>第11条（利用規約の変更）</h3>
-                            <p>運営者は，必要と判断した場合には，ユーザーに通知することなくいつでも本規約を変更することができるものとします。なお，本規約の変更後，本サービスの利用を開始した場合には，当該ユーザーは変更後の規約に同意したものとみなします。</p>
-
-                            <h3>第12条（個人情報の取扱い）</h3>
-                            <p>運営者は，本サービスの利用によって取得する個人情報については，運営者「プライバシーポリシー」に従い適切に取り扱うものとします。</p>
-
-                            <h3>第13条（準拠法・裁判管轄）</h3>
-                            <p>1. 本規約の解釈にあたっては，日本法を準拠法とします。</p>
-                            <p>2. 本サービスに関して紛争が生じた場合には，東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
-
-                            <p style={{marginTop: '40px', textAlign: 'right', fontSize: '0.9rem'}}>
-                                [ 202X年X月X日 制定 ]
+                            <p className="create-pitch">
+                                必要なのは<br />
+                                <strong>「コミュニティ名」</strong>と<strong>「少しの熱量」</strong>だけ。<br /><br />
+                                サークル等の公認団体である必要はありません。<br />
+                                期間限定のプロジェクトも、<br />
+                                深夜のラーメン同好会も、すべて大歓迎。<br />
+                                ここで、あなたがリーダーになろう。
                             </p>
                         </div>
                     </div>
-                )}
+                </section>
 
-                {/* 6. プライバシーポリシー (全文反映) */}
-                {activeSection === 'privacy' && (
-                    <div className="content-fade-in">
-                        <h2 className="section-title">プライバシーポリシー</h2>
-                        <div className="legal-content">
-                            <p>つくばカジュアルコミュニティ（TCC）運営者（以下，「運営者」といいます。）は，本ウェブサイト上で提供するサービス（以下，「本サービス」といいます。）における，ユーザーの個人情報の取扱いについて，以下のとおりプライバシーポリシー（以下，「本ポリシー」といいます。）を定めます。</p>
-
-                            <h3>第1条（個人情報）</h3>
-                            <p>「個人情報」とは，個人情報保護法にいう「個人情報」を指すものとし，生存する個人に関する情報であって，当該情報に含まれる氏名，生年月日，住所，電話番号，連絡先その他の記述等により特定の個人を識別できる情報（個人識別情報）を指します。</p>
-
-                            <h3>第2条（個人情報の収集方法）</h3>
-                            <p>運営者は，ユーザーが利用登録をする際に氏名，所属（学部・研究科等），メールアドレス等の個人情報をお尋ねすることがあります。</p>
-
-                            <h3>第3条（個人情報を収集・利用する目的）</h3>
-                            <p>運営者が個人情報を収集・利用する目的は，以下のとおりです。</p>
-                            <ol>
-                                <li>本サービスの提供・運営のため</li>
-                                <li>ユーザーからのお問い合わせに回答するため（本人確認を行うことを含む）</li>
-                                <li>ユーザーが利用規約に違反した際の本人特定および対応のため</li>
-                                <li>本サービスの利用状況の分析およびサービス改善のため</li>
-                                <li>不正・不当な目的でサービスを利用しようとするユーザーの特定をし，ご利用をお断りするため</li>
-                                <li>上記の利用目的に付随する目的</li>
-                            </ol>
-
-                            <h3>第4条（利用目的の変更）</h3>
-                            <p>運営者は，利用目的が変更前と関連性を有すると合理的に認められる場合に限り，個人情報の利用目的を変更するものとします。</p>
-
-                            <h3>第5条（個人情報の第三者提供）</h3>
-                            <p>1. 運営者は，次に掲げる場合を除いて，あらかじめユーザーの同意を得ることなく，第三者に個人情報を提供することはありません。ただし，個人情報保護法その他の法令で認められる場合を除きます。</p>
-                            <ul>
-                                <li>人の生命，身体または財産の保護のために必要がある場合であって，本人の同意を得ることが困難であるとき</li>
-                                <li>公衆衛生の向上または児童の健全な育成の推進のために特に必要がある場合であって，本人の同意を得ることが困難であるとき</li>
-                                <li>国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合であって，本人の同意を得ることにより当該事務の遂行に支障を及ぼすおそれがあるとき</li>
-                            </ul>
-                            <p>2. 前項の定めにかかわらず，次に掲げる場合には，当該情報の提供先は第三者に該当しないものとします。</p>
-                            <ul>
-                                <li>運営者が利用目的の達成に必要な範囲内において個人情報の取扱いの全部または一部を委託する場合</li>
-                                <li>合併その他の事由による事業の承継に伴って個人情報が提供される場合</li>
-                            </ul>
-
-                            <h3>第6条（アクセス解析ツールについて）</h3>
-                            <p>本サービスでは、サービスの利用状況を把握するためにGoogle社が提供するアクセス解析ツール「Google Analytics」を利用しています。Google Analyticsは、トラフィックデータの収集のためにCookie（クッキー）を使用しています。このトラフィックデータは匿名で収集されており、個人を特定するものではありません。この機能はCookieを無効にすることで収集を拒否することが出来ますので、お使いのブラウザの設定をご確認ください。</p>
-
-                            <h3>第7条（個人情報の開示・訂正・削除）</h3>
-                            <p>ユーザーは、運営者の保有する自己の個人情報が誤った情報である場合には、運営者が定める手続きにより、運営者に対して個人情報の訂正、追加または削除を請求することができます。運営者は、ユーザーからの請求に応じる必要があると判断した場合には、遅滞なく当該個人情報の訂正等を行うものとします。</p>
-
-                            <h3>第8条（お問い合わせ窓口）</h3>
-                            <p>本ポリシーに関するお問い合わせは，下記の窓口までお願いいたします。</p>
-                            <p style={{ marginTop: '16px' }}>
-                                運営者：つくばカジュアルコミュニティ（TCC）運営事務局<br />
-                                Eメールアドレス： [ あなたの連絡用メールアドレスまたはフォームのURL ]
-                            </p>
-
-                            <p style={{marginTop: '40px', textAlign: 'right', fontSize: '0.9rem'}}>
-                                [ 202X年X月X日 制定 ]
-                            </p>
-                        </div>
+                {/* --- CTA 2 --- */}
+                <div className="cta-section final-cta">
+                    <div className="cta-content">
+                        <h2>REDEFINE YOUR CAMPUS LIFE.</h2>
+                        <p>想像していなかった大学生活が、ここにある。</p>
+                        <Link to="/signup" className="cta-button primary-btn large">
+                            今すぐTCCに参加する
+                        </Link>
                     </div>
-                )}
+                </div>
+
+                {/* --- Footer --- */}
+                <footer className="about-footer">
+                    <div className="footer-links">
+                        <Link to="/terms" className="footer-link">Terms of Service</Link>
+                        <span className="separator">/</span>
+                        <Link to="/privacy" className="footer-link">Privacy Policy</Link>
+                    </div>
+                    <p className="copyright">© 202X Tsukuba Casual Community</p>
+                </footer>
 
             </main>
         </div>
