@@ -181,9 +181,8 @@
 }
 
 /* 画像ボックス (ヒーロー内の小画像は非表示にするか、スタイル調整) */
-/* 今回は背景画像がメインなので、netsuben_woman は非表示にするか、下部に小さく配置してもOK */
 .hero-image-box {
-  display: none; /* デザイン変更のため一旦非表示 */
+  display: none;
 }
 
 .hero-message {
@@ -461,10 +460,57 @@
   }
   
   .header-left {
-    display: none; /* スマホではロゴ/戻るを消してシンプルにするか、調整 */
+    display: none;
   }
   
   .top-header {
     justify-content: center;
   }
+}
+
+
+/* =========================================
+   LEGAL PAGES (TERMS & PRIVACY)
+   ※ これがないと規約ページが崩れます！
+========================================= */
+.legal-content {
+  max-width: 800px;
+  margin: 0 auto; /* 中央寄せ */
+  padding: 40px 20px;
+  text-align: left;
+  line-height: 1.8;
+  color: #444;
+}
+
+.legal-content h3 {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 1.2rem;
+  margin-top: 40px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+  color: #333;
+}
+
+.legal-content p {
+  margin-bottom: 15px;
+}
+
+.legal-content ul, .legal-content ol {
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+.legal-content li {
+  margin-bottom: 5px;
+}
+
+/* 規約ページのタイトルの微調整 */
+.main-content .section-title {
+  /* Aboutページのflex設定が干渉しないようにリセット */
+  display: block; 
+  margin-top: 40px;
+  margin-bottom: 20px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: bold;
 }
