@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import { db, auth } from "../firebase/config";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FaUsers, FaClock, FaUserCircle } from "react-icons/fa";
 import { onAuthStateChanged, User } from "firebase/auth";
 import "./CommunityList.css";
@@ -51,6 +51,13 @@ export default function CommunitiesList() {
   // ★ 追加：お気に入り状態（communityId の集合）
   const [favoriteSet, setFavoriteSet] = useState<Set<string>>(new Set());
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  const ROWS_PER_PAGE = 10;
+
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const [page, setPage] = useState(1);
+  const [itemsPerRow, setItemsPerRow] = useState(1);
+
 
   // ログイン監視
   useEffect(() => {
@@ -208,6 +215,68 @@ export default function CommunitiesList() {
     return sa.every((v, i) => v === sb[i]);
   };
 
+  const measureItemsPerRow = () => {
+    const ul = listRef.current;
+    if (!ul) return;
+
+    const children = Array.from(ul.children) as HTMLElement[];
+    if (children.length === 0) {
+      setItemsPerRow(1);
+      return;
+    }
+
+    // 先頭行と同じ offsetTop の要素を数える = 1行の個数
+    const firstTop = children[0].offsetTop;
+    let count = 0;
+    for (const el of children) {
+      if (el.offsetTop !== firstTop) break;
+      count++;
+    }
+    setItemsPerRow(Math.max(1, count));
+  };
+
+  useEffect(() => {
+    // 描画後に計測したいので requestAnimationFrame を挟む
+    const raf = requestAnimationFrame(() => measureItemsPerRow());
+    return () => cancelAnimationFrame(raf);
+  }, [filteredCommunities.length, filterStatus, searchQuery, filterFavOnly, sortKey, sortOrder]);
+
+  useEffect(() => {
+    const ul = listRef.current;
+    if (!ul) return;
+
+    const ro = new ResizeObserver(() => {
+      requestAnimationFrame(() => measureItemsPerRow());
+    });
+    ro.observe(ul);
+
+    // window resizeでも念のため
+    const onResize = () => requestAnimationFrame(() => measureItemsPerRow());
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  const pageSize = itemsPerRow * ROWS_PER_PAGE;
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredCommunities.length / pageSize));
+  }, [filteredCommunities.length, pageSize]);
+
+  // ページが範囲外になったら戻す（列数が変わると起きやすい）
+  useEffect(() => {
+    setPage((p) => Math.min(p, totalPages));
+  }, [totalPages]);
+
+  const pagedCommunities = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredCommunities.slice(start, start + pageSize);
+  }, [filteredCommunities, page, pageSize]);
+
+
 
   const handleSearch = () => setSearchQuery(searchTerm.trim());
   const handleTagClick = (tag: string) => {
@@ -274,10 +343,7 @@ export default function CommunitiesList() {
           </button>
 
           {isOpen && (
-            <div
-              className="user-menu-backdrop"
-              onClick={() => setIsOpen(false)}
-            />
+            <div className="user-menu-backdrop" onClick={() => setIsOpen(false)} />
           )}
 
           <aside className={`user-menu-panel ${isOpen ? "open" : ""}`}>
@@ -366,26 +432,33 @@ export default function CommunitiesList() {
             >
               すべて
             </button>
+
             <button
               type="button"
-              className={`filter-tab ${sameArray(filterStatus, [1]) ? "active" : ""}`}
+              className={`filter-tab ${
+                sameArray(filterStatus, [1]) ? "active" : ""
+              }`}
               onClick={() => handleFilterClick([1])}
-
             >
               公式
             </button>
+
             <button
               type="button"
-              className={`filter-tab ${sameArray(filterStatus, [0, 2]) ? "active" : ""}`}
+              className={`filter-tab ${
+                sameArray(filterStatus, [0, 2]) ? "active" : ""
+              }`}
               onClick={() => handleFilterClick([0, 2])}
-
             >
               非公式
             </button>
+
             {isAdmin && (
               <button
                 type="button"
-                className={`filter-tab ${sameArray(filterStatus, [2]) ? "active" : ""}`}
+                className={`filter-tab ${
+                  sameArray(filterStatus, [2]) ? "active" : ""
+                }`}
                 onClick={() => handleFilterClick([2])}
               >
                 申請中
@@ -396,12 +469,11 @@ export default function CommunitiesList() {
               type="button"
               className={`filter-tab ${filterFavOnly ? "active" : ""}`}
               onClick={() => setFilterFavOnly((v) => !v)}
-              disabled={!currentUser} // ログインしてないと使えない
+              disabled={!currentUser}
               title={!currentUser ? "ログインすると使えます" : ""}
             >
               ★お気に入り
             </button>
-
           </div>
 
           <div className="sort-group">
@@ -430,18 +502,41 @@ export default function CommunitiesList() {
         </div>
       </div>
 
-      <ul className="community-ul">
+      {/* ページネーション（一覧の上） */}
+      {filteredCommunities.length > 0 && (
+        <div className="pagination">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+          >
+            ← 前へ
+          </button>
+
+          <span style={{ margin: "0 12px" }}>
+            {page} / {totalPages}（1ページ: {pageSize}件）
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+          >
+            次へ →
+          </button>
+        </div>
+      )}
+
+      <ul className="community-ul" ref={listRef}>
         {filteredCommunities.length === 0 ? (
           <p>該当するコミュニティはありません。</p>
         ) : (
-          filteredCommunities.map((c) => {
+          pagedCommunities.map((c) => {
             const isFav = favoriteSet.has(c.id);
 
             return (
               <li key={c.id} className="community-list-item">
-                {c.official === 1 && (
-                  <div className="status-badge official">公式</div>
-                )}
+                {c.official === 1 && <div className="status-badge official">公式</div>}
 
                 <Link to={`/communities/${c.id}`} className="community-link">
                   <img
@@ -460,7 +555,6 @@ export default function CommunitiesList() {
                   </p>
                 </Link>
 
-                {/* ★ 一覧でもお気に入り */}
                 {currentUser && (
                   <button
                     type="button"
@@ -497,6 +591,30 @@ export default function CommunitiesList() {
           })
         )}
       </ul>
+
+      {filteredCommunities.length > 0 && (
+        <div className="pagination">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+          >
+            ← 前へ
+          </button>
+
+          <span style={{ margin: "0 12px" }}>
+            {page} / {totalPages}（1ページ: {pageSize}件）
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+          >
+            次へ →
+          </button>
+        </div>
+      )}
 
       <a
         href="https://forms.gle/47FQGmhbneiYNm47A"
