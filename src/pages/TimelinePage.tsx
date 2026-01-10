@@ -8,10 +8,12 @@ import {
   limit,
   onSnapshot,
   getDoc,
+  getDocs,
   doc as fsDoc,
   Timestamp,
   where,
   doc,
+  collection,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "../firebase/config";
@@ -47,6 +49,11 @@ export const TimelinePage = () => {
   // communityId -> communityName のキャッシュ
   const [communityNameMap, setCommunityNameMap] = useState<Record<string, string>>({});
   const fetchingSetRef = useRef<Set<string>>(new Set());
+
+  const [favOnly, setFavOnly] = useState(false);
+  const [favoriteCommunitySet, setFavoriteCommunitySet] = useState<Set<string>>(new Set());
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
 
   const formatDate = (ts?: Timestamp | null) => {
     if (!ts) return "";
@@ -169,6 +176,33 @@ export const TimelinePage = () => {
     fetchNeeded();
   }, [posts, communityNameMap]);
 
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!uid) {
+        setFavoriteCommunitySet(new Set());
+        setFavOnly(false); // ログアウトしたらOFFに戻す（好みで）
+        return;
+      }
+
+      setFavoriteLoading(true);
+      try {
+        const favRef = collection(db, "users", uid, "favorites");
+        const snap = await getDocs(favRef);
+
+        const ids = snap.docs
+          .map((d) => (d.data() as any).communityId as string)
+          .filter(Boolean);
+
+        setFavoriteCommunitySet(new Set(ids));
+      } finally {
+        setFavoriteLoading(false);
+      }
+    };
+
+    fetchFavorites();
+  }, [uid]);
+
+
   // ★ 並び替え（表示用は sortedPosts を使う）
   const sortedPosts = useMemo(() => {
     const copy = [...posts];
@@ -184,7 +218,12 @@ export const TimelinePage = () => {
     });
   }, [posts, sortType]);
 
-  const hasPosts = sortedPosts.length > 0;
+  const visiblePosts = useMemo(() => {
+    if (!favOnly) return sortedPosts;
+    return sortedPosts.filter((p) => favoriteCommunitySet.has(p.communityId));
+  }, [sortedPosts, favOnly, favoriteCommunitySet]);
+
+  const hasPosts = visiblePosts.length > 0;
 
   return (
     <div style={{ maxWidth: 860, margin: "0 auto", padding: 24 }}>
@@ -203,6 +242,15 @@ export const TimelinePage = () => {
         <button onClick={() => setSortType("like")} className={sortType === "like" ? "active-sort" : ""}>
           ❤️ いいね順
         </button>
+
+        <button
+          onClick={() => setFavOnly((v) => !v)}
+          className={favOnly ? "active-sort" : ""}
+          disabled={!uid || favoriteLoading}
+          title={!uid ? "ログインすると使えます" : ""}
+        >
+          ★お気に入りの投稿だけ
+        </button>
       </div>
 
       {loading ? (
@@ -211,7 +259,7 @@ export const TimelinePage = () => {
         <p style={{ marginTop: 16 }}>まだ投稿がありません。</p>
       ) : (
         <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-          {sortedPosts.map((p) => {
+          {visiblePosts.map((p) => {
             const communityName = p.communityId
               ? communityNameMap[p.communityId] ?? "（読み込み中…）"
               : "（不明）";
