@@ -91,8 +91,19 @@ export const CreateCommunity = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // 1. 必須項目のチェック
-    if (!formData.name.trim() || !formData.activityDescription.trim()) {
-      alert("コミュニティ名と活動内容は必須です。");
+    if (
+      !formData.name.trim() ||
+      !formData.activityDescription.trim() ||
+      !formData.activityLocation.trim() ||
+      !formData.activityTime.trim() ||
+      !formData.joinDescription.trim()
+    ) {
+      alert("必須項目（コミュニティ名、活動内容、活動場所、活動頻度、連絡先）をすべて入力してください。");
+      return;
+    }
+
+    if (imageFiles.length === 0) {
+      alert("コミュニティ画像は必須です。少なくとも1枚アップロードしてください。");
       return;
     }
 
@@ -210,7 +221,7 @@ export const CreateCommunity = () => {
         </div>
 
         <div className="item">
-          <p className="label-text">活動場所:</p>
+          <p className="label-text">活動場所<span className="required">*</span>:</p>
           <input
             type="text"
             name="activityLocation"
@@ -222,7 +233,7 @@ export const CreateCommunity = () => {
         </div>
 
         <div className="item">
-          <p className="label-text">活動頻度:</p>
+          <p className="label-text">活動頻度<span className="required">*</span>:</p>
           <input
             type="text"
             name="activityTime"
@@ -247,7 +258,7 @@ export const CreateCommunity = () => {
 
         {/* テキストエリアなので align-top を追加 */}
         <div className="item align-top">
-          <p className="label-text">参加方法:</p>
+          <p className="label-text">参加方法<span className="required">*</span>:</p>
           <textarea
             name="joinDescription"
             placeholder="まずはTwitterのDMでお気軽にご連絡ください"
@@ -355,7 +366,7 @@ export const CreateCommunity = () => {
         </div>
 
         <div className="item">
-          <p className="label-text">メンバー数<span className="required">*</span>:</p>
+          <p className="label-text">メンバー数:</p>
           <select
             name="memberCount"
             value={formData.memberCount}
@@ -372,23 +383,27 @@ export const CreateCommunity = () => {
           </select>
         </div>
 
-        <div className="form-note">公式とは筑波大学に認可された学生団体を指します</div>
-
         <div className="item">
-          <p className="label-text">公式・非公式:</p>
-          <select
-            name="official"
-            value={formData.official}
-            onChange={handleChange}
-            className="input-field select-field"
-          >
-            <option value={0}>非公式</option>
-            <option value={1}>公式</option>
-          </select>
+          <p className="label-text">公式申請<span className="required">*</span>:</p>
+          <label className="label-text">
+            <input
+              type="checkbox"
+              name="official"
+              checked={formData.official === 2}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  official: e.target.checked ? 2 : 0,
+                })
+              }
+            />
+            する
+          </label>
         </div>
-        
+
+
         {/* タグは縦に長くなるので align-top */}
-        <div className="item align-top">
+        <div className="item">
           <p className="label-text">タグ:</p>
           <div style={{ flex: 1 }}>
             <TagSelector
@@ -400,7 +415,7 @@ export const CreateCommunity = () => {
 
         {/* 画像エリア */}
         <div className="image-upload-section">
-          <label className="image-label">コミュニティ画像 (複数可):</label>
+          <label className="image-label">コミュニティ画像 (複数可)<span className="required">*</span>:</label>
           <input
             type="file"
             accept="image/*"
@@ -408,7 +423,7 @@ export const CreateCommunity = () => {
             onChange={handleImageChange}
             className="input-field file-input"
           />
-   
+
           {previewUrls.length > 0 && (
             <div className="preview-area">
               <p className="preview-note">

@@ -1,7 +1,10 @@
 // src/components/LoginForm.tsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signInWithUniversityEmail } from "../firebase/auth";
+
+// ▼ 普通のCSSファイルを読み込みます
+import "./LoginForm.css";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -18,11 +21,9 @@ export const LoginForm = () => {
 
     try {
       await signInWithUniversityEmail(email, password);
-      // ログイン成功時に遷移したい場所（ホームに飛ばす例）
       navigate("/");
     } catch (e: any) {
       console.error(e);
-      // Firebaseのエラーコードで出し分けしたければここで条件分岐してもOK
       setError(e.message ?? "ログインに失敗しました");
     } finally {
       setLoading(false);
@@ -30,30 +31,43 @@ export const LoginForm = () => {
   };
 
   return (
-    <div style={{ padding: 32 }}>
-      <h2>ログイン</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 320 }}>
-        <input
-          type="email"
-          placeholder="大学メールアドレス（@u.tsukuba.ac.jp）"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="パスワード"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+    // ▼ 文字列でクラス名を指定します
+    <div className="login-container">
+      <div className="login-card">
+        <h2 className="login-title">ログイン</h2>
+        
+        <form onSubmit={handleSubmit} className="login-form">
+          <input
+            type="email"
+            placeholder="大学メールアドレス（@u.tsukuba.ac.jp）"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="login-input"
+          />
+          <input
+            type="password"
+            placeholder="パスワード"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="login-input"
+          />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "ログイン中..." : "ログイン"}
-        </button>
+          <button type="submit" disabled={loading} className="login-button">
+            {loading ? "ログイン中..." : "ログイン"}
+          </button>
 
-        {error && <p style={{ color: "red", whiteSpace: "pre-line" }}>{error}</p>}
-      </form>
+          {error && <p className="login-error">{error}</p>}
+        </form>
+
+        <div className="login-link-container">
+          アカウントをお持ちでない方は<br />
+          <Link to="/signup" className="login-link">
+            新規登録はこちら
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };

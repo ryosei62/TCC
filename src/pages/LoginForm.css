@@ -1,0 +1,118 @@
+/* src/components/LoginForm.css */
+
+/* 画面全体：スマホ対応のためにpaddingを追加し、高さを100vhに統一 */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* 80vh -> 100vh に変更（画面いっぱい） */
+  background-color: #f5f7fa;
+  padding: 20px; /* スマホで端がくっつかないように余白を追加 */
+  box-sizing: border-box;
+}
+
+/* 白いカード部分：レスポンシブ対応 */
+.login-card {
+  background-color: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+  width: 100%;       /* スマホでは親枠いっぱい */
+  max-width: 400px;  /* PCでは広がりすぎないように */
+  box-sizing: border-box; /* paddingを含めて幅計算（崩れ防止） */
+  text-align: center;
+}
+
+.login-title {
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 入力欄：スマホでのズーム防止に16pxを確保 */
+.login-input {
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px; /* 重要：スマホ対応 */
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box; /* 追加 */
+  width: 100%; /* 追加 */
+}
+
+.login-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* ボタン */
+.login-button {
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%; /* 追加 */
+}
+
+.login-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.login-error {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 8px;
+  background-color: #fde8e7;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+/* リンク部分のスタイル */
+.login-link-container {
+  margin-top: 24px;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5; /* 行間を少し広げる */
+}
+
+/* リンク自体の装飾（これで十分きれいです！） */
+.login-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 4px; /* テキストとの間隔 */
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+/* ▼ スマホ向けの微調整（SignupFormと同様に追加） */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 24px; /* スマホでは内側の余白を少し減らす */
+  }
+
+  .login-title {
+    font-size: 20px;
+  }
+}
