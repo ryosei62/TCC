@@ -514,3 +514,34 @@
   font-family: 'Noto Sans JP', sans-serif;
   font-weight: bold;
 }
+
+/* --- エラー表示関連 --- */
+
+/* 入力欄の枠を赤くする */
+.input-field.error-border {
+  border-color: #ff4d4f;
+  background-color: #fff1f0;
+}
+
+/* エラーメッセージ */
+.error-text {
+  color: #ff4d4f;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-top: 6px;
+  margin-bottom: 0;
+  font-family: 'Noto Sans JP', sans-serif;
+  animation: fadeIn 0.3s ease;
+}
+
+/* チェック中メッセージ */
+.checking-text {
+  color: #007bff;
+  font-size: 0.8rem;
+  margin-top: 6px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
