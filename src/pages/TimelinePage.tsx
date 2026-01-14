@@ -266,17 +266,23 @@ export const TimelinePage = () => {
 
             const likeKey = `${p.communityId}_${p.id}`;
             const liked = likedMap[likeKey] ?? false;
+            const postHref = `/communities/${p.communityId}?tab=blog&post=${p.id}`;
 
             return (
-              <article
+              <Link
                 key={likeKey}
-                style={{
-                  border: "1px solid #eee",
-                  borderRadius: 12,
-                  padding: 14,
-                  background: "#fff",
-                }}
+                to={postHref}
+                style={{ textDecoration: "none", color: "inherit" }}
               >
+                <article
+                  style={{
+                    border: "1px solid #eee",
+                    borderRadius: 12,
+                    padding: 14,
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <div style={{ minWidth: 0 }}>
                   <div className="meta-row">
@@ -320,7 +326,9 @@ export const TimelinePage = () => {
 
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (!uid) return;
                     toggleLike({ communityId: p.communityId, postId: p.id, uid });
                   }}
@@ -330,6 +338,7 @@ export const TimelinePage = () => {
                   {liked ? "❤️" : "🤍"} {p.likesCount ?? 0}
                 </button>
               </article>
+            </Link>
             );
           })}
         </div>
