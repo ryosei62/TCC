@@ -366,7 +366,7 @@ export const CreateCommunity = () => {
         </div>
 
         <div className="item">
-          <p className="label-text">メンバー数:</p>
+          <p className="label-text">メンバー数<span className="required">*</span>:</p>
           <select
             name="memberCount"
             value={formData.memberCount}
