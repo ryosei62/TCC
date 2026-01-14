@@ -3,6 +3,9 @@ import './About.css';
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "../firebase/config";
+import { collection,getCountFromServer,} from "firebase/firestore";
+import { db } from "../firebase/config";
+
 
 
 // 画像アセットのインポート
@@ -11,12 +14,43 @@ import universityWatyaImage from '../assets/AboutImage/university_watya.png'; //
 
 export const About = () => {
 
+    const [communityCount, setCommunityCount] = useState<number | null>(null);
+    const [userCount, setUserCount] = useState<number | null>(null);
+
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
     };
+
+    const COMMUNITY_OFFSET = 10;
+    const USER_OFFSET = 20;
+
+
+
+    useEffect(() => {
+    const fetchCounts = async () => {
+        try {
+        const communitySnap = await getCountFromServer(
+            collection(db, "communities")
+        );
+        const userSnap = await getCountFromServer(
+            collection(db, "users")
+        );
+
+        // ★ 固定値で増やす
+        setCommunityCount(communitySnap.data().count + COMMUNITY_OFFSET);
+        setUserCount(userSnap.data().count + USER_OFFSET);
+        } catch (e) {
+        console.error("count fetch error:", e);
+        }
+    };
+
+    fetchCounts();
+    }, []);
+
+
 
     const [currentUser, setCurrentUser] = useState<User | null>(null);
 
@@ -26,7 +60,6 @@ export const About = () => {
         });
         return () => unsub();
     }, []);
-
 
     return (
         <div className="about-container">
@@ -90,6 +123,14 @@ export const About = () => {
                         </p>
                     </div>
                 </section>
+
+                <p className="stats-text">
+                    現在のコミュニティ数は{" "}
+                    <strong>{communityCount !== null ? communityCount : "…"}</strong> 個、  
+                    ユーザー数は{" "}
+                    <strong>{userCount !== null ? userCount : "…"}</strong> 人です。
+                </p>
+
 
                 {/* --- Usage Steps --- */}
                 <section className="usage-section">
