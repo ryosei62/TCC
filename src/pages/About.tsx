@@ -1,5 +1,9 @@
 import { Link } from "react-router-dom";
 import './About.css';
+import { useEffect, useState } from "react";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from "../firebase/config";
+
 
 // 画像アセットのインポート
 import sumahoWomanImage from '../assets/AboutImage/sumaho_woman.png';
@@ -14,10 +18,25 @@ export const About = () => {
         }
     };
 
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (user) => {
+        setCurrentUser(user);
+        });
+        return () => unsub();
+    }, []);
+
+
     return (
         <div className="about-container">
             {/* --- Header Navigation --- */}
             <header className="top-header">
+                {currentUser && (
+                <Link to={`/`} className="nav-btn">
+                    TCC
+                </Link>
+                )}
                 <div className="header-left">
                     <Link to="/" className="returnList">
                         <span className="arrow">←</span> Back to List
@@ -95,6 +114,8 @@ export const About = () => {
                 </section>
 
                 {/* --- CTA 1 --- */}
+                {!currentUser && (
+                
                 <div className="cta-section">
                     <div className="cta-content">
                         <p className="cta-catch">さあ、その一歩を踏み出そう。</p>
@@ -104,6 +125,7 @@ export const About = () => {
                         <p className="cta-note">※ @u.tsukuba.ac.jp 等のアドレスが必要です</p>
                     </div>
                 </div>
+                )}
 
                 {/* 2. FIND (ID: find) */}
                 <section id="find" className="section-block feature-section">
@@ -163,6 +185,8 @@ export const About = () => {
                 </section>
 
                 {/* --- CTA 2 --- */}
+                {!currentUser && (
+                
                 <div className="cta-section final-cta">
                     <div className="cta-content">
                         <h2>REDEFINE YOUR CAMPUS LIFE.</h2>
@@ -172,6 +196,7 @@ export const About = () => {
                         </Link>
                     </div>
                 </div>
+                )}
 
                 {/* --- Footer --- */}
                 <footer className="about-footer">
