@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import axios from "axios";
 import { db, auth } from "../firebase/config";
 import "./CreateCommunity.css";
@@ -126,6 +126,27 @@ export const CreateCommunity = () => {
         return;
       }
     }
+    // 5. コミュニティ名の重複チェック
+    try {
+      // "communities" コレクションの中で、"name" が 今入力された名前(formData.name) と同じものを探す
+      const q = query(
+        collection(db, "communities"), 
+        where("name", "==", formData.name.trim()) // trim()で前後の空白は無視して比較
+      );
+      
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        // もし何かしら見つかったら（emptyじゃないなら）、重複しているということ
+        alert(`コミュニティ名「${formData.name}」は既に使用されています。\n別の名前にしてください。`);
+        return; // ここで処理を止める
+      }
+
+    } catch (error) {
+      console.error("重複チェックエラー:", error);
+      alert("エラーが発生しました。もう一度お試しください。");
+      return;
+    }
 
     try {
       const user = auth.currentUser;
@@ -217,6 +238,7 @@ export const CreateCommunity = () => {
             value={formData.activityDescription}
             onChange={handleChange}
             className="textarea-field"
+            required
           />
         </div>
 
@@ -229,6 +251,7 @@ export const CreateCommunity = () => {
             value={formData.activityLocation}
             onChange={handleChange}
             className="input-field"
+            required
           />
         </div>
 
@@ -241,6 +264,7 @@ export const CreateCommunity = () => {
             value={formData.activityTime}
             onChange={handleChange}
             className="input-field"
+            required
           />
         </div>
 
@@ -265,6 +289,7 @@ export const CreateCommunity = () => {
             value={formData.joinDescription}
             onChange={handleChange}
             className="textarea-field"
+            required
           />
         </div>
 
@@ -384,7 +409,7 @@ export const CreateCommunity = () => {
         </div>
 
         <div className="item">
-          <p className="label-text">公式申請<span className="required">*</span>:</p>
+          <p className="label-text">公式申請:</p>
           <label className="label-text">
             <input
               type="checkbox"
