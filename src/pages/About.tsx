@@ -125,9 +125,9 @@ export const About = () => {
                 </section>
 
                 <p className="stats-text">
-                    現在のコミュニティ数は{" "}
-                    <strong>{communityCount !== null ? communityCount : "…"}</strong> 個、  
-                    ユーザー数は{" "}
+                    現在のコミュニティ数は{" "}<br/>
+                    <strong>{communityCount !== null ? communityCount : "…"}</strong> 個<br/>
+                    ユーザー数は{" "}<br/>
                     <strong>{userCount !== null ? userCount : "…"}</strong> 人です。
                 </p>
 

@@ -376,6 +376,9 @@ export default function CommunitiesList() {
                 >
                   マイページ
                 </Link>
+                <Link to="/about" className="user-menu-link">
+                  TCCについて
+                </Link>
               </nav>
 
               <button
@@ -401,9 +404,7 @@ export default function CommunitiesList() {
         <Link to="/timeline" className="timeline header-link">
           <h2>タイムライン</h2>
         </Link>
-        <Link to="/about" className="header-link">
-          <h2>TCCについて</h2>
-        </Link>
+        
       </div>
 
       <div className="controls-container">
