@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toggleLike } from "../component/LikeButton";
 import {
   collectionGroup,
@@ -34,6 +34,8 @@ type TimelinePost = {
 type SortType = "new" | "like";
 
 export const TimelinePage = () => {
+  const navigate = useNavigate();
+
   const [posts, setPosts] = useState<TimelinePost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -269,34 +271,32 @@ export const TimelinePage = () => {
             const postHref = `/communities/${p.communityId}?tab=blog&post=${p.id}`;
 
             return (
-              <Link
+              <article
                 key={likeKey}
-                to={postHref}
-                style={{ textDecoration: "none", color: "inherit" }}
+                onClick={() => navigate(postHref)}
+                style={{
+                  border: "1px solid #eee",
+                  borderRadius: 12,
+                  padding: 14,
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
               >
-                <article
-                  style={{
-                    border: "1px solid #eee",
-                    borderRadius: 12,
-                    padding: 14,
-                    background: "#fff",
-                    cursor: "pointer",
-                  }}
-                >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <div style={{ minWidth: 0 }}>
-                  <div className="meta-row">
-                    <Link
-                      to={`/communities/${p.communityId}`}
-                      className="community-pill"
-                      title={communityName}
-                    >
-                      {communityName}
-                    </Link>
+                    <div className="meta-row">
+                      <Link
+                        to={`/communities/${p.communityId}`}
+                        className="community-pill"
+                        title={communityName}
+                        onClick={(e) => e.stopPropagation()} // ★記事クリック遷移を止める
+                      >
+                        {communityName}
+                      </Link>
 
-                    {p.createdAt ? <span className="meta-sep">・</span> : null}
-                    {p.createdAt ? <span className="meta-date">{formatDate(p.createdAt)}</span> : null}
-                  </div>
+                      {p.createdAt ? <span className="meta-sep">・</span> : null}
+                      {p.createdAt ? <span className="meta-date">{formatDate(p.createdAt)}</span> : null}
+                    </div>
 
                     <h3 style={{ margin: "6px 0 6px", fontSize: 18, lineHeight: 1.3 }}>
                       {p.title ?? "（タイトルなし）"}
@@ -328,7 +328,7 @@ export const TimelinePage = () => {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    e.stopPropagation();
+                    e.stopPropagation(); // ★記事遷移を止める（必須）
                     if (!uid) return;
                     toggleLike({ communityId: p.communityId, postId: p.id, uid });
                   }}
@@ -338,11 +338,10 @@ export const TimelinePage = () => {
                   {liked ? "❤️" : "🤍"} {p.likesCount ?? 0}
                 </button>
               </article>
-            </Link>
             );
           })}
         </div>
       )}
     </div>
   );
-};
+}      

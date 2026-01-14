@@ -18,7 +18,7 @@ import {
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { Link, useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { toggleLike } from "../component/LikeButton";
@@ -88,6 +88,8 @@ const formatDate = (ts?: Timestamp) => {
 type TabType = "info" | "blog";
 
 export default function CommunityDetail() {
+  const navigate = useNavigate();
+
   const { id } = useParams<{ id: string }>();
   const editingPostRef = useRef<HTMLDivElement | null>(null);
 
@@ -113,10 +115,7 @@ export default function CommunityDetail() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
   const [isFavorite, setIsFavorite] = useState(false);
-  const [favoriteLoading, setFavoriteLoading] = useState(true);
-
-
-  
+  const [favoriteLoading, setFavoriteLoading] = useState(true);  
   const [editingPostForm, setEditingPostForm] = useState({
     title: "",
     body: "",
@@ -568,11 +567,14 @@ const handleSelectOwner = async (uid: string) => {
     }
   };
 
-
-
   return (
     <div className="community-detail-container">
-      <Link to="/" className="back-link">← 一覧へ戻る</Link>
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+      >
+        ← 戻る
+      </button>
       <h1 className="detail-title">{community.name}</h1>
 
         {/* ★ ここ追加 */}
