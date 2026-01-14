@@ -554,6 +554,18 @@ export default function CommunitiesList() {
                     <FaClock className="meta-icon" /> {c.activityTime}
                   </p>
                 </Link>
+                <div className="community-tags-container">
+                  {c.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="community-tag-pill"
+                      onClick={() => handleTagClick(tag)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
 
                 {currentUser && (
                   <button
@@ -574,18 +586,7 @@ export default function CommunitiesList() {
                   </button>
                 )}
 
-                <div className="community-tags-container">
-                  {c.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="community-tag-pill"
-                      onClick={() => handleTagClick(tag)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+                
               </li>
             );
           })
