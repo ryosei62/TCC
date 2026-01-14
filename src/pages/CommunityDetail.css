@@ -687,12 +687,6 @@
   color: #dc2626;            /* red-600 */
 }
 
-/* ハートだけ少し強調 */
-.like-button.liked::before {
-  content: "♥";
-  margin-right: 2px;
-}
-
 /* ===== 小さめ表示にしたい場合（タイムライン用） ===== */
 .like-button.small {
   padding: 4px 10px;
