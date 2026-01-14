@@ -17,7 +17,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, type ChangeEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -30,7 +30,6 @@ import {
   FaInfoCircle,
   FaThumbtack,
 } from "react-icons/fa";
-import { useRef } from "react";
 import { addFavorite, removeFavorite, favoriteDocRef } from "../component/favorite";
 
 import "./CommunityDetail.css";
@@ -114,10 +113,94 @@ export default function CommunityDetail() {
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(true);
-
-
-
   
+  const uploadToCloudinary = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "community_images");
+
+    const res = await fetch("https://api.cloudinary.com/v1_1/dvc15z98t/image/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data?.error?.message ?? "Cloudinary upload failed");
+    if (!data?.secure_url) throw new Error("secure_url not returned");
+    return data.secure_url as string;
+  };
+
+  const replaceAt = (arr: string[], idx: number, val: string) =>
+    arr.map((x, i) => (i === idx ? val : x));
+
+const handleAddCommunityImages = async (e: ChangeEvent<HTMLInputElement>) => {
+  if (!e.target.files?.length) return;
+  if (!communityForm) return;
+
+  try {
+    const files = Array.from(e.target.files);
+    const urls = await Promise.all(files.map(uploadToCloudinary));
+
+    setCommunityForm((prev) => {
+      if (!prev) return prev;
+      const nextImageUrls = [...(prev.imageUrls ?? []), ...urls];
+
+      // サムネが未設定なら最初の画像をサムネに
+      const nextThumb = prev.thumbnailUrl || nextImageUrls[0];
+
+      return { ...prev, imageUrls: nextImageUrls, thumbnailUrl: nextThumb };
+    });
+
+    e.target.value = ""; // 同じファイルを再選択できるように
+  } catch (err: any) {
+    console.error(err);
+    alert(`画像追加に失敗: ${err?.message ?? "不明なエラー"}`);
+  }
+};
+const handleReplaceCommunityImage = async (index: number, e: ChangeEvent<HTMLInputElement>) => {
+  if (!e.target.files?.[0]) return;
+  if (!communityForm?.imageUrls?.length) return;
+
+  try {
+    const newUrl = await uploadToCloudinary(e.target.files[0]);
+
+    setCommunityForm((prev) => {
+      if (!prev) return prev;
+      const prevUrls = prev.imageUrls ?? [];
+      const oldUrl = prevUrls[index];
+      const nextUrls = replaceAt(prevUrls, index, newUrl);
+
+      // サムネが置換対象だったら新URLに追従
+      const nextThumb = prev.thumbnailUrl === oldUrl ? newUrl : prev.thumbnailUrl;
+
+      return { ...prev, imageUrls: nextUrls, thumbnailUrl: nextThumb };
+    });
+
+    e.target.value = "";
+  } catch (err: any) {
+    console.error(err);
+    alert(`差し替えに失敗: ${err?.message ?? "不明なエラー"}`);
+  }
+};
+const handleRemoveCommunityImage = (index: number) => {
+  setCommunityForm((prev) => {
+    if (!prev) return prev;
+    const urls = prev.imageUrls ?? [];
+    const removed = urls[index];
+    const nextUrls = urls.filter((_, i) => i !== index);
+
+    // サムネが削除されたら、残ってる先頭をサムネに（なければ空）
+    let nextThumb = prev.thumbnailUrl;
+    if (prev.thumbnailUrl === removed) nextThumb = nextUrls[0] ?? "";
+
+    return { ...prev, imageUrls: nextUrls, thumbnailUrl: nextThumb };
+  });
+};
+const handleSelectThumbnail = (url: string) => {
+  setCommunityForm((prev) => (prev ? { ...prev, thumbnailUrl: url } : prev));
+};
+
+
   const [editingPostForm, setEditingPostForm] = useState({
     title: "",
     body: "",
@@ -366,6 +449,44 @@ const handleSelectOwner = async (uid: string) => {
     setSelectedImage(displayImages[nextIndex]);
   }
 
+  const handleCommunityImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+
+    try {
+      const file = e.target.files[0];
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "community_images");
+
+      const res = await fetch("https://api.cloudinary.com/v1_1/dvc15z98t/image/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Cloudinary error:", data);
+        alert(`画像アップロード失敗: ${data?.error?.message ?? "不明なエラー"}`);
+        return;
+      }
+
+      if (!data?.secure_url) {
+        console.error("No secure_url:", data);
+        alert("画像URLが返ってきませんでした（preset設定を確認）");
+        return;
+      }
+
+      // ★ 編集フォームに反映（最後に保存ボタンでFirestoreへ）
+      setCommunityForm((prev) => (prev ? { ...prev, thumbnailUrl: data.secure_url } : prev));
+    } catch (err) {
+      console.error(err);
+      alert("画像アップロード中にエラーが発生しました");
+    }
+  };
+
+
   // コミュニティ編集フォームの入力変更
   const handleCommunityInputChange = (
     field: keyof Community,
@@ -398,6 +519,7 @@ const handleSelectOwner = async (uid: string) => {
         snsUrls: trimmedSns,
         joinUrls: trimmedJoin,
       });
+      setSelectedImage(null);
       setIsEditingCommunity(false);
       alert("コミュニティ情報を更新しました");
 
@@ -942,6 +1064,78 @@ const handleSelectOwner = async (uid: string) => {
                       ))}
                     </select>
                   </label>
+
+                  {/* 画像編集エリア（追加・削除・差し替え・サムネ選択） */}
+                  <div className="image-upload-section">
+                    <label className="image-label">
+                      コミュニティ画像（追加・差し替え可）
+                    </label>
+
+                    {/* 追加 */}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleAddCommunityImages}
+                      className="input-field file-input"
+                    />
+
+                    {/* プレビュー一覧 */}
+                    {(communityForm.imageUrls?.length ?? 0) > 0 && (
+                      <div className="preview-area">
+                        <p className="preview-note">
+                          ※クリックでサムネイルを選択できます / ×で削除 / 「差し替え」で置換
+                        </p>
+
+                        <div className="preview-grid">
+                          {(communityForm.imageUrls ?? []).map((url, index) => (
+                            <div
+                              key={url}
+                              className={`preview-item ${communityForm.thumbnailUrl === url ? "selected" : ""}`}
+                              onClick={() => handleSelectThumbnail(url)}
+                            >
+                              <img src={url} alt={`img-${index}`} />
+
+                              {communityForm.thumbnailUrl === url && (
+                                <span className="thumbnail-badge">サムネイル</span>
+                              )}
+
+                              <button
+                                type="button"
+                                className="remove-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveCommunityImage(index);
+                                }}
+                              >
+                                ×
+                              </button>
+
+                              {/* 差し替え */}
+                              <label
+                                style={{
+                                  display: "block",
+                                  marginTop: 6,
+                                  fontSize: 12,
+                                  cursor: "pointer",
+                                  textDecoration: "underline",
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                差し替え
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  style={{ display: "none" }}
+                                  onChange={(e) => handleReplaceCommunityImage(index, e)}
+                                />
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   {/* ★ adminだけが変更できる */}
                   {isAdmin && (
