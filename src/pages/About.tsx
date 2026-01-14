@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import './About.css';
 
 // 画像アセットのインポート
-import netsubenWomanImage from '../assets/AboutImage/netsuben_woman.png'; // 予備、または削除してもOK
 import sumahoWomanImage from '../assets/AboutImage/sumaho_woman.png';
 import universityWatyaImage from '../assets/AboutImage/university_watya.png'; // 背景用に追加
 
