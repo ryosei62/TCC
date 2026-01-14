@@ -1068,7 +1068,7 @@ const handleSelectOwner = async (uid: string) => {
                   {/* 画像編集エリア（追加・削除・差し替え・サムネ選択） */}
                   <div className="image-upload-section">
                     <label className="image-label">
-                      コミュニティ画像（追加・差し替え可）
+                      コミュニティ画像
                     </label>
 
                     {/* 追加 */}
@@ -1084,7 +1084,7 @@ const handleSelectOwner = async (uid: string) => {
                     {(communityForm.imageUrls?.length ?? 0) > 0 && (
                       <div className="preview-area">
                         <p className="preview-note">
-                          ※クリックでサムネイルを選択できます / ×で削除 / 「差し替え」で置換
+                          ※クリックでサムネイルを選択できます
                         </p>
 
                         <div className="preview-grid">
