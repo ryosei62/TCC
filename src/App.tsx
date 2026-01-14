@@ -12,6 +12,8 @@ import { CreateBlog } from "./pages/CreateBlog";
 import { LoginForm } from "./pages/LoginForm";
 import { MyPage } from "./pages/MyPage";
 import { TimelinePage } from "./pages/TimelinePage";
+import { Terms } from "./pages/Terms";
+import { Privacy } from "./pages/Privacy";
 
 const App: React.FC = () => {
   return (
@@ -51,6 +53,10 @@ const App: React.FC = () => {
           <Route path="/signup" element={
             <PublicRoute><SignupForm /></PublicRoute>
           } />
+          <Route path="/terms" element={
+              <PublicRoute><Terms /></PublicRoute>} />
+          <Route path="/privacy" element={
+              <PublicRoute><Privacy /></PublicRoute>} />
           
         </Routes>
       </BrowserRouter>
