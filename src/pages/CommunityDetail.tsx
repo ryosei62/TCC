@@ -18,7 +18,7 @@ import {
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { toggleLike } from "../component/LikeButton";
@@ -116,7 +116,6 @@ export default function CommunityDetail() {
   const [favoriteLoading, setFavoriteLoading] = useState(true);
 
 
-
   
   const [editingPostForm, setEditingPostForm] = useState({
     title: "",
@@ -188,7 +187,45 @@ export default function CommunityDetail() {
     return () => unsub();
   }, [id, currentUser]);
 
-  
+  const location = useLocation();
+  const didScrollRef = useRef(false);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const qs = new URLSearchParams(location.search);
+    const tab = qs.get("tab");
+    const postId = qs.get("post");
+
+    // tab指定がないなら何もしない
+    if (tab !== "blog") return;
+
+    // blogタブへ切り替え（毎回setしてOK）
+    setActiveTab("blog");
+
+    // post指定がなければスクロールは不要
+    if (!postId) return;
+
+    // postsがまだ来てないなら待つ
+    if (posts.length === 0) return;
+
+    // 同じURLでposts更新が来ても、スクロールは1回だけ
+    if (didScrollRef.current) return;
+
+    didScrollRef.current = true;
+
+    // 描画後にスクロール
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`post-${postId}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [location.search, id, posts]);
+
+  useEffect(() => {
+    didScrollRef.current = false;
+  }, [location.search]);
+
+
 
 const searchUsersForOwner = async (term: string) => {
   const t = term.trim();
@@ -1120,7 +1157,7 @@ const handleSelectOwner = async (uid: string) => {
               <p>まだブログ記事がありません。</p>
             ) : (
               posts.map((post) => (
-                <article key={post.id} className={`blog-post ${post.isPinned ? "pinned-post" : ""}`}>
+                <article key={post.id} id={`post-${post.id}`} className={`blog-post ${post.isPinned ? "pinned-post" : ""}`}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                     {post.isPinned && (
                       <FaThumbtack style={{ color: "#2563eb", transform: "rotate(45deg)" }} />
