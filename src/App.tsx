@@ -10,6 +10,8 @@ import { CreateBlog } from "./pages/CreateBlog";
 import { LoginForm } from "./pages/LoginForm";
 import { MyPage } from "./pages/MyPage";
 import { TimelinePage } from "./pages/TimelinePage";
+import { Terms } from "./pages/Terms";
+import { Privacy } from "./pages/Privacy";
 
 const App: React.FC = () => {
   return (
@@ -25,6 +27,8 @@ const App: React.FC = () => {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/mypage/:uid" element={<MyPage />} />
         <Route path="/timeline" element={<TimelinePage />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
       </Routes>
     </BrowserRouter>
   );
