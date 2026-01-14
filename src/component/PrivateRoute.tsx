@@ -7,7 +7,7 @@ export const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   // ユーザーがいなければログインページへ転送
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/about" />;
   }
 
   if (user && !user.emailVerified) {

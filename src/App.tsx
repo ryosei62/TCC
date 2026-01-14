@@ -22,14 +22,18 @@ const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           {/* ▼▼▼ 誰でも見れるページ ▼▼▼ */}
+          <Route path="/about" element={
+            <About />} />
+          <Route path="/terms" element={
+              <Terms />} />
+          <Route path="/privacy" element={
+              <Privacy />} />
 
           {/* ▼▼▼ ログイン必須のページ（PrivateRouteで囲む） ▼▼▼ */}
           <Route path="/" element={
             <PrivateRoute><CommunityList /></PrivateRoute>
           } />
-          <Route path="/about" element={
-            <PrivateRoute><About /></PrivateRoute>
-          } />
+          
           <Route path="/communities/:id" element={
             <PrivateRoute><CommunitiesDetail /></PrivateRoute>
           } />
@@ -53,10 +57,7 @@ const App: React.FC = () => {
           <Route path="/signup" element={
             <PublicRoute><SignupForm /></PublicRoute>
           } />
-          <Route path="/terms" element={
-              <PublicRoute><Terms /></PublicRoute>} />
-          <Route path="/privacy" element={
-              <PublicRoute><Privacy /></PublicRoute>} />
+          
           
         </Routes>
       </BrowserRouter>
