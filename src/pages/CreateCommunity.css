@@ -63,7 +63,7 @@ body {
   transition: all 0.2s ease;
 }
 
-.back-button:hover {
+.back-button-center:hover {
   color: #2563eb; 
   transform: translateY(-2px); 
 }
