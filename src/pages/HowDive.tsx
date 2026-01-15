@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import './About.css';
+import joinImage from '../assets/AboutImage/shot_join.png';
 
 export const HowDive = () => {
   return (
@@ -7,7 +8,7 @@ export const HowDive = () => {
       <header className="top-header">
         <div className="header-left">
           <Link to="/about" className="returnList">
-            <span className="arrow">←</span> Back to About
+            <span className="arrow">←</span> 前のページに戻る
           </Link>
         </div>
       </header>
@@ -36,6 +37,16 @@ export const HowDive = () => {
               参加後は、メンバー限定のチャットや掲示板にアクセスできるようになります。<br />
               自己紹介をしたり、イベントの企画に参加して、交流を深めましょう。
             </p>
+          </div>
+
+          <div style={{ textAlign: 'center', margin: '40px 0' }}>
+            <img src={joinImage} alt="コミュニティ参加画面" style={{ maxWidth: '600px', width: '80%', height: 'auto', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', display: 'block', margin: '0 auto' }} />
+          </div>
+
+          <div style={{ marginTop: '50px', textAlign: 'center' }}>
+            <Link to="/" className="cta-button primary-btn">
+              コミュニティを探しに行く
+            </Link>
           </div>
         </div>
       </main>

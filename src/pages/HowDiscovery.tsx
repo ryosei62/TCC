@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import './About.css';
+import hakkenImage from '../assets/AboutImage/shot_hakken.png';
 
 export const HowDiscovery = () => {
   return (
@@ -7,7 +8,7 @@ export const HowDiscovery = () => {
       <header className="top-header">
         <div className="header-left">
           <Link to="/about" className="returnList">
-            <span className="arrow">←</span> Back to About
+            <span className="arrow">←</span> 前のページに戻る
           </Link>
         </div>
       </header>
@@ -33,6 +34,10 @@ export const HowDiscovery = () => {
 
             <h3>3. トレンド・新着</h3>
             <p>トップページには、今盛り上がっているコミュニティや、設立されたばかりの新しいコミュニティがピックアップされています。</p>
+          </div>
+
+          <div style={{ textAlign: 'center', margin: '40px 0' }}>
+            <img src={hakkenImage} alt="コミュニティ発見画面" style={{ maxWidth: '600px', width: '80%', height: 'auto', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', display: 'block', margin: '0 auto' }} />
           </div>
         </div>
       </main>

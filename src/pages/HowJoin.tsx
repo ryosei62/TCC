@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import './About.css'; // Aboutと同じスタイルを利用（必要なら別途cssを作成）
+import tourokuImage from '../assets/AboutImage/shot_touroku.png';
 
 export const HowJoin = () => {
   return (
@@ -8,7 +9,7 @@ export const HowJoin = () => {
       <header className="top-header">
         <div className="header-left">
           <Link to="/about" className="returnList">
-            <span className="arrow">←</span> Back to About
+            <span className="arrow">←</span> 前のページに戻る
           </Link>
         </div>
       </header>
@@ -36,6 +37,10 @@ export const HowJoin = () => {
             </p>
           </div>
           
+          <div style={{ textAlign: 'center', margin: '40px 0' }}>
+            <img src={tourokuImage} alt="アカウント登録画面" style={{ maxWidth: '600px', width: '80%', height: 'auto', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', display: 'block', margin: '0 auto' }} />
+          </div>
+
           <div style={{ marginTop: '50px', textAlign: 'center' }}>
             <Link to="/signup" className="cta-button primary-btn">
               登録ページへ進む

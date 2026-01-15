@@ -10,7 +10,7 @@ import { db } from "../firebase/config";
 
 // 画像アセットのインポート
 import sumahoWomanImage from '../assets/AboutImage/sumaho_woman.png';
-import universityWatyaImage from '../assets/AboutImage/university_watya.png'; // 背景用に追加
+import universityWatyaImage from '../assets/AboutImage/Tsukuba01.jpg'; // 背景用に追加
 
 export const About = () => {
 
@@ -173,7 +173,7 @@ export const About = () => {
                 <section id="find" className="section-block feature-section">
                     <div className="feature-content">
                         <h2 className="section-title">
-                            <span className="en-heading">FIND YOUR VIBE</span><br /><br />
+                            <span className="en-heading">FIND YOUR VIBE</span><br />
                             <span className="jp-heading">共鳴する場所を探す</span>
                         </h2>
                         
@@ -204,7 +204,7 @@ export const About = () => {
                 <section id="create" className="section-block feature-section reverse">
                     <div className="feature-content">
                         <h2 className="section-title">
-                            <span className="en-heading">IGNITE PASSION</span><br /><br />
+                            <span className="en-heading">IGNITE PASSION</span><br />
                             <span className="jp-heading">「好き」をカタチにする</span>
                         </h2>
 

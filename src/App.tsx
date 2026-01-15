@@ -2,6 +2,7 @@ import React from "react";
 import { AuthProvider } from "./context/AuthContext"; 
 import { PrivateRoute ,PublicRoute} from "./component/PrivateRoute";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ScrollToTop from "./component/ScrollToTop"; // 追加
 
 import CommunityList from "./pages/CommunityList";
 import CommunitiesDetail from "./pages/CommunityDetail";
@@ -23,6 +24,7 @@ const App: React.FC = () => {
     // 1. アプリ全体をAuthProviderで囲む（これでどこでもログイン情報が使える）
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           {/* ▼▼▼ 誰でも見れるページ ▼▼▼ */}
           <Route path="/about" element={
