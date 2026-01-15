@@ -66,15 +66,10 @@ export const About = () => {
             {/* --- Header Navigation --- */}
             <header className="top-header">
                 {currentUser && (
-                <Link to={`/`} className="nav-btn">
-                    TCC
+                <Link to={`/`} className="return-btn">
+                    一覧に戻る
                 </Link>
                 )}
-                <div className="header-left">
-                    <Link to="/" className="returnList">
-                        <span className="arrow">←</span> Back to List
-                    </Link>
-                </div>
 
                 <nav className="header-nav">
                     <button className="nav-btn" onClick={() => scrollToSection('concept')}>

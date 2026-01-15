@@ -46,7 +46,11 @@
   gap: 20px;
 }
 
-.nav-btn {
+.return-btn {
+  margin-left: 10px;
+}
+
+.return-btn, .nav-btn {
   background: none;
   border: none;
   font-family: 'Montserrat', sans-serif;
@@ -59,11 +63,11 @@
   position: relative;
 }
 
-.nav-btn:hover {
+.return-btn:hover, .nav-btn:hover {
   color: #000;
 }
 
-.nav-btn::after {
+.return-btn::after .nav-btn::after {
   content: '';
   position: absolute;
   width: 0;
@@ -494,6 +498,14 @@
   
   .hero-section {
     height: 80vh;
+  }
+
+  .return-btn {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 0;
   }
 
   .nav-btn {
