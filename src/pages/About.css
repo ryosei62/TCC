@@ -273,6 +273,9 @@
   text-align: left;
   position: relative;
   transition: transform 0.3s;
+  text-decoration: none; /* リンクの下線を消す */
+  color: inherit;        /* 親要素の文字色を引き継ぐ */
+  display: block;        /* ブロック要素として振る舞わせる */
 }
 
 .step-item:hover {

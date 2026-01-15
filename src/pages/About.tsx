@@ -136,23 +136,29 @@ export const About = () => {
                 <section className="usage-section">
                     <h2 className="section-sub-title">HOW TO USE</h2>
                     <div className="steps-container">
-                        <div className="step-item">
+                        {/* 01: Join Us -> /how-join */}
+                        <Link to="/how-join" className="step-item">
                             <span className="step-num">01</span>
                             <h3>Join Us</h3>
                             <p>筑波大学発行のメールアドレスで<br/>簡単アカウント登録。</p>
-                        </div>
-                        <div className="step-item">
+                        </Link>
+
+                        {/* 02: Discovery -> /how-discovery */}
+                        <Link to="/how-discovery" className="step-item">
                             <span className="step-num">02</span>
                             <h3>Discovery</h3>
                             <p>タグやキーワードから、<br/>共鳴するコミュニティを探す。</p>
-                        </div>
-                        <div className="step-item">
+                        </Link>
+
+                        {/* 03: Dive In -> /how-dive */}
+                        <Link to="/how-dive" className="step-item">
                             <span className="step-num">03</span>
                             <h3>Dive In</h3>
                             <p>気になる活動へ参加リクエスト。<br/>新しい日常の始まり。</p>
-                        </div>
+                        </Link>
                     </div>
                 </section>
+
 
                 {/* --- CTA 1 --- */}
                 {!currentUser && (
@@ -172,7 +178,7 @@ export const About = () => {
                 <section id="find" className="section-block feature-section">
                     <div className="feature-content">
                         <h2 className="section-title">
-                            <span className="en-heading">FIND YOUR VIBE</span>
+                            <span className="en-heading">FIND YOUR VIBE</span><br /><br />
                             <span className="jp-heading">共鳴する場所を探す</span>
                         </h2>
                         
@@ -203,7 +209,7 @@ export const About = () => {
                 <section id="create" className="section-block feature-section reverse">
                     <div className="feature-content">
                         <h2 className="section-title">
-                            <span className="en-heading">IGNITE PASSION</span>
+                            <span className="en-heading">IGNITE PASSION</span><br /><br />
                             <span className="jp-heading">「好き」をカタチにする</span>
                         </h2>
 
