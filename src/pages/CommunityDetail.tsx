@@ -690,8 +690,9 @@ const handleSelectOwner = async (uid: string) => {
       <button
         type="button"
         onClick={() => navigate(-1)}
+        className="back-button"
       >
-        ← 戻る
+        ← 一覧に戻る
       </button>
       <h1 className="detail-title">{community.name}</h1>
 
