@@ -18,8 +18,6 @@ import {
 import { db, auth } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState, useRef, type ChangeEvent } from "react";
-import { Link, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -116,7 +114,6 @@ export default function CommunityDetail() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
   const [isFavorite, setIsFavorite] = useState(false);
-  const [favoriteLoading, setFavoriteLoading] = useState(true);
   
   const uploadToCloudinary = async (file: File) => {
     const formData = new FormData();
