@@ -255,7 +255,7 @@
 }
 
 /* 左側：フィルタ（タブ切り替え風デザイン） */
-.filter-buttons-group {
+.filter-buttons-group, .favorite-filter-group {
   display: flex;
   background-color: #e5e7eb; /* 背景色 */
   padding: 4px;
@@ -284,6 +284,13 @@
   color: #2563eb;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* ★お気に入り側だけ少し離す */
+.filter-buttons-group--fav {
+  margin-left: 12px; /* 好みで調整 */
+}
+
+
 
 /* 右側：ソート */
 .sort-group {
@@ -479,6 +486,9 @@
 
 /* --- スマホ対応 (レスポンシブ) --- */
 @media (max-width: 600px) {
+  .main-title-area {
+    margin-top: 10px;
+  }
 
   .community-list-container {
     padding: 20px 16px; /* 左右の余白を少し確保 */
@@ -530,6 +540,11 @@
     flex: 1; /* 3等分 */
     padding: 8px 0;
     text-align: center;
+  }
+
+  .filter-buttons-group--fav {
+    margin-left: 0;
+    margin-top: 8px;
   }
   
   .sort-group {
