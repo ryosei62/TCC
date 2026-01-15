@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { collection, getDocs, getDoc, doc, query, where, documentId, orderBy } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, query, where, documentId, orderBy, updateDoc } from "firebase/firestore";
 
 import { auth, db } from "../firebase/config";
 
@@ -30,7 +30,10 @@ export const MyPage = () => {
   const [loading, setLoading] = useState(true);
   const [favoriteCommunities, setFavoriteCommunities] = useState<Community[]>([]);
   const [favoriteLoading, setFavoriteLoading] = useState(true);
-
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   // ① ログイン状態を監視（「ログイン中の自分」を知るため）
   useEffect(() => {
@@ -65,21 +68,32 @@ export const MyPage = () => {
 
       if (snap.exists()) {
         const data = snap.data() as any;
+
+        const username = data.username ?? "（ユーザー名未設定）";
+
         setProfile({
-          username: data.username ?? "（ユーザー名未設定）",
+          username,
           email: data.email ?? "",
           photoURL: data.photoURL,
         });
+
+        // ★ 編集中でなければ input に反映
+        if (!nameInput) {
+          setNameInput(username === "（ユーザー名未設定）" ? "" : username);
+        }
       } else {
         setProfile({
           username: "（ユーザー不明）",
           email: "",
         });
+
+        if (!nameInput) setNameInput("");
       }
     };
 
     fetchProfile();
   }, [targetUid]);
+
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -192,6 +206,36 @@ useEffect(() => {
   fetchCommunities();
 }, [targetUid]);
 
+  const saveUsername = async () => {
+    if (!currentUser || !targetUid) return;
+    if (currentUser.uid !== targetUid) return;
+
+    const next = nameInput.trim();
+    if (next.length === 0) {
+      setNameError("ユーザーネームを入力してください");
+      return;
+    }
+    if (next.length > 20) {
+      setNameError("ユーザーネームは20文字以内にしてください");
+      return;
+    }
+
+    setSavingName(true);
+    setNameError(null);
+    try {
+      const ref = doc(db, "users", targetUid);
+      await updateDoc(ref, { username: next });
+
+      // 画面上の表示も即更新（体感良く）
+      setProfile((prev) => ({ ...(prev ?? {}), username: next }));
+      setEditingName(false);
+    } catch (e) {
+      console.error(e);
+      setNameError("保存に失敗しました");
+    } finally {
+      setSavingName(false);
+    }
+  };
 
   if (!targetUid) return null;
 
@@ -204,7 +248,63 @@ useEffect(() => {
       <section style={{ marginTop: 16 }}>
         <h2 style={{ fontSize: 18 }}>アカウント情報</h2>
         <div style={{ marginTop: 8, lineHeight: 1.8 }}>
-          <div><b>ユーザー名：</b>{profile?.username ?? "（読み込み中…）"}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <b>ユーザー名：</b>
+
+            {!isMyPage || !editingName ? (
+              <>
+                <span>{profile?.username ?? "（読み込み中…）"}</span>
+
+                {isMyPage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingName(true);
+                      setNameError(null);
+                      setNameInput(profile?.username ?? "");
+                    }}
+                    style={{ padding: "4px 10px", border: "1px solid #ddd", borderRadius: 8, background: "#fff" }}
+                  >
+                    変更
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <input
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  placeholder="ユーザーネーム"
+                  style={{ padding: "6px 10px", border: "1px solid #ddd", borderRadius: 8, minWidth: 220 }}
+                />
+
+                <button
+                  type="button"
+                  onClick={saveUsername}
+                  disabled={savingName}
+                  style={{ padding: "6px 10px", border: "1px solid #ddd", borderRadius: 8, background: "#fff" }}
+                >
+                  {savingName ? "保存中..." : "保存"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingName(false);
+                    setNameError(null);
+                    setNameInput(profile?.username ?? "");
+                  }}
+                  disabled={savingName}
+                  style={{ padding: "6px 10px", border: "1px solid #ddd", borderRadius: 8, background: "#fff" }}
+                >
+                  キャンセル
+                </button>
+
+                {nameError ? <div style={{ width: "100%", color: "red", fontSize: 12 }}>{nameError}</div> : null}
+              </>
+            )}
+          </div>
+
           <div><b>メール：</b>{profile?.email || "（非公開）"}</div>
 
           {/* emailVerified は Auth の情報で、他人のは取れないので「自分の時だけ」表示 */}

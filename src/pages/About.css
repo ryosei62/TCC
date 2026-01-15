@@ -9,13 +9,13 @@
   background-color: #ffffff;
   color: #333;
   font-family: 'Noto Sans JP', sans-serif;
-  overflow-x: hidden; /* 横揺れ防止 */
+  overflow-x: hidden;
 }
 
 /* --- ヘッダー: 固定・ミニマル --- */
 .top-header {
   background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px); /* すりガラス効果 */
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0,0,0,0.05);
   padding: 15px 30px;
   display: flex;
@@ -49,7 +49,7 @@
 .nav-btn {
   background: none;
   border: none;
-  font-family: 'Montserrat', sans-serif; /* 英語フォント */
+  font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -62,7 +62,7 @@
 .nav-btn:hover {
   color: #000;
 }
-/* ホバー時の下線アニメーション */
+
 .nav-btn::after {
   content: '';
   position: absolute;
@@ -85,17 +85,15 @@
 
 .section-block {
   padding: 100px 20px;
-  /* ヘッダー被り防止 */
   scroll-margin-top: 60px;
 }
 
 /* =========================================
    HERO SECTION (メインビジュアル)
-   画像背景 + "サッ"と表示するアニメーション
 ========================================= */
 .hero-section {
   position: relative;
-  height: 90vh; /* 画面の90%を占有 */
+  height: 90vh;
   min-height: 600px;
   display: flex;
   align-items: center;
@@ -103,18 +101,12 @@
   text-align: center;
   color: white;
   overflow: hidden;
-
-  /* 背景画像の設定 */
-  background-image: url('../assets/AboutImage/university_watya.png');
   background-size: cover;
   background-position: center;
-  
-  /* アニメーション: ページを開いた瞬間にふわっと拡大しながら現れる */
   opacity: 0; 
   animation: heroReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-/* 画像の上に黒いフィルターをかけて文字を読みやすくする */
 .hero-section::before {
   content: '';
   position: absolute;
@@ -122,27 +114,26 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* 黒の半透明レイヤー */
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1;
 }
 
-/* アニメーション定義: 下からサッと上がりつつフェードイン */
 @keyframes heroReveal {
   0% {
     opacity: 0;
-    transform: scale(1.05); /* 少し拡大された状態から */
+    transform: scale(1.05);
     filter: blur(10px);
   }
   100% {
     opacity: 1;
-    transform: scale(1); /* 等倍に戻る */
+    transform: scale(1);
     filter: blur(0);
   }
 }
 
 .hero-title {
   position: relative;
-  z-index: 2; /* 背景より手前に */
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -151,12 +142,13 @@
 
 .en-title {
   font-family: 'Montserrat', sans-serif;
-  font-size: 5rem; /* かなり大きく */
+  font-size: 5rem;
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.02em;
-  background: linear-gradient(to right, #fff, #aaddff); /* 文字をグラデーションに */
+  background: linear-gradient(to right, #fff, #aaddff);
   -webkit-background-clip: text;
+  background-clip: text; /* 修正: 標準プロパティを追加 */
   -webkit-text-fill-color: transparent;
 }
 
@@ -180,7 +172,6 @@
   margin-right: auto;
 }
 
-/* 画像ボックス (ヒーロー内の小画像は非表示にするか、スタイル調整) */
 .hero-image-box {
   display: none;
 }
@@ -197,9 +188,57 @@
   padding-top: 20px;
 }
 
+/* =========================================
+   STATS BAR (バッチバチギラギラな数値表示)
+========================================= */
+.stats-text {
+  background: #050505;
+  color: #888;
+  text-align: center;
+  padding: 50px 20px;
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  border-top: 1px solid rgba(0, 198, 255, 0.3);
+  border-bottom: 1px solid rgba(0, 198, 255, 0.1);
+  box-shadow: 0 0 30px rgba(0, 198, 255, 0.05) inset;
+  position: relative;
+  z-index: 10;
+}
+
+.stats-text strong {
+  display: inline-block;
+  margin: 0 8px;
+  font-size: 4rem; 
+  line-height: 1;
+  font-weight: 900;
+  vertical-align: middle;
+  background: linear-gradient(180deg, #ffffff 0%, #00c6ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text; /* 修正: 標準プロパティを追加 */
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 15px rgba(0, 198, 255, 0.8));
+  animation: neonPulse 2s infinite alternate;
+}
+
+/* 修正: 空のルールセット (.stats-text strong + span) は削除しました */
+
+@keyframes neonPulse {
+  0% {
+    filter: drop-shadow(0 0 10px rgba(0, 198, 255, 0.6));
+    transform: scale(1);
+  }
+  100% {
+    filter: drop-shadow(0 0 25px rgba(0, 198, 255, 1));
+    transform: scale(1.02);
+  }
+}
+
 
 /* =========================================
-   USAGE STEPS (3カラム)
+   USAGE STEPS
 ========================================= */
 .usage-section {
   padding: 80px 20px;
@@ -229,11 +268,14 @@
   min-width: 250px;
   background: white;
   padding: 40px 30px;
-  border-radius: 4px; /* 角を少しだけ丸く */
+  border-radius: 4px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
   text-align: left;
   position: relative;
   transition: transform 0.3s;
+  text-decoration: none; /* リンクの下線を消す */
+  color: inherit;        /* 親要素の文字色を引き継ぐ */
+  display: block;        /* ブロック要素として振る舞わせる */
 }
 
 .step-item:hover {
@@ -244,7 +286,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 3rem;
   font-weight: 900;
-  color: #eef1f5; /* 背景に溶け込む薄い色 */
+  color: #eef1f5;
   position: absolute;
   top: 10px;
   right: 20px;
@@ -294,7 +336,7 @@
 
 .jp-heading {
   font-size: 1rem;
-  color: #007bff; /* アクセントカラー */
+  color: #007bff;
   font-weight: bold;
   letter-spacing: 0.2em;
 }
@@ -304,7 +346,6 @@
   align-items: center;
   gap: 60px;
 }
-/* 逆配置（Createセクション用） */
 .feature-section.reverse .feature-grid {
   flex-direction: row-reverse;
 }
@@ -343,7 +384,7 @@
   max-width: 100%;
   height: auto;
   border-radius: 8px;
-  box-shadow: 20px 20px 0px #f0f0f0; /* ずらした影でデザイン性アップ */
+  box-shadow: 20px 20px 0px #f0f0f0;
 }
 
 .create-pitch {
@@ -357,11 +398,11 @@
 
 
 /* =========================================
-   CTA SECTION (Call To Action)
+   CTA SECTION
 ========================================= */
 .cta-section {
   padding: 100px 20px;
-  background-color: #000; /* 黒背景で締める */
+  background-color: #000;
   color: white;
   text-align: center;
 }
@@ -452,7 +493,7 @@
   }
   
   .hero-section {
-    height: 80vh; /* スマホのアドレスバー対策 */
+    height: 80vh;
   }
 
   .nav-btn {
@@ -466,16 +507,27 @@
   .top-header {
     justify-content: center;
   }
+
+  /* Stats bar mobile adjustment */
+  .stats-text {
+    font-size: 1rem;
+    padding: 40px 15px;
+    line-height: 2;
+  }
+  .stats-text strong {
+    font-size: 3rem;
+    display: block;
+    margin: 10px 0;
+  }
 }
 
 
 /* =========================================
    LEGAL PAGES (TERMS & PRIVACY)
-   ※ これがないと規約ページが崩れます！
 ========================================= */
 .legal-content {
   max-width: 800px;
-  margin: 0 auto; /* 中央寄せ */
+  margin: 0 auto;
   padding: 40px 20px;
   text-align: left;
   line-height: 1.8;
@@ -507,10 +559,40 @@
 
 /* 規約ページのタイトルの微調整 */
 .main-content .section-title {
-  /* Aboutページのflex設定が干渉しないようにリセット */
   display: block; 
   margin-top: 40px;
   margin-bottom: 20px;
   font-family: 'Noto Sans JP', sans-serif;
   font-weight: bold;
+}
+
+/* --- エラー表示関連 --- */
+
+/* 入力欄の枠を赤くする */
+.input-field.error-border {
+  border-color: #ff4d4f;
+  background-color: #fff1f0;
+}
+
+/* エラーメッセージ */
+.error-text {
+  color: #ff4d4f;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-top: 6px;
+  margin-bottom: 0;
+  font-family: 'Noto Sans JP', sans-serif;
+  animation: fadeIn 0.3s ease;
+}
+
+/* チェック中メッセージ */
+.checking-text {
+  color: #007bff;
+  font-size: 0.8rem;
+  margin-top: 6px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }

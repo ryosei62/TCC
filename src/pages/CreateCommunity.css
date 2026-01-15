@@ -1,60 +1,78 @@
 /* CreateCommunity.css */
 
+/* Google Fontsの読み込み (Aboutと同じ) */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+JP:wght@400;700&display=swap');
+
 body {
-  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-  background-color: #f8f9fa;
+  font-family: 'Noto Sans JP', sans-serif;
+  background-color: #f9f9f9; /* ベースは薄いグレーで清潔感を */
   color: #333;
 }
 
 /* --- メインコンテナ --- */
 .create-container {
-  width: 95%;          /* スマホでもギリギリまで使う */
-  max-width: 900px;    /* PCでは広めに確保 (600px -> 900px) */
-  margin: 40px auto;
-  padding: 40px;
+  width: 90%;
+  max-width: 800px;
+  margin: 60px auto;
+  padding: 60px;
   background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  /* 影を薄く広げて「浮いている」感を出す */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05); 
+  border-radius: 4px; /* 角丸は控えめに */
 }
 
+/* --- タイトル --- */
 .title {
   text-align: center;
-  font-size: 1.8rem;
+  font-family: 'Montserrat', sans-serif; /* 英語見出しフォント */
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 30px;
-  color: #1f2937;
+  margin-bottom: 40px;
+  color: #000;
+  letter-spacing: 0.05em;
+  text-transform: uppercase; /* 大文字に統一 */
 }
 
+/* --- 戻るリンク --- */
 .return-link-wrapper {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .returnList {
-  color: #2563eb;
+  color: #888;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .returnList:hover {
-  text-decoration: underline;
+  color: #007bff; /* TCC Blue */
 }
 
 /* --- フォーム全体 --- */
 .create-form {
   display: flex;
   flex-direction: column;
-  gap: 24px; /* 項目ごとの間隔を広げてゆったりさせる */
+  gap: 30px; /* 余白を広めに */
 }
 
 /* --- 入力項目の行 --- */
 .item {
   display: flex;
-  /* ★重要: デフォルトは中央揃え（inputとラベルの高さを合わせるため） */
   align-items: center; 
   justify-content: flex-start;
-  gap: 20px;
+  gap: 30px;
+  border-bottom: 1px solid #f0f0f0; /* 薄い線で区切る */
+  padding-bottom: 30px;
 }
 
-/* ★重要: textareaなど縦に長い要素がある場合は上揃えにする */
+.item:last-of-type {
+  border-bottom: none;
+}
+
 .item.align-top {
   align-items: flex-start;
 }
@@ -62,60 +80,64 @@ body {
 /* ラベル部分 */
 .label-text {
   flex-shrink: 0;
-  width: 160px; /* ラベル幅を少し広げて改行しにくくする */
-  font-weight: 600;
-  color: #4b5563;
+  width: 180px;
+  font-weight: 700;
+  color: #000; /* ラベルは黒くはっきり */
   margin: 0;
-  /* padding-top を削除して中央揃えを効かせる */
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
 }
 
 /* 必須マーク */
 .required {
-  color: #ef4444;
+  color: #007bff; /* 赤ではなく青にしてクールに */
   margin-left: 4px;
+  vertical-align: top;
+  font-size: 0.8rem;
 }
 
-/* 入力欄共通 */
+/* --- 入力欄共通デザイン --- */
 .input-field,
 .textarea-field,
 .select-field {
-  flex: 1; /* 横幅いっぱいに広げる */
+  flex: 1;
   width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  background-color: #fcfcfc;
+  border-radius: 2px; /* ほぼ直角 */
   font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 0.3s;
   box-sizing: border-box;
+  font-family: 'Noto Sans JP', sans-serif;
 }
 
 /* フォーカス時のデザイン */
 .input-field:focus,
 .textarea-field:focus,
 .select-field:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #007bff;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1); /* 青いグロー効果 */
   outline: none;
 }
 
 .textarea-field {
   resize: vertical;
-  min-height: 100px; /* 少し高く */
-  line-height: 1.5;
+  min-height: 120px;
+  line-height: 1.6;
 }
 
-/* セレクトボックスの調整 */
 .select-field {
   cursor: pointer;
-  background-color: #fff;
 }
 
 /* 注釈テキスト */
 .form-note {
   font-size: 0.85rem;
-  color: #6b7280;
-  margin-top: -16px; /* 上の項目に近づける */
-  margin-left: 180px; /* ラベル幅+ギャップ分ずらす */
+  color: #888;
+  margin-top: -20px;
+  margin-left: 210px; /* ラベル幅に合わせてインデント */
   line-height: 1.5;
 }
 
@@ -124,7 +146,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
 }
 
 .url-row {
@@ -133,111 +155,109 @@ body {
   align-items: center;
 }
 
-.url-label-input {
-  flex: 1; 
-}
+.url-label-input { flex: 1; }
+.url-value-input { flex: 2; }
 
-.url-value-input {
-  flex: 2; 
-}
-
-/* --- ボタン類 --- */
+/* --- 追加・削除ボタン (UIパーツ化) --- */
 .btn-delete {
-  background-color: #f3f4f6;
-  color: #ef4444;
-  border: 1px solid #e5e7eb;
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
+  background-color: #fff;
+  color: #ccc;
+  border: 1px solid #ddd;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* 丸ボタン */
   cursor: pointer;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  font-size: 1.2rem;
 }
 .btn-delete:hover {
-  background-color: #fee2e2;
-  border-color: #fecaca;
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+  background-color: #fff1f0;
 }
 
 .btn-add {
   align-self: flex-start;
   background-color: transparent;
-  color: #2563eb;
-  border: 1px dashed #2563eb;
-  padding: 8px 16px;
-  border-radius: 6px;
+  color: #007bff;
+  border: 1px dashed #007bff;
+  padding: 8px 20px;
+  border-radius: 2px;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: 500;
-  margin-top: 4px;
+  font-weight: 600;
+  margin-top: 5px;
   transition: all 0.2s;
 }
 
 .btn-add:hover {
-  background-color: #eff6ff;
+  background-color: #f0f7ff;
 }
 
-/* --- 画像エリア --- */
+/* --- 画像アップロードエリア --- */
 .image-upload-section {
-  margin-top: 20px;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 20px;
+  margin-top: 40px;
+  border-top: 2px solid #f0f0f0;
+  padding-top: 40px;
 }
 
 .image-label {
   display: block;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 12px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
 }
 
+/* input[type="file"] のスタイル調整は難しいので、最低限整える */
 .file-input {
   border: none;
+  background: transparent;
   padding: 0;
 }
 
 .preview-area {
-  margin-top: 15px;
-  padding: 15px;
-  background-color: #f9fafb;
-  border: 1px dashed #d1d5db;
-  border-radius: 8px;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 4px;
 }
 
 .preview-note {
   font-size: 0.85rem;
   color: #666;
   margin-top: 0;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .preview-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 15px;
 }
 
 .preview-item {
   position: relative;
-  width: 120px;
-  height: 120px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  aspect-ratio: 1 / 1; /* 正方形に */
+  border: 2px solid transparent;
+  border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .preview-item:hover {
-  border-color: #9ca3af;
-  transform: translateY(-2px);
+  opacity: 0.9;
 }
 
 .preview-item.selected {
-  border: 3px solid #2563eb;
-  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
 }
 
 .preview-item img {
@@ -248,102 +268,119 @@ body {
 
 .thumbnail-badge {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
-  background-color: #2563eb;
+  width: 100%;
+  background-color: rgba(0, 123, 255, 0.9);
   color: white;
-  font-size: 11px;
-  padding: 4px 8px;
+  font-size: 10px;
+  padding: 4px 0;
+  text-align: center;
   font-weight: bold;
-  border-bottom-right-radius: 6px;
 }
 
 .remove-btn {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  background: rgba(0, 0, 0, 0.6);
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.5);
   color: white;
   border: none;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 14px;
+  font-size: 12px;
   transition: background 0.2s;
 }
 .remove-btn:hover {
-  background: rgba(239, 68, 68, 0.9);
-}
-
-/* --- 送信ボタン --- */
-.createButton {
-  display: block;
-  width: 100%;
-  max-width: 400px;
-  margin: 40px auto 0;
-  padding: 16px 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-  transition: all 0.2s;
-}
-
-.createButton:hover {
-  background-color: #1d4ed8;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
-}
-
-/* スマホレスポンシブ対応 */
-@media (max-width: 768px) {
-  .create-container {
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .item, .item.align-top {
-    flex-direction: column; /* 縦並びにする */
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .label-text {
-    width: 100%;
-  }
-
-  .form-note {
-    margin-left: 0;
-    margin-top: 0;
-    margin-bottom: 10px;
-  }
-
-  .url-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  background: rgba(0, 0, 0, 0.8);
 }
 
 /* --- 文字数カウンター --- */
 .char-counter {
   text-align: right;
   font-size: 0.8rem;
-  color: #6b7280;
-  margin-top: 4px;
+  color: #aaa;
+  margin-top: 5px;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .char-counter.limit {
-  color: #ef4444; /* 制限に達したら赤文字 */
+  color: #ff4d4f;
   font-weight: bold;
+}
+
+/* --- 送信ボタン (TCCスタイル) --- */
+.createButton {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 60px auto 0; /* 下に余裕を持たせる */
+  padding: 18px 0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background-color: #000; /* 黒背景 */
+  color: white;
+  border: none;
+  border-radius: 2px; /* シャープに */
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.createButton:hover {
+  background-color: #007bff; /* ホバーで青に */
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(0, 123, 255, 0.2);
+}
+
+/* ---------------------------------- */
+/* 📱 スマホ・レスポンシブ対応 */
+/* ---------------------------------- */
+@media (max-width: 768px) {
+  .create-container {
+    width: 100%;
+    margin: 0;
+    padding: 30px 20px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+  }
+
+  .item, .item.align-top {
+    flex-direction: column; /* 縦並び */
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+
+  .label-text {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .form-note {
+    margin-left: 0;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+
+  .url-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn-delete {
+    align-self: flex-end; /* 右端に寄せる */
+  }
 }

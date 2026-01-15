@@ -19,6 +19,8 @@ import { db, auth } from "../firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState, useRef, type ChangeEvent } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { CreateBlog } from "./CreateBlog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { toggleLike } from "../component/LikeButton";
@@ -87,6 +89,8 @@ const formatDate = (ts?: Timestamp) => {
 type TabType = "info" | "blog";
 
 export default function CommunityDetail() {
+  const navigate = useNavigate();
+
   const { id } = useParams<{ id: string }>();
   const editingPostRef = useRef<HTMLDivElement | null>(null);
 
@@ -201,12 +205,14 @@ const handleSelectThumbnail = (url: string) => {
 };
 
 
+  const [favoriteLoading, setFavoriteLoading] = useState(true);  
   const [editingPostForm, setEditingPostForm] = useState({
     title: "",
     body: "",
     imageUrl: "",
     timeline: false,
   });
+  const [formError, setFormError] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchAdmin = async () => {
@@ -271,7 +277,45 @@ const handleSelectThumbnail = (url: string) => {
     return () => unsub();
   }, [id, currentUser]);
 
-  
+  const location = useLocation();
+  const didScrollRef = useRef(false);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const qs = new URLSearchParams(location.search);
+    const tab = qs.get("tab");
+    const postId = qs.get("post");
+
+    // tab指定がないなら何もしない
+    if (tab !== "blog") return;
+
+    // blogタブへ切り替え（毎回setしてOK）
+    setActiveTab("blog");
+
+    // post指定がなければスクロールは不要
+    if (!postId) return;
+
+    // postsがまだ来てないなら待つ
+    if (posts.length === 0) return;
+
+    // 同じURLでposts更新が来ても、スクロールは1回だけ
+    if (didScrollRef.current) return;
+
+    didScrollRef.current = true;
+
+    // 描画後にスクロール
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`post-${postId}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [location.search, id, posts]);
+
+  useEffect(() => {
+    didScrollRef.current = false;
+  }, [location.search]);
+
+
 
 const searchUsersForOwner = async (term: string) => {
   const t = term.trim();
@@ -499,9 +543,38 @@ const handleSelectOwner = async (uid: string) => {
     });
   };
 
+  const isBlank = (v?: string | null) => !v || v.trim().length === 0;
+
+  const validateCommunityForm = (c: Community | null) => {
+    if (!c) return "フォームが読み込めていません。";
+
+    if (isBlank(c.name)) return "コミュニティ名は必須です。";
+    if (isBlank(c.activityDescription)) return "活動内容は必須です。";
+    if (isBlank(c.activityLocation)) return "活動場所は必須です。";
+    if (isBlank(c.activityTime)) return "活動頻度は必須です。";
+    if (isBlank(c.joinDescription)) return "参加方法は必須です。";
+    if (isBlank(c.memberCount)) return "メンバー数は必須です。";
+
+    // 画像必須（thumbnailUrl か imageUrls のどちらか）
+    const hasThumb = !!c.thumbnailUrl && c.thumbnailUrl.trim().length > 0;
+    const hasImages = Array.isArray(c.imageUrls) && c.imageUrls.some((u) => !!u && u.trim().length > 0);
+    if (!hasThumb && !hasImages) return "コミュニティ画像は必須です。";
+
+    return null;
+  };
+
   // コミュニティ情報を保存
   const handleSaveCommunity = async () => {
     if (!id || !communityForm) return;
+
+    const err = validateCommunityForm(communityForm);
+    if (err) {
+      setFormError(err);
+      alert(err); // 好みで消してOK（画面内表示だけでもよい）
+      return;
+    }
+
+    setFormError(null);
 
     try {
       const docRef = doc(db, "communities", id);
@@ -653,11 +726,14 @@ const handleSelectOwner = async (uid: string) => {
     }
   };
 
-
-
   return (
     <div className="community-detail-container">
-      <Link to="/" className="back-link">← 一覧へ戻る</Link>
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+      >
+        ← 戻る
+      </button>
       <h1 className="detail-title">{community.name}</h1>
 
         {/* ★ ここ追加 */}
@@ -852,15 +928,22 @@ const handleSelectOwner = async (uid: string) => {
             ) : (
               communityForm && (
                 <div className="admin-form">
+                  {formError && (
+                    <div style={{ color: "#ef4444", fontSize: 13, marginBottom: 10 }}>
+                      {formError}
+                    </div>
+                  )}
+
                   {/* 1. コミュニティ名 */}
                   <label className="admin-form-field">
-                    コミュニティ名
+                    コミュニティ名*
                     <input
                       type="text"
                       value={communityForm.name}
-                      onChange={(e) =>
-                        handleCommunityInputChange("name", e.target.value)
-                      }
+                      onChange={(e) => handleCommunityInputChange("name", e.target.value)}
+                      style={{
+                        border: isBlank(communityForm.name) ? "1px solid #ef4444" : undefined,
+                      }}
                     />
                   </label>
 
@@ -877,28 +960,28 @@ const handleSelectOwner = async (uid: string) => {
 
                   {/* 3. 活動内容 */}
                   <label className="admin-form-field">
-                    活動内容
+                    活動内容*
                     <textarea
                       value={communityForm.activityDescription}
-                      onChange={(e) =>
-                        handleCommunityInputChange(
-                          "activityDescription",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleCommunityInputChange("activityDescription", e.target.value)}
+                      style={{
+                        border: isBlank(communityForm.activityDescription) ? "1px solid #ef4444" : undefined,
+                      }}
                     />
                   </label>
 
                   {/* ★ここに参加方法の説明を追加する */}
                   <label className="admin-form-field">
-                    参加方法の説明
+                    参加方法の説明*
                     <textarea
-                      value={communityForm.joinDescription ?? ""}
-                      onChange={(e) =>
-                        handleCommunityInputChange("joinDescription", e.target.value)
-                      }
+                      value={communityForm.joinDescription}
+                      onChange={(e) => handleCommunityInputChange("joinDescription", e.target.value)}
+                      style={{
+                        border: isBlank(communityForm.joinDescription) ? "1px solid #ef4444" : undefined,
+                      }}
                     />
                   </label>
+
 
                   <label className="admin-form-field">
                     連絡先
@@ -915,31 +998,25 @@ const handleSelectOwner = async (uid: string) => {
 
                   {/* 4. 活動場所 */}
                   <label className="admin-form-field">
-                    活動場所
-                    <input
-                      type="text"
+                    活動場所*
+                    <textarea
                       value={communityForm.activityLocation}
-                      onChange={(e) =>
-                        handleCommunityInputChange(
-                          "activityLocation",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleCommunityInputChange("activityLocation", e.target.value)}
+                      style={{
+                        border: isBlank(communityForm.activityLocation) ? "1px solid #ef4444" : undefined,
+                      }}
                     />
                   </label>
 
                   {/* 5. 活動頻度 */}
                   <label className="admin-form-field">
-                    活動頻度
-                    <input
-                      type="text"
+                    活動頻度*
+                    <textarea
                       value={communityForm.activityTime}
-                      onChange={(e) =>
-                        handleCommunityInputChange(
-                          "activityTime",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleCommunityInputChange("activityTime", e.target.value)}
+                      style={{
+                        border: isBlank(communityForm.activityTime) ? "1px solid #ef4444" : undefined,
+                      }}
                     />
                   </label>
 
@@ -1048,13 +1125,15 @@ const handleSelectOwner = async (uid: string) => {
 
                   {/* 8. 構成人数 */}
                   <label className="admin-form-field">
-                    構成人数
+                    構成人数*
                     <select
                       value={communityForm.memberCount ?? ""}
-                      onChange={(e) =>
-                        handleCommunityInputChange("memberCount", e.target.value)
-                      }
-                      style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+                      onChange={(e) => handleCommunityInputChange("memberCount", e.target.value)}
+                      style={{
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: isBlank(communityForm.memberCount) ? "1px solid #ef4444" : "1px solid #ccc",
+                      }}
                     >
                       <option value="">選択してください</option>
                       {MEMBER_COUNT_OPTIONS.map((option) => (
@@ -1314,7 +1393,7 @@ const handleSelectOwner = async (uid: string) => {
               <p>まだブログ記事がありません。</p>
             ) : (
               posts.map((post) => (
-                <article key={post.id} className={`blog-post ${post.isPinned ? "pinned-post" : ""}`}>
+                <article key={post.id} id={`post-${post.id}`} className={`blog-post ${post.isPinned ? "pinned-post" : ""}`}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                     {post.isPinned && (
                       <FaThumbtack style={{ color: "#2563eb", transform: "rotate(45deg)" }} />

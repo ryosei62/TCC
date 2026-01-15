@@ -376,6 +376,9 @@ export default function CommunitiesList() {
                 >
                   マイページ
                 </Link>
+                <Link to="/about" className="user-menu-link">
+                  TCCについて
+                </Link>
               </nav>
 
               <button
@@ -401,9 +404,7 @@ export default function CommunitiesList() {
         <Link to="/timeline" className="timeline header-link">
           <h2>タイムライン</h2>
         </Link>
-        <Link to="/about" className="header-link">
-          <h2>TCCについて</h2>
-        </Link>
+        
       </div>
 
       <div className="controls-container">
@@ -554,6 +555,18 @@ export default function CommunitiesList() {
                     <FaClock className="meta-icon" /> {c.activityTime}
                   </p>
                 </Link>
+                <div className="community-tags-container">
+                  {c.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="community-tag-pill"
+                      onClick={() => handleTagClick(tag)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
 
                 {currentUser && (
                   <button
@@ -574,18 +587,7 @@ export default function CommunitiesList() {
                   </button>
                 )}
 
-                <div className="community-tags-container">
-                  {c.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="community-tag-pill"
-                      onClick={() => handleTagClick(tag)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+                
               </li>
             );
           })
