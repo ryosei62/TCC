@@ -465,17 +465,20 @@ export default function CommunitiesList() {
                 申請中
               </button>
             )}
-
-            <button
-              type="button"
-              className={`filter-tab ${filterFavOnly ? "active" : ""}`}
-              onClick={() => setFilterFavOnly((v) => !v)}
-              disabled={!currentUser}
-              title={!currentUser ? "ログインすると使えます" : ""}
-            >
-              ★お気に入り
-            </button>
           </div>
+
+            <div className="favorite-filter-group">
+              <button
+                type="button"
+                className={`filter-tab ${filterFavOnly ? "active" : ""}`}
+                onClick={() => setFilterFavOnly(v => !v)}
+                disabled={!currentUser}
+                title={!currentUser ? "ログインすると使えます" : ""}
+              >
+                ★ お気に入り
+              </button>
+            </div>
+            
 
           <div className="sort-group">
             <select
