@@ -490,44 +490,6 @@ const handleSelectOwner = async (uid: string) => {
     setSelectedImage(displayImages[nextIndex]);
   }
 
-  const handleCommunityImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-
-    try {
-      const file = e.target.files[0];
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "community_images");
-
-      const res = await fetch("https://api.cloudinary.com/v1_1/dvc15z98t/image/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        console.error("Cloudinary error:", data);
-        alert(`画像アップロード失敗: ${data?.error?.message ?? "不明なエラー"}`);
-        return;
-      }
-
-      if (!data?.secure_url) {
-        console.error("No secure_url:", data);
-        alert("画像URLが返ってきませんでした（preset設定を確認）");
-        return;
-      }
-
-      // ★ 編集フォームに反映（最後に保存ボタンでFirestoreへ）
-      setCommunityForm((prev) => (prev ? { ...prev, thumbnailUrl: data.secure_url } : prev));
-    } catch (err) {
-      console.error(err);
-      alert("画像アップロード中にエラーが発生しました");
-    }
-  };
-
-
   // コミュニティ編集フォームの入力変更
   const handleCommunityInputChange = (
     field: keyof Community,
