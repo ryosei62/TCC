@@ -14,6 +14,9 @@ import { MyPage } from "./pages/MyPage";
 import { TimelinePage } from "./pages/TimelinePage";
 import { Terms } from "./pages/Terms";
 import { Privacy } from "./pages/Privacy";
+import { HowJoin } from './pages/HowJoin';
+import { HowDiscovery } from './pages/HowDiscovery';
+import { HowDive } from './pages/HowDive';
 
 const App: React.FC = () => {
   return (
@@ -28,6 +31,13 @@ const App: React.FC = () => {
               <Terms />} />
           <Route path="/privacy" element={
               <Privacy />} />
+          
+          <Route path="/how-join" element={
+            <HowJoin />} />
+          <Route path="/how-discovery" element={
+            <HowDiscovery />} />
+          <Route path="/how-dive" element={
+            <HowDive />} />
 
           {/* ▼▼▼ ログイン必須のページ（PrivateRouteで囲む） ▼▼▼ */}
           <Route path="/" element={
