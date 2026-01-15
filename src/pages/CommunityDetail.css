@@ -420,6 +420,30 @@
   padding-left: 4px; /* 少しインデント */
 }
 
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* 矢印と文字の間隔 */
+  
+  background: transparent; /* 背景なし */
+  border: none;            /* 枠線なし */
+  padding: 8px 0;          /* クリック範囲を少し確保 */
+  margin-bottom: 20px;
+  
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #6b7280; /* 落ち着いたグレー */
+  
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  color: #2563eb; /* ホバー時にTCCブルーに */
+  transform: translateX(-4px); /* 左に少し動くアニメーション */
+}
+
 /* SNSセクション */
 .sns-section-wrapper {
   border-bottom: none; /* SNSは最後の要素になりがちなので線を消す */
