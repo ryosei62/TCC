@@ -5,6 +5,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { collection, getDocs, getDoc, doc, query, where, documentId, orderBy, updateDoc } from "firebase/firestore";
 
 import { auth, db } from "../firebase/config";
+import "./MyPage.css"; // ★ CSS読み込み
 
 type Community = {
   id: string;
@@ -22,7 +23,7 @@ type Profile = {
 
 export const MyPage = () => {
   const navigate = useNavigate();
-  const { uid } = useParams<{ uid: string }>(); // ★ URLのuid
+  const { uid } = useParams<{ uid: string }>();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -35,7 +36,6 @@ export const MyPage = () => {
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
 
-  // ① ログイン状態を監視（「ログイン中の自分」を知るため）
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -48,7 +48,6 @@ export const MyPage = () => {
     return () => unsub();
   }, []);
 
-  // uid が無いURLなら、自分のページに飛ばす（ログインしてる時だけ）
   useEffect(() => {
     if (!uid) {
       if (currentUser) navigate(`/mypage/${currentUser.uid}`);
@@ -56,9 +55,8 @@ export const MyPage = () => {
     }
   }, [uid, currentUser, navigate]);
 
-  const targetUid = uid || currentUser?.uid; // 表示対象
+  const targetUid = uid || currentUser?.uid;
 
-  // ② users/{uid} を取ってプロフィール表示
   useEffect(() => {
     const fetchProfile = async () => {
       if (!targetUid) return;
@@ -68,7 +66,6 @@ export const MyPage = () => {
 
       if (snap.exists()) {
         const data = snap.data() as any;
-
         const username = data.username ?? "（ユーザー名未設定）";
 
         setProfile({
@@ -77,7 +74,6 @@ export const MyPage = () => {
           photoURL: data.photoURL,
         });
 
-        // ★ 編集中でなければ input に反映
         if (!nameInput) {
           setNameInput(username === "（ユーザー名未設定）" ? "" : username);
         }
@@ -86,18 +82,14 @@ export const MyPage = () => {
           username: "（ユーザー不明）",
           email: "",
         });
-
         if (!nameInput) setNameInput("");
       }
     };
-
     fetchProfile();
   }, [targetUid]);
 
-
   useEffect(() => {
     const fetchFavorites = async () => {
-      // 自分のページのときだけ表示（他人のお気に入りは見ない）
       if (!currentUser || !targetUid) return;
       if (currentUser.uid !== targetUid) {
         setFavoriteCommunities([]);
@@ -107,7 +99,6 @@ export const MyPage = () => {
 
       setFavoriteLoading(true);
       try {
-        // 1) favorites を新しい順で取得
         const favRef = collection(db, "users", targetUid, "favorites");
         const favSnap = await getDocs(query(favRef, orderBy("createdAt", "desc")));
         const ids = favSnap.docs
@@ -119,7 +110,6 @@ export const MyPage = () => {
           return;
         }
 
-        // 2) Firestore 'in' は制限があるので分割（安全に10ずつ）
         const chunk = <T,>(arr: T[], size: number) =>
           Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
             arr.slice(i * size, (i + 1) * size)
@@ -146,7 +136,6 @@ export const MyPage = () => {
           });
         }
 
-        // 3) favorites の順番に並び替え
         const order = new Map(ids.map((id, i) => [id, i]));
         results.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
 
@@ -155,56 +144,42 @@ export const MyPage = () => {
         setFavoriteLoading(false);
       }
     };
-
     fetchFavorites();
   }, [currentUser, targetUid]);
 
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      if (!targetUid) return;
+      setLoading(true);
+      try {
+        const communitiesRef = collection(db, "communities");
+        const qOwner = query(communitiesRef, where("ownerId", "==", targetUid));
+        const ownerSnap = await getDocs(qOwner);
+        const qCreated = query(communitiesRef, where("createdBy", "==", targetUid));
+        const createdSnap = await getDocs(qCreated);
 
-  // ③ 表示対象(uid)が作ったコミュニティを取得
-  // ③ 表示対象(uid)が「代表」のコミュニティを取得
-useEffect(() => {
-  const fetchCommunities = async () => {
-    if (!targetUid) return;
-
-    setLoading(true);
-    try {
-      const communitiesRef = collection(db, "communities");
-
-      // 代表（ownerId）
-      const qOwner = query(communitiesRef, where("ownerId", "==", targetUid));
-      const ownerSnap = await getDocs(qOwner);
-
-      // フォールバック：古いデータで ownerId が無い場合に備えて createdBy も拾う
-      const qCreated = query(communitiesRef, where("createdBy", "==", targetUid));
-      const createdSnap = await getDocs(qCreated);
-
-      // 重複排除してマージ
-      const map = new Map<string, Community>();
-
-      const addToMap = (snap: any) => {
-        snap.docs.forEach((d: any) => {
-          const data = d.data() as any;
-          map.set(d.id, {
-            id: d.id,
-            name: data.name,
-            message: data.message,
-            thumbnailUrl: data.thumbnailUrl,
-            createdAt: data.createdAt,
+        const map = new Map<string, Community>();
+        const addToMap = (snap: any) => {
+          snap.docs.forEach((d: any) => {
+            const data = d.data() as any;
+            map.set(d.id, {
+              id: d.id,
+              name: data.name,
+              message: data.message,
+              thumbnailUrl: data.thumbnailUrl,
+              createdAt: data.createdAt,
+            });
           });
-        });
-      };
-
-      addToMap(ownerSnap);
-      addToMap(createdSnap);
-
-      setCommunities(Array.from(map.values()));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchCommunities();
-}, [targetUid]);
+        };
+        addToMap(ownerSnap);
+        addToMap(createdSnap);
+        setCommunities(Array.from(map.values()));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCommunities();
+  }, [targetUid]);
 
   const saveUsername = async () => {
     if (!currentUser || !targetUid) return;
@@ -225,8 +200,6 @@ useEffect(() => {
     try {
       const ref = doc(db, "users", targetUid);
       await updateDoc(ref, { username: next });
-
-      // 画面上の表示も即更新（体感良く）
       setProfile((prev) => ({ ...(prev ?? {}), username: next }));
       setEditingName(false);
     } catch (e) {
@@ -242,132 +215,133 @@ useEffect(() => {
   const isMyPage = currentUser?.uid === targetUid;
 
   return (
-    <div style={{ padding: 24, maxWidth: 720, margin: "0 auto" }}>
-      <h1>{isMyPage ? "マイページ" : "ユーザーページ"}</h1>
+    <div className="mypage-container">
+      <Link to="/" className="mypage-back-link">
+        ← 一覧に戻る
+      </Link>
 
-      <section style={{ marginTop: 16 }}>
-        <h2 style={{ fontSize: 18 }}>アカウント情報</h2>
-        <div style={{ marginTop: 8, lineHeight: 1.8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <b>ユーザー名：</b>
+      <h1 className="mypage-title">{isMyPage ? "マイページ" : "マイページ"}</h1>
 
-            {!isMyPage || !editingName ? (
-              <>
-                <span>{profile?.username ?? "（読み込み中…）"}</span>
-
-                {isMyPage && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingName(true);
-                      setNameError(null);
-                      setNameInput(profile?.username ?? "");
-                    }}
-                    style={{ padding: "4px 10px", border: "1px solid #ddd", borderRadius: 8, background: "#fff" }}
-                  >
-                    変更
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                <input
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  placeholder="ユーザーネーム"
-                  style={{ padding: "6px 10px", border: "1px solid #ddd", borderRadius: 8, minWidth: 220 }}
-                />
-
-                <button
-                  type="button"
-                  onClick={saveUsername}
-                  disabled={savingName}
-                  style={{ padding: "6px 10px", border: "1px solid #ddd", borderRadius: 8, background: "#fff" }}
-                >
-                  {savingName ? "保存中..." : "保存"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingName(false);
-                    setNameError(null);
-                    setNameInput(profile?.username ?? "");
-                  }}
-                  disabled={savingName}
-                  style={{ padding: "6px 10px", border: "1px solid #ddd", borderRadius: 8, background: "#fff" }}
-                >
-                  キャンセル
-                </button>
-
-                {nameError ? <div style={{ width: "100%", color: "red", fontSize: 12 }}>{nameError}</div> : null}
-              </>
-            )}
+      <section className="mypage-section profile-section">
+        <h2 className="section-title">アカウント情報</h2>
+        
+        <div className="profile-grid">
+          {/* ユーザー名行 */}
+          <div className="profile-row">
+            <span className="profile-label">ユーザー名</span>
+            <div className="profile-value-area">
+              {!isMyPage || !editingName ? (
+                <>
+                  <span className="profile-username">
+                    {profile?.username ?? "（読み込み中…）"}
+                  </span>
+                  {isMyPage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingName(true);
+                        setNameError(null);
+                        setNameInput(profile?.username ?? "");
+                      }}
+                      className="edit-btn"
+                    >
+                      変更
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="edit-form-inline">
+                  <input
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    placeholder="ユーザーネーム"
+                    className="mypage-input"
+                  />
+                  <div className="edit-actions">
+                    <button
+                      type="button"
+                      onClick={saveUsername}
+                      disabled={savingName}
+                      className="save-btn"
+                    >
+                      {savingName ? "保存中..." : "保存"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingName(false);
+                        setNameError(null);
+                        setNameInput(profile?.username ?? "");
+                      }}
+                      disabled={savingName}
+                      className="cancel-btn"
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                  {nameError && <p className="error-msg">{nameError}</p>}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div><b>メール：</b>{profile?.email || "（非公開）"}</div>
-
-          {/* emailVerified は Auth の情報で、他人のは取れないので「自分の時だけ」表示 */}
-          {isMyPage && (
-            <div>
-              <b>メール認証：</b>{currentUser?.emailVerified ? "✅ 済" : "❌ 未"}
-            </div>
-          )}
+          {/* メールアドレス行 */}
+          <div className="profile-row">
+            <span className="profile-label">メールアドレス</span>
+            <span className="profile-value">{profile?.email || "（非公開）"}</span>
+          </div>
         </div>
       </section>
 
-      <section style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 18 }}>運営しているコミュニティ</h2>
-
+      {/* 運営コミュニティ */}
+      <section className="mypage-section">
+        <h2 className="section-title">運営しているコミュニティ</h2>
         {loading ? (
-          <p>読み込み中...</p>
+          <p className="loading-text">読み込み中...</p>
         ) : communities.length === 0 ? (
-          <p>まだ運営しているコミュニティがありません。</p>
+          <p className="empty-text">まだ運営しているコミュニティがありません。</p>
         ) : (
-          <ul style={{ marginTop: 12, paddingLeft: 16 }}>
+          <ul className="community-list">
             {communities.map((c) => (
-              <li key={c.id} style={{ marginBottom: 10 }}>
-                <Link to={`/communities/${c.id}`} style={{ textDecoration: "underline" }}>
-                  {c.name}
+              <li key={c.id} className="community-item">
+                <Link to={`/communities/${c.id}`} className="community-card-link">
+                  <div className="community-info">
+                    <h3 className="community-name">{c.name}</h3>
+                    {c.message && <p className="community-message">{c.message}</p>}
+                  </div>
+                  <span className="arrow-icon">→</span>
                 </Link>
-                {c.message ? (
-                  <div style={{ fontSize: 12, opacity: 0.8 }}>{c.message}</div>
-                ) : null}
               </li>
             ))}
           </ul>
         )}
       </section>
 
+      {/* お気に入り（自分のページのみ） */}
       {isMyPage && (
-        <section style={{ marginTop: 24 }}>
-          <h2 style={{ fontSize: 18 }}>お気に入り</h2>
-
+        <section className="mypage-section">
+          <h2 className="section-title">お気に入り</h2>
           {favoriteLoading ? (
-            <p>読み込み中...</p>
+            <p className="loading-text">読み込み中...</p>
           ) : favoriteCommunities.length === 0 ? (
-            <p>お気に入りはまだありません。</p>
+            <p className="empty-text">お気に入りはまだありません。</p>
           ) : (
-            <ul style={{ marginTop: 12, paddingLeft: 16 }}>
+            <ul className="community-list">
               {favoriteCommunities.map((c) => (
-                <li key={c.id} style={{ marginBottom: 10 }}>
-                  <Link to={`/communities/${c.id}`} style={{ textDecoration: "underline" }}>
-                    {c.name}
+                <li key={c.id} className="community-item">
+                  <Link to={`/communities/${c.id}`} className="community-card-link">
+                    <div className="community-info">
+                      <h3 className="community-name">{c.name}</h3>
+                      {c.message && <p className="community-message">{c.message}</p>}
+                    </div>
+                    <span className="arrow-icon">→</span>
                   </Link>
-                  {c.message ? (
-                    <div style={{ fontSize: 12, opacity: 0.8 }}>{c.message}</div>
-                  ) : null}
                 </li>
               ))}
             </ul>
           )}
         </section>
       )}
-
-
-      <div style={{ marginTop: 24 }}>
-        <Link to="/" style={{ textDecoration: "underline" }}>← 一覧へ戻る</Link>
-      </div>
     </div>
   );
 };

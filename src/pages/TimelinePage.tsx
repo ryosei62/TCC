@@ -232,7 +232,7 @@ export const TimelinePage = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <h1 style={{ margin: 0 }}>タイムライン</h1>
         <Link to="/" style={{ textDecoration: "underline" }}>
-          ← 一覧へ戻る
+          ← 一覧に戻る
         </Link>
       </div>
 
