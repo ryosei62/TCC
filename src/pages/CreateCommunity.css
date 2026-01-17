@@ -13,7 +13,7 @@ body {
 .create-container {
   width: 90%;
   max-width: 800px;
-  margin: 60px auto;
+  margin: 10px auto;
   padding: 60px;
   background-color: #ffffff;
   /* 影を薄く広げて「浮いている」感を出す */
@@ -347,10 +347,12 @@ body {
 @media (max-width: 768px) {
   .create-container {
     width: 100%;
+    max-width: 100%;
     margin: 0;
     padding: 30px 20px;
     border-radius: 0;
     box-shadow: none;
+    box-sizing: border-box;
   }
 
   .title {
