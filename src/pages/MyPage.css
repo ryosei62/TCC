@@ -1,4 +1,4 @@
-/* MyPage.css */
+/* MyPage.css (文字サイズ微調整版) */
 
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+JP:wght@400;700&display=swap');
@@ -26,17 +26,18 @@ body {
   text-decoration: none;
   color: #888;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.85rem; /* 少し小さく */
   transition: color 0.3s;
 }
 .mypage-back-link:hover {
   color: #007bff;
 }
 
+
 /* --- ページタイトル --- */
 .mypage-title {
   font-family: 'Montserrat', sans-serif;
-  font-size: 2rem;
+  font-size: 2rem; /* 2rem -> 1.8rem */
   font-weight: 700;
   margin: 0 0 40px 0;
   color: #000;
@@ -46,15 +47,15 @@ body {
 
 /* --- セクション共通 --- */
 .mypage-section {
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
 .section-title {
-  font-size: 1.2rem;
+  font-size: 1.4rem !important; /* 1.2rem -> 1.1rem */
   font-weight: 700;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid #eee; /* 線を少し細く */
   color: #333;
 }
 
@@ -62,21 +63,20 @@ body {
 .profile-grid {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .profile-row {
   display: flex;
-  /* デフォルト（PC）は横並び */
   flex-direction: row; 
   align-items: baseline;
   gap: 16px;
-  padding-bottom: 8px; /* スマホ表示時の区切り線用 */
+  padding-bottom: 8px;
 }
 
 .profile-label {
-  width: 140px; /* 固定幅 */
-  font-size: 0.85rem;
+  width: 140px;
+  font-size: 0.8rem; /* 0.85rem -> 0.8rem */
   font-weight: 700;
   color: #888;
   flex-shrink: 0;
@@ -93,18 +93,18 @@ body {
 
 .profile-username {
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1.1rem; /* 1.2rem -> 1.1rem */
 }
 
 .profile-value {
-  font-size: 1rem;
+  font-size: 0.95rem; /* 1rem -> 0.95rem */
 }
 
 /* --- ボタン類 --- */
 .edit-btn,
 .save-btn,
 .cancel-btn {
-  font-size: 0.8rem;
+  font-size: 0.75rem; /* 0.8rem -> 0.75rem */
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -130,7 +130,7 @@ body {
 
 /* 認証バッジ */
 .verified-badge {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: 700;
@@ -149,7 +149,7 @@ body {
 /* --- 編集フォーム (インライン) --- */
 .edit-form-inline {
   display: flex;
-  flex-direction: row; /* 横並び */
+  flex-direction: row; 
   gap: 10px;
   width: 100%;
   align-items: center;
@@ -157,10 +157,10 @@ body {
 }
 
 .mypage-input {
-  padding: 8px 12px;
+  padding: 6px 10px; /* パディング縮小 */
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.95rem; /* 文字サイズ縮小 */
   flex-grow: 1;
   max-width: 300px;
   box-sizing: border-box;
@@ -180,7 +180,7 @@ body {
   color: #ff4d4f;
   font-size: 0.8rem;
   margin: 0;
-  width: 100%; /* 改行させる */
+  width: 100%; 
 }
 
 /* --- コミュニティリスト --- */
@@ -194,7 +194,7 @@ body {
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 16px;
+  gap: 12px; /* 間隔少し狭く */
 }
 
 .community-item {
@@ -214,7 +214,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 14px 16px; /* パディング微調整 */
   text-decoration: none;
   color: inherit;
 }
@@ -222,18 +222,18 @@ body {
 .community-info {
   flex-grow: 1;
   padding-right: 16px;
-  min-width: 0; /* フレックスアイテムの縮小許可 */
+  min-width: 0; 
 }
 
 .community-name {
-  font-size: 1.1rem;
+  font-size: 1rem; /* 1.1rem -> 1rem */
   font-weight: 700;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
   color: #333;
 }
 
 .community-message {
-  font-size: 0.85rem;
+  font-size: 0.8rem; /* 0.85rem -> 0.8rem */
   color: #666;
   margin: 0;
   white-space: nowrap;
@@ -255,7 +255,6 @@ body {
 /* 📱 スマホ・レスポンシブ対応 (768px以下) */
 /* ---------------------------------- */
 @media (max-width: 768px) {
-  /* コンテナ：画面いっぱいに広げる */
   .mypage-container {
     width: 100%;
     margin: 0;
@@ -266,18 +265,17 @@ body {
   }
 
   .mypage-title {
-    font-size: 1.6rem;
-    margin-bottom: 30px;
-    text-align: left; /* スマホなら左寄せが自然な場合も */
+    font-size: 1.5rem; /* 1.6rem -> 1.5rem */
+    margin-bottom: 24px;
+    text-align: left; 
   }
 
-  /* プロフィール行：縦積みに変更 */
   .profile-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
-    border-bottom: 1px solid #f5f5f5; /* 区切り線を追加 */
-    padding-bottom: 16px;
+    gap: 4px; /* 間隔詰める */
+    border-bottom: 1px solid #f5f5f5; 
+    padding-bottom: 12px;
     margin-bottom: 10px;
   }
   .profile-row:last-child {
@@ -286,12 +284,12 @@ body {
 
   .profile-label {
     width: auto;
-    font-size: 0.8rem;
+    font-size: 0.75rem; /* 小さく */
     color: #999;
   }
 
   .profile-username {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   /* 編集フォームも縦積みに */
@@ -300,20 +298,19 @@ body {
     align-items: flex-start;
   }
   .mypage-input {
-    max-width: 100%; /* 横幅いっぱい */
+    max-width: 100%; 
   }
   .edit-actions {
     width: 100%;
-    justify-content: flex-end; /* ボタンを右寄せ */
+    justify-content: flex-end; 
   }
 
-  /* ボタン類を少し大きく（タッチしやすく） */
   .edit-btn, .save-btn, .cancel-btn {
     padding: 8px 16px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .community-item:hover {
-    transform: none; /* スマホではホバー移動を無効化（誤操作防止） */
+    transform: none; 
   }
 }
