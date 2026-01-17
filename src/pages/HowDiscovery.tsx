@@ -18,7 +18,7 @@ export const HowDiscovery = () => {
       {/* ★ 4. メインエリアのクラス名を変更 */}
       <main className="howto-main">
         <div className="howto-title">
-          <span className="en-heading">02. DISCOVERY</span>
+          <span className="en-heading-sub">02. DISCOVERY</span>
           <span className="jp-heading">コミュニティの探し方</span>
         </div>
 
