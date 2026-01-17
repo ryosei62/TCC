@@ -524,11 +524,38 @@
   .feature-section.reverse .feature-grid {
     flex-direction: column;
   }
-  
+
   .hero-section {
-    height: 80vh;
+    /* ★修正: 文字数に合わせて高さを自動で伸ばす */
+    height: auto; 
+    min-height: 80vh; /* 最低でも画面の80%は確保 */
+    
+    /* 上下の余白をたっぷり取る（ヘッダー被り防止＆読みやすさ確保） */
+    padding-top: 100px; 
+    padding-bottom: 60px;
+    
+    /* 背景画像の位置調整 */
+    background-position: center top; 
+  }
+  .hero-description {
+    font-size: 0.8rem; /* 1.1rem -> 0.9rem に小さく */
+    line-height: 1.8;  /* 読みやすさは維持 */
+    margin-top: 30px;  /* 上の余白を少し詰める */
+    
+    /* 横幅いっぱいに文字が広がると読みづらいので制限 */
+    width: 95%;        
+    margin-left: auto;
+    margin-right: auto;
   }
 
+  .hero-message {
+    font-size: 0.78rem; /* 1rem -> 0.9rem に小さく */
+    margin-top: 30px;
+    padding-top: 20px;
+  }
+
+
+  
   .return-btn {
     /* 位置を左端に固定 */
     position: absolute;
