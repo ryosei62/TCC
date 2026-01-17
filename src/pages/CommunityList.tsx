@@ -319,29 +319,34 @@ export default function CommunitiesList() {
 
   return (
     <div className="community-list-container">
-      <div className="main-title-area">
-        <img
-          src="/favicon.png"
-          alt="TCCロゴ"
-          width="40"
-          height="40"
-          className="main-logo"
-        />
-        <h1>つくばカジュアルコミュニティ</h1>
-      </div>
+      <header className="site-header">
+        <div className="header-left">
+          <img
+            src="/favicon.png"
+            alt="TCCロゴ"
+            width="40"
+            height="40"
+            className="main-logo"
+          />
+          <h1>つくばカジュアルコミュニティ</h1>
+        </div>
+        {currentUser && (
+          <div className="header-right">
+            <button
+                  type="button"
+                  aria-label="ユーザーメニュー"
+                  onClick={() => setIsOpen((v) => !v)}
+                  className="user-menu-trigger"
+              >
+                <FaUserCircle className="user-icon-default"/>
+          </button>
+          </div>
+        )}
+      </header>
 
       {/* 右上アイコン（ログイン中だけ） */}
       {currentUser && (
         <>
-          <button
-            type="button"
-            aria-label="ユーザーメニュー"
-            onClick={() => setIsOpen((v) => !v)}
-            className="user-menu-trigger"
-          >
-            <FaUserCircle />
-          </button>
-
           {isOpen && (
             <div className="user-menu-backdrop" onClick={() => setIsOpen(false)} />
           )}

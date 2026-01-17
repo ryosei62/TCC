@@ -188,9 +188,15 @@ body {
   font-size: 0.95rem;
   line-height: 1.6;
   color: #555;
+  /* 標準仕様（対応ブラウザはまだ少ない） */
+  display: box;
+  line-clamp: 3;
+
+  /* WebKit 用（実際に効くのはこちら） */
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* 3行制限 */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+
   overflow: hidden;
 }
 
