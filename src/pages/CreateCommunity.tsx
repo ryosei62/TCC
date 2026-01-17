@@ -108,10 +108,15 @@ export const CreateCommunity = () => {
     }
 
     // 2. 文字数チェック (一言メッセージ)
+    if (formData.name.length > 20) {
+      alert("コミュニティ名は20文字以内で入力してください。");
+      return;
+    }
     if (formData.message.length > 30) {
       alert("一言メッセージは30文字以内で入力してください。");
       return;
     }
+
     // 3. メンバー数が選択されているか
     if (!formData.memberCount) {
       alert("メンバー数を選択してください。");
@@ -194,17 +199,23 @@ export const CreateCommunity = () => {
       <h2 className="title">新しいコミュニティを作る</h2>
 
       <form onSubmit={handleSubmit} className="create-form">
-        <div className="item">
+        <div className="item align-top">
           <p className="label-text">コミュニティ名<span className="required">*</span>:</p>
-          <input
-            type="text"
-            name="name"
-            placeholder="筑波散歩会"
-            value={formData.name}
-            onChange={handleChange}
-            className="input-field"
-            required
-          />
+          <div style={{ width: "100%" }}>
+            <input
+              type="text"
+              name="name"
+              placeholder="筑波散歩会"
+              value={formData.name}
+              onChange={handleChange}
+              className="input-field"
+              required
+              maxLength={20} // 20文字制限
+            />
+            <p className={`char-counter ${formData.name.length >= 20 ? "limit" : ""}`}>
+              {formData.name.length} / 20
+            </p>
+          </div>
         </div>
         
 
