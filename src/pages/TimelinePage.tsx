@@ -228,39 +228,45 @@ export const TimelinePage = () => {
   const hasPosts = visiblePosts.length > 0;
 
   return (
-    <div style={{ maxWidth: 860, margin: "0 auto", padding: 24 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <h1 style={{ margin: 0 }}>タイムライン</h1>
-        <Link to="/" style={{ textDecoration: "underline" }}>
+    <div className="timeline-container">
+      <div className="timeline-header">
+        <Link to="/" className="back-link">
           ← 一覧に戻る
         </Link>
+        <h1 className="timeline-title">タイムライン</h1>
       </div>
 
       {/* ソート切り替え */}
-      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        <button onClick={() => setSortType("new")} className={sortType === "new" ? "active-sort" : ""}>
+      <div className="sort-controls">
+        <button 
+          onClick={() => setSortType("new")} 
+          className={`sort-btn ${sortType === "new" ? "active-sort" : ""}`}
+        >
           新着順
         </button>
-        <button onClick={() => setSortType("like")} className={sortType === "like" ? "active-sort" : ""}>
+        <button 
+          onClick={() => setSortType("like")} 
+          className={`sort-btn ${sortType === "like" ? "active-sort" : ""}`}
+        >
           ❤️ いいね順
         </button>
 
         <button
           onClick={() => setFavOnly((v) => !v)}
-          className={favOnly ? "active-sort" : ""}
+          className={`sort-btn ${favOnly ? "active-sort" : ""}`}
           disabled={!uid || favoriteLoading}
           title={!uid ? "ログインすると使えます" : ""}
         >
-          ★お気に入りの投稿だけ
+          ★ お気に入り限定
         </button>
       </div>
 
       {loading ? (
-        <p style={{ marginTop: 16 }}>読み込み中...</p>
+        <p className="loading-text">読み込み中...</p>
       ) : !hasPosts ? (
-        <p style={{ marginTop: 16 }}>まだ投稿がありません。</p>
+        <p className="empty-text">まだ投稿がありません。</p>
       ) : (
-        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="post-list">
           {visiblePosts.map((p) => {
             const communityName = p.communityId
               ? communityNameMap[p.communityId] ?? "（読み込み中…）"
@@ -274,16 +280,10 @@ export const TimelinePage = () => {
               <article
                 key={likeKey}
                 onClick={() => navigate(postHref)}
-                style={{
-                  border: "1px solid #eee",
-                  borderRadius: 12,
-                  padding: 14,
-                  background: "#fff",
-                  cursor: "pointer",
-                }}
+                className="post-card"
               >
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                  <div style={{ minWidth: 0 }}>
+                <div className="post-main">
+                  <div className="post-content-top">
                     <div className="meta-row">
                       <Link
                         to={`/communities/${p.communityId}`}
@@ -293,50 +293,47 @@ export const TimelinePage = () => {
                       >
                         {communityName}
                       </Link>
-
-                      {p.createdAt ? <span className="meta-sep">・</span> : null}
-                      {p.createdAt ? <span className="meta-date">{formatDate(p.createdAt)}</span> : null}
+                      {p.createdAt && (
+                        <div className="meta-info-group">
+                          <span style={{ opacity: 0.3 }}>|</span> {/* 薄い縦線で区切る */}
+                          <span className="meta-date">{formatDate(p.createdAt)}</span>
+                        </div>
+                      )}
                     </div>
-
-                    <h3 style={{ margin: "6px 0 6px", fontSize: 18, lineHeight: 1.3 }}>
+                    <h3 className="post-title">
                       {p.title ?? "（タイトルなし）"}
                     </h3>
-
                     {p.body ? (
-                      <p style={{ margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+                      <p className="post-body">
                         {p.body}
                       </p>
                     ) : null}
-                  </div>
-
-                  {p.imageUrl ? (
-                    <img
-                      src={p.imageUrl}
-                      alt=""
-                      style={{
-                        width: 120,
-                        height: 90,
-                        objectFit: "cover",
-                        borderRadius: 10,
-                        flexShrink: 0,
-                      }}
-                    />
-                  ) : null}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation(); // ★記事遷移を止める（必須）
-                    if (!uid) return;
-                    toggleLike({ communityId: p.communityId, postId: p.id, uid });
-                  }}
-                  disabled={!uid}
-                  className={`like-button ${liked ? "liked" : ""}`}
-                >
-                  {liked ? "❤️" : "🤍"} {p.likesCount ?? 0}
-                </button>
+                <div className="post-actions">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation(); // ★記事遷移を止める（必須）
+                      if (!uid) return;
+                      toggleLike({ communityId: p.communityId, postId: p.id, uid });
+                    }}
+                    disabled={!uid}
+                    className={`like-button ${liked ? "liked" : ""}`}
+                  >
+                    {liked ? "❤️" : "🤍"} {p.likesCount ?? 0}
+                  </button>
+                  </div>
+                </div>
+                
+                {p.imageUrl ? (
+                  <img
+                    src={p.imageUrl}
+                    alt=""
+                    className="post-thumbnail"
+                  />
+                ) : null}
               </article>
             );
           })}

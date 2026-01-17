@@ -38,35 +38,20 @@ body {
   margin-bottom: 30px;
 }
 
+/* --- 戻るリンク --- */
 .back-button-center {
-  /* レイアウト: Flexboxでアイコンと文字を並べる */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px; 
-  
-  /* ★配置: ここが重要（中央寄せ設定） */
-  width: fit-content;       /* 幅を文字数に合わせる（これがないと横いっぱいになる） */
-  margin: 0 auto 30px auto; /* 上 左右(auto) 下(30px) 左(auto) -> これで真ん中へ */
-
-  /* 見た目 */
-  background: transparent; 
-  border: none;            
-  padding: 10px 20px;      /* 少しクリック範囲を広く */
-  
-  cursor: pointer;
-  font-family: 'Noto Sans JP', sans-serif;
-  font-size: 0.95rem;
+  display: inline-block;
+  margin-bottom: 20px;
+  text-decoration: none;
+  color: #888;
   font-weight: 700;
-  color: #6b7280; 
-  
-  transition: all 0.2s ease;
+  font-size: 0.9rem; 
+  transition: color 0.3s;
+}
+.back-button-center:hover {
+  color: #007bff;
 }
 
-.back-button-center:hover {
-  color: #2563eb; 
-  transform: translateY(-2px); 
-}
 
 /* --- フォーム全体 --- */
 .create-form {
