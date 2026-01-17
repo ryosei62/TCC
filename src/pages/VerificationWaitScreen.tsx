@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { resendVerificationForCurrentUser } from "../firebase/auth";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/config";
+import { useNavigate } from "react-router-dom";
 
 // デザインはSignupFormと同じものを使用
 import "./SignupForm.css";
 
 export const VerificationWaitScreen = () => {
+  const navigate = useNavigate();
   const [canResendAt, setCanResendAt] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
   const [message, setMessage] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export const VerificationWaitScreen = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      navigate("/signup");
     } catch (e) {
       console.error("Logout failed", e);
     }
@@ -107,13 +110,13 @@ export const VerificationWaitScreen = () => {
               style={{ 
                 background: "none", 
                 border: "none", 
-                color: "#666", 
+                color: "#007bff",
                 textDecoration: "underline", 
                 cursor: "pointer",
                 fontSize: "12px"
               }}
             >
-              メールアドレスを間違えた場合はログアウト
+              メールアドレスを修正する(登録画面に戻る)
             </button>
           </div>
         </div>

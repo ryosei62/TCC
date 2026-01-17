@@ -18,6 +18,7 @@ import { Privacy } from "./pages/Privacy";
 import { HowJoin } from './pages/HowJoin';
 import { HowDiscovery } from './pages/HowDiscovery';
 import { HowDive } from './pages/HowDive';
+import { VerificationWaitScreen } from "./pages/VerificationWaitScreen";
 
 const App: React.FC = () => {
   return (
@@ -40,6 +41,8 @@ const App: React.FC = () => {
             <HowDiscovery />} />
           <Route path="/how-dive" element={
             <HowDive />} />
+          <Route path="/verify-email" element={
+            <VerificationWaitScreen />} />
 
           {/* ▼▼▼ ログイン必須のページ（PrivateRouteで囲む） ▼▼▼ */}
           <Route path="/" element={
