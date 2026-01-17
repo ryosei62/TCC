@@ -11,50 +11,67 @@
   background-color: #ffffff;
 }
 
-.main-title-area {
-  display: flex; 
-  align-items: center; 
-  gap: 15px; 
-  margin-bottom: 25px; 
-  border-bottom: 3px solid #E3F2FD; 
-  padding-bottom: 10px; 
-  cursor: default;
-  user-select: none;
+.site-header {
+  display: flex;
+  justify-content: space-between; /* 左右に配置 */
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #E3F2FD; /* 下線はヘッダー全体に */
 }
 
-.community-list-container h1 {
-  font-size: 2.2em;
-  color: #1976D2; 
-  margin: 0; 
+/* 左側（タイトルグループ） */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
+
+/* タイトルのスタイル微調整 */
+.community-list-container h1 {
+  font-size: 1.8rem; /* 少し調整 */
+  color: #1976D2;
+  margin: 0;
+  line-height: 1.2;
+}
+
 
 .main-logo {
-  vertical-align: middle; 
-  flex-shrink: 0; /* ロゴが縮まないようにする */
+  flex-shrink: 0;
 }
-
 /* ---------------------------------- */
 /* ヘッダーリンク（ナビゲーション） */
 /* ---------------------------------- */
 
 /* 右上のアイコン */
-.user-menu-trigger {
-  position: absolute; /* 一覧右上に固定 */
-  top: 16px;
-  right: 16px;
-  z-index: 10;
-  font-size: 30px;
+.user-menu-trigger {        
   background: transparent;
   border: none;
   cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  
+  /* 高さ調整など */
+  margin-left: 10px; 
 }
 
-/* 背景の暗幕 */
-.user-menu-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  z-index: 999;
+.user-menu-trigger:hover {
+  opacity: 0.7;
+}
+.user-icon-default {
+  font-size: 40px; /* ★ここでサイズを大きく指定 */
+  color: #ccc;     /* 薄いグレー */
+  background-color: #fff;
+  border-radius: 50%;
+  transition: color 0.2s;
+}
+
+/* ホバー時に少し濃くする */
+.user-menu-trigger:hover .user-icon-default {
+  color: #999;
 }
 
 /* 右から出るパネル本体 */
@@ -323,6 +340,48 @@
 }
 
 /* ---------------------------------- */
+/* ページネーション (モダン化) */
+/* ---------------------------------- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  gap: 16px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #555;
+  transition: all 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f0f7ff;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f9f9f9;
+}
+
+.pagination span {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+}
+
+/* ---------------------------------- */
 /* コミュニティリスト */
 /* ---------------------------------- */
 
@@ -476,6 +535,67 @@
   margin-top: 20px;
 }
 
+/* ---------------------------------- */
+/* 不具合報告フォーム (カード化) */
+/* ---------------------------------- */
+.form {
+  display: block;
+  text-decoration: none;
+  background-color: #fff;
+  border: 1px dashed #ccc; /* 破線で「開発中」「報告」感を出す */
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  margin-top: 60px;
+  transition: all 0.2s;
+  color: #666;
+}
+
+.form:hover {
+  background-color: #fffaf0; /* 薄いオレンジ背景で注意を引く */
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.form h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* アイコンっぽく「！」を追加 */
+.form h3::before {
+  content: "⚠️";
+  font-size: 1.2rem;
+}
+
+/* ---------------------------------- */
+/* タグの微調整 (よりクリックしやすく) */
+/* ---------------------------------- */
+.community-tags-container {
+  margin-top: 12px; /* 少し離す */
+}
+
+.community-tag-pill {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 20px; /* 完全な丸み */
+  background-color: #f1f5f9;
+  color: #475569;
+  transition: background-color 0.2s;
+  border: 1px solid transparent;
+}
+
+.community-tag-pill:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
 
 /* --- スマホ対応 (レスポンシブ) --- */
 @media (max-width: 600px) {
@@ -484,14 +604,28 @@
     padding: 20px 16px; /* 左右の余白を少し確保 */
   }
 
+  .header-left {
+    flex-shrink: 0; /* 縮小を防ぐ */
+    min-width: 0;
+  }
+
+  .user-icon-default {
+  font-size: 28px; /* ★ここでサイズを大きく指定 */
+  color: #ccc;     /* 薄いグレー */
+  background-color: #fff;
+  border-radius: 50%;
+  transition: color 0.2s;
+  }
+
   .community-list-container h1 {
-    font-size: 1.3rem; /* PCの2.2remから縮小 */
-    line-height: 1.4;
+    font-size: 1.15rem;
+    white-space: normal; /* 改行を許可 */
+    word-break: break-word;
   }
 
   .main-logo {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
   }
 
   .header-links {
@@ -555,5 +689,24 @@
   /* 画像を少し大きく見せてリッチにする */
   .community-thumbnail {
     height: 180px; 
+  }
+
+  .pagination {
+    gap: 8px;
+    margin-top: 30px;
+  }
+  
+  .pagination button {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .pagination span {
+    font-size: 0.8rem;
+  }
+
+  .form {
+    margin-top: 40px;
+    padding: 16px;
   }
 }
