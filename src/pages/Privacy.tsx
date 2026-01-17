@@ -70,7 +70,7 @@ export const Privacy = () => {
                     </p>
 
                     <p style={{marginTop: '40px', textAlign: 'right', fontSize: '0.9rem'}}>
-                        [ 202X年X月X日 制定 ]
+                        [ 2026年1月18日 制定 ]
                     </p>
                 </div>
             </main>
