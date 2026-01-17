@@ -1,0 +1,167 @@
+/* HowTo.css - 使い方ページ専用スタイル */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+JP:wght@400;700&display=swap');
+
+/* --- 全体のコンテナ --- */
+.howto-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #333;
+  font-family: 'Noto Sans JP', sans-serif;
+  width: 100%;
+  overflow-x: hidden; /* 横はみ出し防止 */
+}
+
+/* --- シンプルなヘッダー --- */
+.howto-header {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid #eee;
+  padding: 15px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+}
+
+/* 「戻る」リンク */
+.howto-return-link {
+  text-decoration: none;
+  color: #666;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+}
+
+.howto-return-link:hover {
+  color: #007bff;
+}
+
+.arrow {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* --- メインコンテンツ（記事エリア） --- */
+.howto-main {
+  width: 100%;
+  max-width: 800px; /* 読みやすい幅に制限 */
+  margin: 0 auto;   /* 中央寄せ */
+  padding: 40px 20px 80px; /* 上の余白は40pxに減らす */
+  box-sizing: border-box;  /* パディングを含めて幅計算 */
+}
+
+/* --- タイトル --- */
+.howto-title {
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 30px;
+}
+
+.en-heading {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #007bff; /* TCCブルー */
+  letter-spacing: 0.05em;
+}
+
+.jp-heading {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #333;
+  display: block;
+  margin-top: 10px;
+}
+
+/* --- 本文テキスト --- */
+.howto-text {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #444;
+}
+
+.howto-text h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-top: 40px;
+  margin-bottom: 15px;
+  padding-left: 15px;
+  border-left: 5px solid #007bff; /* 青い縦線で見出し強調 */
+  color: #000;
+}
+
+.howto-text p {
+  margin-bottom: 1.5em;
+}
+
+/* --- 画像エリア --- */
+.howto-image-container {
+  text-align: center;
+  margin: 40px 0;
+}
+
+.howto-image {
+  max-width: 100%; /* 親要素からはみ出さない */
+  width: auto;     /* PCでは本来のサイズ */
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* ふんわりした影 */
+  border: 1px solid #f0f0f0;
+}
+
+.howto-image-small {
+  max-width: 300px; /* ★ここで好きな最大幅を指定（300px〜400pxくらいがおすすめ） */
+  width: 100%;      /* スマホでは画面幅に合わせる */
+  height: auto;
+  
+  /* 以下は howto-image と同じ装飾 */
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border: 1px solid #f0f0f0;
+}
+
+/* --- ボタンエリア --- */
+.howto-button-area {
+  margin-top: 60px;
+  text-align: center;
+}
+
+/* TCC共通のプライマリボタン（必要ならAbout.cssからコピペでもOK） */
+.primary-btn {
+  display: inline-block;
+  padding: 16px 40px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: bold;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+.primary-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
+}
+
+/* --- 📱 スマホ対応 --- */
+@media (max-width: 768px) {
+  .howto-main {
+    padding: 30px 20px; /* 余白をさらに調整 */
+  }
+
+  .en-heading {
+    font-size: 2rem;
+  }
+
+  .howto-image {
+    width: 100%; /* スマホでは幅いっぱい */
+  }
+}

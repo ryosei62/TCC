@@ -604,6 +604,21 @@
   .stat-number {
     font-size: 3rem; /* 少し小さく */
   }
+
+  .section-block {
+    /* PC: 100px -> スマホ: 40px に変更 */
+    padding: 40px 20px; 
+  }
+
+  /* --- 2. コンテンツ間の隙間も詰める --- */
+  .feature-grid {
+    gap: 30px; /* 少し詰める */
+  }
+
+  /* --- 3. タイトル下の余白も少し詰める --- */
+  .section-title {
+    margin-bottom: 30px; /* 60px -> 30px */
+  }
 }
 
 
