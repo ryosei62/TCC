@@ -1,292 +1,283 @@
 /* Timeline.css */
 
-/* --- 全体のレイアウト --- */
-.about-container {
-  display: flex; /* 横並びにする */
-  min-height: 100vh; /* 画面いっぱいの高さを確保 */
-  background-color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+JP:wght@400;700&display=swap');
 
-/* --- 左側：サイドバー --- */
-.sidebar {
-  width: 260px; /* サイドバーの幅 */
-  background-color: #f8f9fa; /* 薄いグレーの背景 */
-  border-right: 1px solid #e9ecef;
-  display: flex;
-  flex-direction: column;
-  padding: 40px 20px;
-  box-sizing: border-box;
-  flex-shrink: 0; /* 縮まないように固定 */
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 16px; /* ボタン同士の間隔 */
-  margin-bottom: auto; /* フッター（戻るボタン）を下に押しやる */
-}
-
-/* サイドバーのボタン */
-.sidebar-btn {
-  background: none;
-  border: none;
-  text-align: left;
-  font-size: 1rem;
-  padding: 12px 16px;
-  cursor: pointer;
-  border-radius: 8px;
-  color: #495057;
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-.sidebar-btn:hover {
-  background-color: #e2e6ea;
-  color: #212529;
-}
-
-/* 選択中のボタンのスタイル */
-.sidebar-btn.active {
-  background-color: #e7f1ff; /* 薄い青背景 */
-  color: #007bff; /* 文字色を青に */
-  font-weight: bold;
-}
-
-.sidebar-footer {
-  margin-top: 40px;
-  text-align: center;
-}
-
-/* --- 右側：メインコンテンツ --- */
-.main-content {
-  flex-grow: 1; /* 残りのスペースを全て使う */
-  padding: 60px 40px;
-  overflow-y: auto; /* 内容が多い場合はスクロール */
-}
-
-/* フェードインアニメーション（切り替え時用） */
-.content-fade-in {
-  animation: fadeIn 0.4s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- 既存のスタイル + 調整 --- */
-
-.logo-container {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.about-title {
-  /* 1. 中央に配置 */
-  text-align: center;
-
-  /* 2. もっと大きく */
-  font-size: 3.5rem; 
-  
-  /* タイトルと他の要素との間隔を調整 */
-  margin-bottom: 24px;
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background-color: #f9f9f9;
   color: #333;
 }
 
-/* 他のページのタイトルのためのスタイル（少し小さめ） */
-.section-title {
-  text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 32px;
-  color: #333;
-}
-
-.about-description {
-  /* 追記したテキストを読みやすくスタイリング */
-  font-size: 1.1rem;
-  line-height: 1.8; /* 行間を少し広げました */
-  
-  /* 1行が長すぎると読みにくいため、最大幅を設定 */
-  max-width: 700px;
-  
-  /* ブロック全体を中央寄せ */
-  margin-left: auto;
-  margin-right: auto;
-  
-  color: #555; /* 真っ黒より少しグレーが読みやすい */
-}
-
-/* 既存の「一覧に戻る」リンクのスタイル */
-.returnList {
-  display: block;
-  text-align: center;
-  font-size: 1rem;
-  color: #007bff;
-  text-decoration: none;
-}
-
-.returnList:hover {
-  text-decoration: underline;
-}
-
-/* スマホ対応（レスポンシブ） */
-@media (max-width: 768px) {
-  .about-container {
-    flex-direction: column; /* スマホでは縦並びに */
-  }
-  
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #e9ecef;
-    padding: 20px;
-  }
-
-  .about-title {
-    font-size: 2.5rem;
-  }
-  
-  .main-content {
-    padding: 30px 20px;
-  }
-}
-
-/* 規約やポリシーの長い文章用コンテナ */
-.legal-content {
+.timeline-container {
   max-width: 800px;
-  margin: 0 auto; /* 画面中央に配置 */
-  text-align: left; /* 左揃えにする（読みやすさのため） */
-  color: #444;
+  margin: 40px auto;
+  padding: 0 20px;
+  padding-bottom: 100px;
 }
 
-.legal-content h3 {
-  font-size: 1.4rem;
-  margin-top: 40px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #ddd; /* 区切り線 */
-  padding-bottom: 8px;
-  color: #333;
+/* --- ヘッダー --- */
+.timeline-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
 }
 
-.legal-content p {
-  line-height: 1.8;
-  margin-bottom: 16px;
+.back-link {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #888;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.back-link:hover {
+  color: #007bff;
 }
 
-.legal-content ul, .legal-content ol {
-  margin-bottom: 16px;
-  padding-left: 24px;
+.timeline-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin: 0;
+  color: #000;
+  letter-spacing: 0.05em;
 }
 
-.legal-content li {
-  margin-bottom: 8px;
-  line-height: 1.6;
+/* --- ソートボタンエリア --- */
+.sort-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  flex-wrap: wrap; /* スマホで折り返すならwrap, 横スクロールならnowrap */
 }
 
-/* ===== Like Button ===== */
-.like-button {
-  margin-top: 10px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb; /* gray-200 */
-  background: #fff;
-  color: #374151; /* gray-700 */
-  font-size: 14px;
-  font-weight: 500;
+/* ボタンの共通デザイン */
+.sort-btn {
+  /* サイズと形を統一 */
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
-
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  /* Flexでアイコンと文字を綺麗に並べる */
   display: inline-flex;
   align-items: center;
   gap: 6px;
-
-  transition: 
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.05s ease;
 }
 
-.like-button:hover {
-  background-color: #f9fafb; /* gray-50 */
+.sort-btn:hover {
+  background-color: #f0f7ff;
+  border-color: #007bff;
+  color: #007bff;
 }
 
-.like-button:active {
-  transform: scale(0.96);
-}
-
-.like-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* 押している状態 */
-.like-button.liked {
-  background-color: #fee2e2; /* red-100 */
-  border-color: #fecaca;     /* red-200 */
-  color: #dc2626;            /* red-600 */
-}
-
-/* ===== 小さめ表示にしたい場合（タイムライン用） ===== */
-.like-button.small {
-  padding: 4px 10px;
-  font-size: 13px;
-}
-
-.active-sort {
-  background: #2563eb;
+/* 選択中のスタイル（青背景） */
+.sort-btn.active-sort {
+  background-color: #007bff;
   color: #fff;
-  border-radius: 6px;
+  border-color: #007bff;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
 }
 
-/* 上のメタ情報（コミュニティ＋日付） */
+.sort-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #eee;
+  border-color: #eee;
+  color: #aaa;
+  box-shadow: none;
+}
+
+/* --- 投稿カード --- */
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.post-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  
+  /* レイアウト: 横並び (左:テキストエリア, 右:画像) */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  border-color: #aaddff;
+}
+
+/* 左側のメインエリア（縦積み：上部コンテンツ ＋ いいねボタン） */
+.post-main {
+  flex: 1; /* 残りの幅を埋める */
+  min-width: 0; /* 文字省略のために必須 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* メタ情報・タイトル・本文をまとめるグループ */
+.post-content-top {
+  margin-bottom: 16px; /* いいねボタンとの距離 */
+}
+
 .meta-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
-/* コミュニティ名を“ピル（バッジ）”にする */
 .community-pill {
   display: inline-flex;
   align-items: center;
-  max-width: 100%;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #f8fafc;
-  color: #0f172a;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: #f0f7ff;
+  color: #007bff;
   font-weight: 700;
-  font-size: 12px;
-  line-height: 1.2;
+  font-size: 0.75rem;
   text-decoration: none;
-
-  /* 長い名前を省略 */
+  transition: all 0.2s;
+  max-width: 100%;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
-
-/* ホバーで強調 */
 .community-pill:hover {
-  background: #eef2ff;
-  border-color: #c7d2fe;
-  color: #1d4ed8;
+  background: #007bff;
+  color: #fff;
 }
 
-/* 押した感 */
-.community-pill:active {
-  transform: translateY(1px);
+.meta-info-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #aaa;
 }
 
-/* 区切りと日付 */
-.meta-sep {
-  opacity: 0.55;
-  font-size: 12px;
+.post-title {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #333;
 }
 
-.meta-date {
-  opacity: 0.7;
-  font-size: 12px;
+.post-body {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* 3行制限 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* いいねボタンエリア（左カラムの底辺に配置） */
+.post-actions {
+  margin-top: auto; /* これで一番下に押し下げられる */
+  display: flex;
+  align-items: center;
+}
+
+.like-button {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #eee;
+  background: #fff;
+  color: #555;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.like-button:hover {
+  background-color: #f9f9f9;
+  border-color: #ddd;
+}
+.like-button.liked {
+  background-color: #fff1f0;
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+}
+
+/* 右側の画像（固定サイズ） */
+.post-thumbnail {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0; /* 縮まないように */
+  background-color: #f0f0f0;
+  border: 1px solid #eee;
+}
+
+/* 読み込みメッセージ */
+.loading-text, .empty-text {
+  text-align: center;
+  color: #888;
+  margin-top: 60px;
+}
+
+/* --- スマホ対応 --- */
+@media (max-width: 600px) {
+  .timeline-container {
+    padding: 20px;
+    margin: 0;
+  }
+
+  .timeline-title {
+    font-size: 1.8rem;
+  }
+
+  /* ボタン群を横スクロールに */
+  .sort-controls {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .sort-btn {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    padding: 8px 16px;
+  }
+
+  /* カードを縦積みに変更 */
+  .post-card {
+    flex-direction: column-reverse; /* 画像を上に持ってくる */
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .post-thumbnail {
+    width: 100%;
+    height: 180px; /* 横長に */
+  }
+
+  /* スマホでは画像の横に余白はいらないのでmargin-top: autoを解除してもよいが、
+     縦積みなのでそのままでもOK */
 }

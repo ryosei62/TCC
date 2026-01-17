@@ -188,11 +188,10 @@ export const CreateCommunity = () => {
 
   return (
     <div className="create-container">
-      <h2 className="title">新しいコミュニティを作る</h2>
-
       <div className="return-link-wrapper">
         <Link to="/" className="back-button-center">← 一覧に戻る</Link>
       </div>
+      <h2 className="title">新しいコミュニティを作る</h2>
 
       <form onSubmit={handleSubmit} className="create-form">
         <div className="item">
