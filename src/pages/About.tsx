@@ -119,12 +119,19 @@ export const About = () => {
                     </div>
                 </section>
 
-                <p className="stats-text">
-                    現在のコミュニティ数は{" "}<br/>
-                    <strong>{communityCount !== null ? communityCount : "…"}</strong> 個<br/>
-                    ユーザー数は{" "}<br/>
-                    <strong>{userCount !== null ? userCount : "…"}</strong> 人です。
-                </p>
+               <div className="stats-bar">
+                    <div className="stat-item">
+                        <span className="stat-label">現在のコミュニティ数</span>
+                        <strong className="stat-number">{communityCount !== null ? communityCount : "…"}</strong>
+                        <span className="stat-unit">個</span>
+                    </div>
+                    <div className="stat-divider"></div> {/* PC用の区切り線 */}
+                    <div className="stat-item">
+                        <span className="stat-label">ユーザー数</span>
+                        <strong className="stat-number">{userCount !== null ? userCount : "…"}</strong>
+                        <span className="stat-unit">人</span>
+                    </div>
+                </div>
 
 
                 {/* --- Usage Steps --- */}
@@ -247,7 +254,7 @@ export const About = () => {
                         <span className="separator">/</span>
                         <Link to="/privacy" className="footer-link">Privacy Policy</Link>
                     </div>
-                    <p className="copyright">© 202X Tsukuba Casual Community</p>
+                    <p className="copyright">© 2026 Tsukuba Casual Community</p>
                 </footer>
 
             </main>

@@ -103,7 +103,7 @@ export const Terms = () => {
                     <p>2. 本サービスに関して紛争が生じた場合には，東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
 
                     <p style={{marginTop: '40px', textAlign: 'right', fontSize: '0.9rem'}}>
-                        [ 202X年X月X日 制定 ]
+                        [ 2026年1月18日 制定 ]
                     </p>
                 </div>
             </main>

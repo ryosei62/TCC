@@ -195,36 +195,65 @@
 /* =========================================
    STATS BAR (バッチバチギラギラな数値表示)
 ========================================= */
-.stats-text {
-  background: #050505;
-  color: #888;
-  text-align: center;
-  padding: 50px 20px;
-  margin: 0;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.1rem;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-  border-top: 1px solid rgba(0, 198, 255, 0.3);
-  border-bottom: 1px solid rgba(0, 198, 255, 0.1);
-  box-shadow: 0 0 30px rgba(0, 198, 255, 0.05) inset;
+.stats-bar {
+  background: #050505; /* 黒背景 */
+  color: #fff;
+  padding: 40px 20px;
+  
+  /* ★ Flexboxで横並びにする */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 60px; /* アイテム間の距離 */
+  
+  /* ★ 青い線 (border-top) を削除しました */
+  /* border-top: 1px solid rgba(0, 198, 255, 0.3); */
+  
   position: relative;
   z-index: 10;
+  font-family: 'Montserrat', sans-serif;
 }
 
-.stats-text strong {
-  display: inline-block;
-  margin: 0 8px;
-  font-size: 4rem; 
-  line-height: 1;
+.stat-item {
+  display: flex;
+  flex-direction: column; /* 中身（ラベル・数字・単位）は縦積み */
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #888;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.stat-number {
+  font-size: 3.5rem;
   font-weight: 900;
-  vertical-align: middle;
+  line-height: 1;
+  
+  /* グラデーション文字 */
   background: linear-gradient(180deg, #ffffff 0%, #00c6ff 100%);
   -webkit-background-clip: text;
-  background-clip: text; /* 修正: 標準プロパティを追加 */
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 15px rgba(0, 198, 255, 0.8));
-  animation: neonPulse 2s infinite alternate;
+  
+  /* ネオン風の光彩 */
+  filter: drop-shadow(0 0 10px rgba(0, 198, 255, 0.5));
+}
+
+.stat-unit {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: bold;
+}
+
+/* PC用の区切り線（ただの装飾） */
+.stat-divider {
+  width: 1px;
+  height: 50px;
+  background-color: #333;
 }
 
 /* 修正: 空のルールセット (.stats-text strong + span) は削除しました */
@@ -501,11 +530,38 @@
   }
 
   .return-btn {
+    /* 位置を左端に固定 */
     position: absolute;
-    left: 20px;
+    left: 10px;       /* 端すぎないように少し余白 */
     top: 50%;
     transform: translateY(-50%);
     margin-left: 0;
+
+    /* ★ここがポイント: 元の文字「一覧に戻る」を見えなくする */
+    font-size: 0; 
+    
+    /* タップしやすい大きさにする */
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+ 
+  }
+
+  /* ★代わりに「←」を表示する */
+  .return-btn::before {
+    content: '←';        /* 矢印 */
+    font-size: 1.2rem;   /* 矢印の大きさ（元の文字サイズより大きく） */
+    color: #333;         /* 色 */
+    font-weight: bold;
+    display: block;
+  }
+
+  /* 下線を消す（アイコン化するため） */
+  .return-btn::after {
+    display: none;
   }
 
   .nav-btn {
@@ -514,6 +570,10 @@
   
   .top-header {
     justify-content: center;
+  }
+
+  .feature-img-box {
+    display: none; /* これだけで消えます */
   }
 
   /* Stats bar mobile adjustment */
@@ -526,6 +586,23 @@
     font-size: 3rem;
     display: block;
     margin: 10px 0;
+  }
+  .stats-bar {
+    /* ★ スマホでは縦並びにする */
+    flex-direction: column;
+    gap: 20px;
+    padding: 40px 20px;
+  }
+
+  .stat-divider {
+    /* スマホでは縦並びになるので、縦棒の区切り線は消す */
+    width: 100px;
+    height: 1px; /* 横線にする */
+    background-color: #222;
+  }
+
+  .stat-number {
+    font-size: 3rem; /* 少し小さく */
   }
 }
 
