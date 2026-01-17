@@ -1,6 +1,5 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { VerificationWaitScreen } from "../pages/VerificationWaitScreen";
 
 export const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
@@ -11,7 +10,7 @@ export const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (user && !user.emailVerified) {
-  return <VerificationWaitScreen />; // ← ここに飛ばす
+  return <Navigate to="/verify-email" />; // ← ここに飛ばす
   }
 
   // ログインしていれば、中身（ページ）を表示
