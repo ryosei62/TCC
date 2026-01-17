@@ -18,7 +18,7 @@ export const HowJoin = () => {
       {/* ★ 4. メインエリアのクラス名を変更 */}
       <main className="howto-main">
         <div className="howto-title">
-          <span className="en-heading">01. JOIN US</span>
+          <span className="en-heading-sub">01. JOIN US</span>
           <span className="jp-heading">アカウント登録の方法</span>
         </div>
 

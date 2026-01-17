@@ -15,7 +15,7 @@ export const HowDive = () => {
 
       <main className="howto-main">
         <div className="howto-title">
-          <span className="en-heading">03. DIVE IN</span>
+          <span className="en-heading-sub">03. DIVE IN</span>
           <span className="jp-heading">参加と交流</span>
         </div>
 
