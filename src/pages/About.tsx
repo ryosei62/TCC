@@ -3,19 +3,24 @@ import './About.css';
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "../firebase/config";
-import { collection,getCountFromServer,} from "firebase/firestore";
+import { collection, getCountFromServer } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-
+// Component and Modal Imports
+import Modal from '../component/Modal';
+import { HowJoin } from './HowJoin';
+import { HowDiscovery } from './HowDiscovery';
+import { HowDive } from './HowDive';
 
 // 画像アセットのインポート
 import sumahoWomanImage from '../assets/AboutImage/sumaho_woman.png';
 import universityWatyaImage from '../assets/AboutImage/Tsukuba01.jpg'; // 背景用に追加
 
 export const About = () => {
-
+    const [activeModal, setActiveModal] = useState<string | null>(null);
     const [communityCount, setCommunityCount] = useState<number | null>(null);
     const [userCount, setUserCount] = useState<number | null>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
@@ -27,48 +32,46 @@ export const About = () => {
     const COMMUNITY_OFFSET = 10;
     const USER_OFFSET = 20;
 
-
-
     useEffect(() => {
-    const fetchCounts = async () => {
-        try {
-        const communitySnap = await getCountFromServer(
-            collection(db, "communities")
-        );
-        const userSnap = await getCountFromServer(
-            collection(db, "users")
-        );
+        const fetchCounts = async () => {
+            try {
+                const communitySnap = await getCountFromServer(collection(db, "communities"));
+                const userSnap = await getCountFromServer(collection(db, "users"));
+                setCommunityCount(communitySnap.data().count + COMMUNITY_OFFSET);
+                setUserCount(userSnap.data().count + USER_OFFSET);
+            } catch (e) {
+                console.error("count fetch error:", e);
+            }
+        };
+        fetchCounts();
 
-        // ★ 固定値で増やす
-        setCommunityCount(communitySnap.data().count + COMMUNITY_OFFSET);
-        setUserCount(userSnap.data().count + USER_OFFSET);
-        } catch (e) {
-        console.error("count fetch error:", e);
-        }
-    };
-
-    fetchCounts();
-    }, []);
-
-
-
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-    useEffect(() => {
         const unsub = onAuthStateChanged(auth, (user) => {
-        setCurrentUser(user);
+            setCurrentUser(user);
         });
         return () => unsub();
     }, []);
+
+    const renderModalContent = () => {
+        switch (activeModal) {
+            case 'join':
+                return <HowJoin />;
+            case 'discovery':
+                return <HowDiscovery />;
+            case 'dive':
+                return <HowDive />;
+            default:
+                return null;
+        }
+    };
 
     return (
         <div className="about-container">
             {/* --- Header Navigation --- */}
             <header className="top-header">
                 {currentUser && (
-                <Link to={`/`} className="return-btn">
-                    一覧に戻る
-                </Link>
+                    <Link to={`/`} className="return-btn">
+                        一覧に戻る
+                    </Link>
                 )}
 
                 <nav className="header-nav">
@@ -88,20 +91,16 @@ export const About = () => {
             <main className="main-content">
                 
                 {/* 1. HERO / CONCEPT (ID: concept) */}
-                {/* 背景画像を style で直接指定することで、確実に表示させます */}
                 <section 
                     id="concept" 
                     className="section-block hero-section"
                     style={{ backgroundImage: `url(${universityWatyaImage})` }}
                 >
-                    {/* CSSの ::before で黒いフィルターがかかります */}
-                    
                     <div className="text-center fade-in-up">
                         <h1 className="hero-title">
                             <span className="en-title">CONNECT. CREATE. CASUAL.</span>
                             <span className="jp-title">筑波大生の「好き」が、交差する場所。</span>
                         </h1>
-                        
                         <p className="hero-description">
                             広いキャンパス、数え切れない学生。<br />
                             すれ違うだけではもったいない。<br /><br />
@@ -110,7 +109,6 @@ export const About = () => {
                             あなたの「好き」や「興味」でつながる<br />
                             次世代のコミュニティ・プラットフォームです。
                         </p>
-
                         <p className="hero-message">
                             同じ講義室にはいない、<br />
                             最高の仲間がきっと見つかる。<br />
@@ -133,47 +131,44 @@ export const About = () => {
                     </div>
                 </div>
 
-
                 {/* --- Usage Steps --- */}
                 <section className="usage-section">
                     <h2 className="section-sub-title">HOW TO USE</h2>
                     <div className="steps-container">
-                        {/* 01: Join Us -> /how-join */}
-                        <Link to="/how-join" className="step-item">
+                        {/* 01: Join Us -> Opens Modal */}
+                        <div className="step-item" onClick={() => setActiveModal('join')}>
                             <span className="step-num">01</span>
                             <h3>Join Us</h3>
                             <p>筑波大学発行のメールアドレスで<br/>簡単アカウント登録。</p>
-                        </Link>
+                        </div>
 
-                        {/* 02: Discovery -> /how-discovery */}
-                        <Link to="/how-discovery" className="step-item">
+                        {/* 02: Discovery -> Opens Modal */}
+                        <div className="step-item" onClick={() => setActiveModal('discovery')}>
                             <span className="step-num">02</span>
                             <h3>Discovery</h3>
                             <p>タグやキーワードから、<br/>共鳴するコミュニティを探す。</p>
-                        </Link>
+                        </div>
 
-                        {/* 03: Dive In -> /how-dive */}
-                        <Link to="/how-dive" className="step-item">
+                        {/* 03: Dive In -> Opens Modal */}
+                        <div className="step-item" onClick={() => setActiveModal('dive')}>
                             <span className="step-num">03</span>
                             <h3>Dive In</h3>
                             <p>気になる活動へ参加リクエスト。<br/>新しい日常の始まり。</p>
-                        </Link>
+                        </div>
                     </div>
                 </section>
 
-
                 {/* --- CTA 1 --- */}
                 {!currentUser && (
-                
-                <div className="cta-section">
-                    <div className="cta-content">
-                        <p className="cta-catch">さあ、その一歩を踏み出そう。</p>
-                        <Link to="/signup" className="cta-button primary-btn">
-                            無料で始める
-                        </Link>
-                        <p className="cta-note">※ @u.tsukuba.ac.jp 等のアドレスが必要です</p>
+                    <div className="cta-section">
+                        <div className="cta-content">
+                            <p className="cta-catch">さあ、その一歩を踏み出そう。</p>
+                            <Link to="/signup" className="cta-button primary-btn">
+                                無料で始める
+                            </Link>
+                            <p className="cta-note">※ @u.tsukuba.ac.jp 等のアドレスが必要です</p>
+                        </div>
                     </div>
-                </div>
                 )}
 
                 {/* 2. FIND (ID: find) */}
@@ -183,7 +178,6 @@ export const About = () => {
                             <span className="en-heading">FIND YOUR VIBE</span><br />
                             <span className="jp-heading">共鳴する場所を探す</span>
                         </h2>
-                        
                         <div className="feature-grid">
                             <div className="feature-text">
                                 <p>
@@ -214,7 +208,6 @@ export const About = () => {
                             <span className="en-heading">IGNITE PASSION</span><br />
                             <span className="jp-heading">「好き」をカタチにする</span>
                         </h2>
-
                         <div className="feature-text-center">
                             <p>
                                 探しても見つからないなら、作ればいい。<br />
@@ -235,16 +228,15 @@ export const About = () => {
 
                 {/* --- CTA 2 --- */}
                 {!currentUser && (
-                
-                <div className="cta-section final-cta">
-                    <div className="cta-content">
-                        <h2>REDEFINE YOUR CAMPUS LIFE.</h2>
-                        <p>想像していなかった大学生活が、ここにある。</p>
-                        <Link to="/signup" className="cta-button primary-btn large">
-                            今すぐTCCに参加する
-                        </Link>
+                    <div className="cta-section final-cta">
+                        <div className="cta-content">
+                            <h2>REDEFINE YOUR CAMPUS LIFE.</h2>
+                            <p>想像していなかった大学生活が、ここにある。</p>
+                            <Link to="/signup" className="cta-button primary-btn large">
+                                今すぐTCCに参加する
+                            </Link>
+                        </div>
                     </div>
-                </div>
                 )}
 
                 {/* --- Footer --- */}
@@ -256,8 +248,11 @@ export const About = () => {
                     </div>
                     <p className="copyright">© 2026 Tsukuba Casual Community</p>
                 </footer>
-
             </main>
+
+            <Modal isOpen={!!activeModal} onClose={() => setActiveModal(null)}>
+                {renderModalContent()}
+            </Modal>
         </div>
-    )
+    );
 }

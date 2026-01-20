@@ -35,14 +35,7 @@ const App: React.FC = () => {
           <Route path="/privacy" element={
               <Privacy />} />
           
-          <Route path="/how-join" element={
-            <HowJoin />} />
-          <Route path="/how-discovery" element={
-            <HowDiscovery />} />
-          <Route path="/how-dive" element={
-            <HowDive />} />
-          <Route path="/verify-email" element={
-            <VerificationWaitScreen />} />
+          {/* How-to pages are now modals in About.tsx */}
 
           {/* ▼▼▼ ログイン必須のページ（PrivateRouteで囲む） ▼▼▼ */}
           <Route path="/" element={
