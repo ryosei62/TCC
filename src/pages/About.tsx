@@ -24,8 +24,8 @@ export const About = () => {
         }
     };
 
-    const COMMUNITY_OFFSET = 10;
-    const USER_OFFSET = 20;
+    const COMMUNITY_OFFSET = 0;
+    const USER_OFFSET = 10;
 
 
 

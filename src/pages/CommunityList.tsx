@@ -215,43 +215,35 @@ export default function CommunitiesList() {
     return sa.every((v, i) => v === sb[i]);
   };
 
-  const measureItemsPerRow = () => {
+
+  // 1行あたりの列数は「ulの幅」から決める（描画されてる要素数に依存しない）
+  const calcItemsPerRowByWidth = () => {
     const ul = listRef.current;
     if (!ul) return;
 
-    const children = Array.from(ul.children) as HTMLElement[];
-    if (children.length === 0) {
-      setItemsPerRow(1);
-      return;
-    }
+    // CSSと合わせる（min幅/ギャップ）
+    const MIN_ITEM_WIDTH = 260; // .community-list-item の最小幅に合わせる
+    const GAP = 16;             // ul の gap に合わせる
 
-    // 先頭行と同じ offsetTop の要素を数える = 1行の個数
-    const firstTop = children[0].offsetTop;
-    let count = 0;
-    for (const el of children) {
-      if (el.offsetTop !== firstTop) break;
-      count++;
-    }
-    setItemsPerRow(Math.max(1, count));
+    const width = ul.getBoundingClientRect().width;
+
+    const cols = Math.floor((width + GAP) / (MIN_ITEM_WIDTH + GAP));
+
+    setItemsPerRow(Math.max(1, Math.min(4, cols || 1)));
   };
 
   useEffect(() => {
-    // 描画後に計測したいので requestAnimationFrame を挟む
-    const raf = requestAnimationFrame(() => measureItemsPerRow());
-    return () => cancelAnimationFrame(raf);
-  }, [filteredCommunities.length, filterStatus, searchQuery, filterFavOnly, sortKey, sortOrder]);
-
-  useEffect(() => {
     const ul = listRef.current;
     if (!ul) return;
 
+    calcItemsPerRowByWidth();
+
     const ro = new ResizeObserver(() => {
-      requestAnimationFrame(() => measureItemsPerRow());
+      requestAnimationFrame(calcItemsPerRowByWidth);
     });
     ro.observe(ul);
 
-    // window resizeでも念のため
-    const onResize = () => requestAnimationFrame(() => measureItemsPerRow());
+    const onResize = () => requestAnimationFrame(calcItemsPerRowByWidth);
     window.addEventListener("resize", onResize);
 
     return () => {
@@ -266,7 +258,6 @@ export default function CommunitiesList() {
     return Math.max(1, Math.ceil(filteredCommunities.length / pageSize));
   }, [filteredCommunities.length, pageSize]);
 
-  // ページが範囲外になったら戻す（列数が変わると起きやすい）
   useEffect(() => {
     setPage((p) => Math.min(p, totalPages));
   }, [totalPages]);
