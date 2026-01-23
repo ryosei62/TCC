@@ -9,7 +9,7 @@ import { db } from "../firebase/config";
 
 
 // 画像アセットのインポート
-import sumahoWomanImage from '../assets/AboutImage/sumaho_woman.png';
+import liveImage from '../assets/AboutImage/live.png';
 import universityWatyaImage from '../assets/AboutImage/Tsukuba01.jpg'; // 背景用に追加
 
 export const About = () => {
@@ -184,24 +184,22 @@ export const About = () => {
                             <span className="jp-heading">共鳴する場所を探す</span>
                         </h2>
                         
-                        <div className="feature-grid">
+                        <div
+                        className="feature-grid feature-bg"
+                        style={{ backgroundImage: `url(${liveImage})` }}
+                        >
+                            <div className="feature-overlay" />
+
                             <div className="feature-text">
                                 <p>
-                                    ガチな部活から、ゆるい趣味の集まりまで。<br />
-                                    TCCには多種多様なコミュニティが存在します。
+                                ガチな部活から、ゆるい趣味の集まりまで。<br />
+                                TCCには多種多様なコミュニティが存在します。
                                 </p>
                                 <ul className="feature-list">
-                                    <li><strong>TAG SEARCH</strong> - 「音楽」「プログラミング」「散歩」など直感的にタグで検索。</li>
-                                    <li><strong>KEYWORD</strong> - ニッチな趣味も、キーワード検索なら見つかるかもしれない。</li>
-                                    <li><strong>TREND</strong> - 今盛り上がっている新しいコミュニティをチェック。</li>
+                                <li><strong>TAG SEARCH</strong> - 「音楽」「プログラミング」「散歩」など直感的にタグで検索。</li>
+                                <li><strong>KEYWORD</strong> - ニッチな趣味も、キーワード検索なら見つかるかもしれない。</li>
+                                <li><strong>TREND</strong> - 今盛り上がっている新しいコミュニティをチェック。</li>
                                 </ul>
-                            </div>
-                            <div className="feature-img-box">
-                                <img 
-                                    src={sumahoWomanImage} 
-                                    alt="Searching on phone" 
-                                    className="feature-img"
-                                />
                             </div>
                         </div>
                     </div>
