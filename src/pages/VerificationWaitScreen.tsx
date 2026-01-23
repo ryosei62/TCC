@@ -14,6 +14,7 @@ export const VerificationWaitScreen = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [checking, setChecking] = useState(false);
 
   const userEmail = auth.currentUser?.email;
 
@@ -25,6 +26,52 @@ export const VerificationWaitScreen = () => {
 
   const secondsLeft = canResendAt ? Math.max(0, Math.ceil((canResendAt - now) / 1000)) : 0;
   const canResend = canResendAt ? Date.now() >= canResendAt : true;
+
+  const handleVerificationCheck = async () => {
+    // 念のため currentUser があるかチェック
+    if (!auth.currentUser) return;
+    
+    setChecking(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      console.log("1. ユーザー情報の更新を開始します...");
+      
+      // 1. Firebaseサーバーから最新情報を取得 (reload)
+      await auth.currentUser.reload();
+      console.log("2. reload完了");
+
+      // 2. ★重要: トークンを強制的にリフレッシュする (trueを指定)
+      // これを行うことで、ブラウザ内のキャッシュ情報も更新されます
+      await auth.currentUser.getIdToken(true);
+      console.log("3. トークンリフレッシュ完了");
+
+      // 3. 更新後のステータスを確認
+      console.log("現在のステータス: ", auth.currentUser.emailVerified);
+
+      if (auth.currentUser.emailVerified) {
+        console.log("認証成功！");
+        
+        // ★重要: いきなりリロードせず、まずは成功メッセージを出す
+        setMessage("認証が確認できました！");
+        
+        // 念のためアラートを出して、ユーザーにOKを押させる（この間にデータ保存が完了するのを待つ）
+        alert("認証が完了しました。トップページへ移動します。");
+      
+        navigate("/"); 
+        
+      } else {
+        console.warn("認証失敗: まだ emailVerified が false です");
+        setMessage("まだ確認が完了していないようです。メールのリンクをクリックしましたか？");
+      }
+    } catch (e) {
+      console.error("エラーが発生しました:", e);
+      setError("確認中にエラーが発生しました。");
+    } finally {
+      setChecking(false);
+    }
+  };
 
   const handleResend = async () => {
     setError(null);
@@ -65,11 +112,12 @@ export const VerificationWaitScreen = () => {
 
         {/* 1. メインボタン：リロード (SignupFormのCSSクラスを適用して大きく表示) */}
         <button 
-          onClick={() => window.location.reload()} 
+          onClick={handleVerificationCheck} 
           className="signup-button"
-          style={{ marginBottom: 20 }}
+          disabled={checking} // チェック中は押せないようにする
+          style={{ marginBottom: 20, opacity: checking ? 0.7 : 1 }}
         >
-          認証完了しました
+          {checking ? "確認中..." : "認証完了しました"}
         </button>
 
         {/* メッセージ表示エリア */}
