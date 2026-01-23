@@ -429,6 +429,127 @@
   margin-top: 30px;
 }
 
+/* ========== FIND section base ========== */
+.feature-section {
+  padding: 96px 0;
+}
+
+.feature-content {
+  width: min(1100px, 92vw);
+  margin: 0 auto;
+}
+
+.section-title {
+  margin: 0 0 28px;
+  line-height: 1.1;
+}
+
+.section-title .en-heading {
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: clamp(22px, 2.2vw, 30px);
+  opacity: 0.9;
+}
+
+.section-title .jp-heading {
+  display: inline-block;
+  margin-top: 10px;
+  font-weight: 700;
+  font-size: clamp(22px, 2.6vw, 34px);
+}
+
+/* ========== Feature hero (background image + overlay + text) ========== */
+.feature-grid.feature-bg {
+  position: relative;
+  display: grid;
+  align-items: center;
+
+  min-height: 440px;
+  border-radius: 22px;
+  overflow: hidden;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* text block is on the right (PC) */
+  justify-items: end;
+
+  /* subtle depth */
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+}
+
+/* overlay (right side darker so right-aligned text stays readable) */
+.feature-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  background: linear-gradient(
+    270deg,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.7) 35%,
+    rgba(0, 0, 0, 0.22) 65%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+/* text block */
+.feature-text {
+  position: relative;
+  z-index: 2;
+
+  width: min(560px, 92%);
+  padding: 40px 44px;
+
+  text-align: right;
+  color: #fff;
+
+  /* slightly lift readability without looking "outlined" */
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+}
+
+.feature-text p {
+  margin: 0 0 18px;
+  font-size: clamp(15px, 1.1vw, 17px);
+  line-height: 1.9;
+  opacity: 0.95;
+}
+
+/* list */
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: grid;
+  gap: 12px;
+}
+
+.feature-text {
+  position: relative;
+  z-index: 2;
+
+  /* ★ここが本体 */
+  max-width: 45vw;
+  margin-left: auto;
+
+  padding: 40px 44px;
+  text-align: right;
+  color: #fff;
+
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+}
+
+.feature-text p,
+.feature-list li {
+  line-height: 1.85;
+  word-break: keep-all;
+}
+
+.feature-list strong {
+  letter-spacing: 0.06em;
+}
 
 /* =========================================
    CTA SECTION
@@ -510,6 +631,14 @@
 .separator { color: #ccc; }
 .copyright { margin-top: 20px; font-size: 0.8rem; color: #aaa; font-family: 'Montserrat', sans-serif; }
 
+@media (max-width: 900px) {
+  .feature-text {
+    max-width: none;
+    text-align: left;
+    margin-left: 0;
+    padding: 28px 22px;
+  }
+}
 
 /* =========================================
    MOBILE RESPONSIVE
@@ -554,7 +683,7 @@
     padding-top: 20px;
   }
 
-
+  
   
   .return-btn {
     /* 位置を左端に固定 */
@@ -573,8 +702,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    
- 
   }
 
   /* ★代わりに「←」を表示する */
@@ -645,6 +772,36 @@
   /* --- 3. タイトル下の余白も少し詰める --- */
   .section-title {
     margin-bottom: 30px; /* 60px -> 30px */
+  }
+
+  .feature-section {
+    padding: 76px 0;
+  }
+
+  .feature-grid.feature-bg {
+    min-height: 420px;
+    justify-items: center;
+  }
+
+  .feature-text {
+    text-align: left;
+    padding: 28px 22px;
+    width: min(640px, 92%);
+  }
+
+  /* switch overlay to vertical for mobile readability */
+  .feature-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.58) 55%,
+      rgba(0, 0, 0, 0.22) 100%
+    );
+  }
+
+  /* your <br/> inside li can become too tall on small screens */
+  .feature-list li br {
+    display: none;
   }
 }
 

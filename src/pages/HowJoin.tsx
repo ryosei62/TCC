@@ -29,6 +29,7 @@ export const HowJoin = () => {
           <h3>必要なもの</h3>
           {/* リストのデザインはCSS側で調整済み、または必要に応じてHowTo.cssに追加 */}
           <ul style={{ paddingLeft: '20px', marginBottom: '30px' }}>
+            <li>ユーザー名</li>
             <li style={{ marginBottom: '10px' }}>筑波大学発行のメールアドレス（@u.tsukuba.ac.jp など）</li>
             <li>パスワード</li>
           </ul>
