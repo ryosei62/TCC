@@ -17,13 +17,6 @@ export const About = () => {
     const [communityCount, setCommunityCount] = useState<number | null>(null);
     const [userCount, setUserCount] = useState<number | null>(null);
 
-    const scrollToSection = (id: string) => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
-
     const COMMUNITY_OFFSET = 0;
     const USER_OFFSET = 10;
 
@@ -71,17 +64,15 @@ export const About = () => {
                 </Link>
                 )}
 
+                {!currentUser && (
                 <nav className="header-nav">
-                    <button className="nav-btn" onClick={() => scrollToSection('concept')}>
-                        CONCEPT
-                    </button>
-                    <button className="nav-btn" onClick={() => scrollToSection('find')}>
-                        FIND
-                    </button>
-                    <button className="nav-btn" onClick={() => scrollToSection('create')}>
-                        CREATE
-                    </button>
-                </nav>
+                    <Link to="/signup" className="header-signup-btn">
+                    新規登録
+                    </Link>
+                    <Link to="/login" className="header-login-link">
+                        ログイン
+                    </Link>
+                </nav>)}
             </header>
 
             {/* --- Main Content --- */}
@@ -119,7 +110,7 @@ export const About = () => {
                     </div>
                 </section>
 
-               <div className="stats-bar">
+                <div className="stats-bar">
                     <div className="stat-item">
                         <span className="stat-label">現在のコミュニティ数</span>
                         <strong className="stat-number">{communityCount !== null ? communityCount : "…"}</strong>

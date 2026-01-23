@@ -43,8 +43,82 @@
 
 .header-nav {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 14px;
 }
+
+.header-signup-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+
+  background: #111;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.header-signup-btn:hover {
+  background: #000;
+  transform: translateY(-1px);
+}
+
+.header-login-link {
+  position: relative;
+  padding-left: 14px;
+
+  font-size: 14px;
+  color: #555;
+  text-decoration: none;
+}
+
+/* 区切り線を疑似要素で */
+.header-login-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 1px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.header-login-link:hover {
+  color: #000;
+}
+
+
+.top-header {
+  display: flex;
+  align-items: center;
+
+  padding: 16px 24px;
+}
+
+/* ログイン時：左に戻るボタン */
+.return-btn {
+  text-decoration: none;
+  color: #111;
+  font-weight: 600;
+}
+
+/* 未ログイン時：右上に寄せる */
+.header-nav {
+  margin-left: auto;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.return-btn {
+  margin-left: auto;
+}
+
+
 
 .return-btn {
   margin-left: 10px;
@@ -683,6 +757,14 @@
     padding-top: 20px;
   }
 
+  .top-header {
+    padding: 12px 16px;
+  }
+
+  .header-nav {
+    gap: 10px;
+  }
+
   
   
   .return-btn {
@@ -778,25 +860,30 @@
     padding: 76px 0;
   }
 
-  .feature-grid.feature-bg {
-    min-height: 420px;
-    justify-items: center;
-  }
-
-  .feature-text {
-    text-align: left;
-    padding: 28px 22px;
-    width: min(640px, 92%);
-  }
-
   /* switch overlay to vertical for mobile readability */
   .feature-overlay {
     background: linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.78) 0%,
-      rgba(0, 0, 0, 0.58) 55%,
-      rgba(0, 0, 0, 0.22) 100%
+      rgba(0, 0, 0, 0.75) 0%,
+      rgba(0, 0, 0, 0.6) 60%,
+      rgba(0, 0, 0, 0.45) 100%
     );
+  }
+  .feature-grid.feature-bg {
+    min-height: auto;
+    padding: 24px 0;
+  }
+  .feature-text {
+    max-width: 100%;
+    margin: 0 auto;
+
+    text-align: left;
+    padding: 20px 16px;
+  }
+  .feature-text p,
+  .feature-list li {
+    font-size: 14px;
+    line-height: 1.8;
   }
 
   /* your <br/> inside li can become too tall on small screens */
