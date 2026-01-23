@@ -15,10 +15,6 @@ import { MyPage } from "./pages/MyPage";
 import { TimelinePage } from "./pages/TimelinePage";
 import { Terms } from "./pages/Terms";
 import { Privacy } from "./pages/Privacy";
-import { HowJoin } from './pages/HowJoin';
-import { HowDiscovery } from './pages/HowDiscovery';
-import { HowDive } from './pages/HowDive';
-import { VerificationWaitScreen } from "./pages/VerificationWaitScreen";
 
 const App: React.FC = () => {
   return (
