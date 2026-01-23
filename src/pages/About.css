@@ -856,39 +856,70 @@
     margin-bottom: 30px; /* 60px -> 30px */
   }
 
-  .feature-section {
-    padding: 76px 0;
+  /* 背景ヒーロー：中身に合わせる + 下に余白 */
+  .feature-grid.feature-bg {
+    min-height: auto;
+    padding: 18px;
+    justify-items: stretch;   /* 右寄せ解除 */
+    align-items: end;         /* ★文字を下に寄せる */
   }
 
-  /* switch overlay to vertical for mobile readability */
+  /* 文字の裏だけ暗くする（下側を濃く） */
   .feature-overlay {
     background: linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.75) 0%,
-      rgba(0, 0, 0, 0.6) 60%,
-      rgba(0, 0, 0, 0.45) 100%
+      rgba(0,0,0,0.15) 0%,
+      rgba(0,0,0,0.35) 45%,
+      rgba(0,0,0,0.72) 100%
     );
   }
-  .feature-grid.feature-bg {
-    min-height: auto;
-    padding: 24px 0;
-  }
+
+  /* 文字は「カード」として載せる */
   .feature-text {
     max-width: 100%;
-    margin: 0 auto;
-
+    margin: 0;
     text-align: left;
-    padding: 20px 16px;
-  }
-  .feature-text p,
-  .feature-list li {
-    font-size: 14px;
-    line-height: 1.8;
+
+    padding: 16px 14px;
+    border-radius: 16px;
+
+    background: rgba(0,0,0,0.30);
+    border: 1px solid rgba(255,255,255,0.14);
+    backdrop-filter: blur(8px);
+
+    text-shadow: none; /* カードにしたら要らない */
   }
 
-  /* your <br/> inside li can become too tall on small screens */
-  .feature-list li br {
-    display: none;
+  .feature-text p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  /* リストを“段落”として読めるようにする */
+  .feature-list {
+    gap: 10px;
+  }
+
+  .feature-list li {
+    padding: 12px 12px;
+    border-radius: 14px;
+
+    background: rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.12);
+
+    font-size: 13px;
+    line-height: 1.7;
+
+    /* ★自然改行（日本語 + 記号混在の破綻を防ぐ） */
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .feature-list strong {
+    display: inline-block;
+    margin-right: 6px;
+    letter-spacing: 0.06em;
   }
 }
 
