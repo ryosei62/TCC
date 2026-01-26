@@ -31,6 +31,7 @@ import {
   FaThumbtack,
 } from "react-icons/fa";
 import { addFavorite, removeFavorite, favoriteDocRef } from "../component/favorite";
+import { TagSelector, type Tag } from "./TagSelector";
 
 import "./CommunityDetail.css";
 
@@ -50,7 +51,8 @@ type Community = {
   createdBy?: string;
   official?: number;
   ownerId?: string;
-  joinDescription?: string;  
+  joinDescription?: string; 
+  tags?: string[]; 
 };
 
 type Post = {
@@ -103,6 +105,7 @@ export default function CommunityDetail() {
   const [communityForm, setCommunityForm] = useState<Community | null>(null);
   const [snsUrls, setSnsUrls] = useState<{ label: string; url: string }[]>([]);
   const [joinUrls, setJoinUrls] = useState<{ label: string; url: string }[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [ownerSearch, setOwnerSearch] = useState("");
@@ -490,6 +493,20 @@ const handleSelectOwner = async (uid: string) => {
     setSelectedImage(displayImages[nextIndex]);
   }
 
+  const toNormalized = (s: string) =>
+    s.trim().toLowerCase().replace(/\s+/g, " ");
+
+  const tagsToTagObjects = (names: string[]): Tag[] =>
+    names
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .map((name) => ({
+        id: `custom-${toNormalized(name)}`,
+        name,
+        normalizedNames: [toNormalized(name)],
+      }));
+
+
   // コミュニティ編集フォームの入力変更
   const handleCommunityInputChange = (
     field: keyof Community,
@@ -540,11 +557,13 @@ const handleSelectOwner = async (uid: string) => {
 
       const trimmedSns = snsUrls.filter((v) => v.label || v.url);
       const trimmedJoin = joinUrls.filter((v) => v.label || v.url);
+      const nextTags = selectedTags.map((t) => t.name);
 
       await updateDoc(docRef, { 
         ...communityForm,
         snsUrls: trimmedSns,
         joinUrls: trimmedJoin,
+        tags: nextTags,
       });
       setCommunity({
         ...communityForm,
@@ -872,6 +891,11 @@ const handleSelectOwner = async (uid: string) => {
 
                     setSnsUrls(community.snsUrls ?? [{ label: "", url: "" }]);
                     setJoinUrls(community.joinUrls ?? [{ label: "", url: "" }]);
+
+                    const initialNames = (communityForm?.tags ?? community.tags ?? []);
+                      setSelectedTags(tagsToTagObjects(initialNames));
+
+                    setCommunityForm((prev) => (prev ? { ...prev, tags: prev.tags ?? [] } : prev));
                   }}
                   className="admin-edit-button"
                 >
@@ -1103,6 +1127,13 @@ const handleSelectOwner = async (uid: string) => {
                       ))}
                     </select>
                   </label>
+
+                  <div className="admin-form-field">
+                    <span>タグ</span>
+                    <div style={{ flex: 1 }}>
+                      <TagSelector selectedTags={selectedTags} setSelectedTags={setSelectedTags} />
+                    </div>
+                  </div>
 
                   {/* 画像編集エリア（追加・削除・差し替え・サムネ選択） */}
                   <div className="image-upload-section">
