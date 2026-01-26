@@ -712,6 +712,25 @@
     margin-left: 0;
     padding: 28px 22px;
   }
+  .feature-grid.feature-bg{
+    min-height: auto;
+    padding: 16px;
+    justify-items: stretch; /* 右寄せ解除 */
+    border-radius: 20px;
+  }
+
+  .feature-text{
+    width: 100%;
+    max-width: none;
+    text-align: left;
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  .feature-overlay{
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.72) 100%);
+  }
 }
 
 /* =========================================
@@ -808,118 +827,76 @@
     justify-content: center;
   }
 
-  .feature-img-box {
-    display: none; /* これだけで消えます */
+  .feature-grid.feature-bg{
+    min-height: auto;          /* ★重要：固定/最小高さ依存をやめる */
+    padding: 22px 18px 22px;   /* 文字が収まる余白 */
+    align-items: start;        /* ★重要：下寄せ/中央寄せをやめる */
+    justify-items: start;      /* 右寄せをやめてPC寄りの左寄せに */
+    background-position: center; /* 必要なら center top に */
   }
 
-  /* Stats bar mobile adjustment */
-  .stats-text {
-    font-size: 1rem;
-    padding: 40px 15px;
-    line-height: 2;
-  }
-  .stats-text strong {
-    font-size: 3rem;
-    display: block;
-    margin: 10px 0;
-  }
-  .stats-bar {
-    /* ★ スマホでは縦並びにする */
-    flex-direction: column;
-    gap: 20px;
-    padding: 40px 20px;
+  /* オーバーレイ：PCと同じ「写真を活かしつつ読める暗さ」 */
+  .feature-overlay{
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 100%);
   }
 
-  .stat-divider {
-    /* スマホでは縦並びになるので、縦棒の区切り線は消す */
-    width: 100px;
-    height: 1px; /* 横線にする */
-    background-color: #222;
-  }
-
-  .stat-number {
-    font-size: 3rem; /* 少し小さく */
-  }
-
-  .section-block {
-    /* PC: 100px -> スマホ: 40px に変更 */
-    padding: 40px 20px; 
-  }
-
-  /* --- 2. コンテンツ間の隙間も詰める --- */
-  .feature-grid {
-    gap: 30px; /* 少し詰める */
-  }
-
-  /* --- 3. タイトル下の余白も少し詰める --- */
-  .section-title {
-    margin-bottom: 30px; /* 60px -> 30px */
-  }
-
-  /* 背景ヒーロー：中身に合わせる + 下に余白 */
-  .feature-grid.feature-bg {
-    min-height: auto;
-    padding: 18px;
-    justify-items: stretch;   /* 右寄せ解除 */
-    align-items: end;         /* ★文字を下に寄せる */
-  }
-
-  /* 文字の裏だけ暗くする（下側を濃く） */
-  .feature-overlay {
-    background: linear-gradient(
-      180deg,
-      rgba(0,0,0,0.15) 0%,
-      rgba(0,0,0,0.35) 45%,
-      rgba(0,0,0,0.72) 100%
-    );
-  }
-
-  /* 文字は「カード」として載せる */
-  .feature-text {
-    max-width: 100%;
+  /* テキスト：カード化を完全に解除（PCの“直貼り”へ） */
+  .feature-text{
+    width: 100%;
+    max-width: none;
     margin: 0;
+    padding: 0;
+
     text-align: left;
+    color: #fff;
 
-    padding: 16px 14px;
-    border-radius: 16px;
-
-    background: rgba(0,0,0,0.30);
-    border: 1px solid rgba(255,255,255,0.14);
-    backdrop-filter: blur(8px);
-
-    text-shadow: none; /* カードにしたら要らない */
+    background: transparent;   /* ★カード解除 */
+    border: none;              /* ★カード解除 */
+    backdrop-filter: none;     /* ★カード解除 */
+    border-radius: 0;          /* ★カード解除 */
+    text-shadow: 0 2px 14px rgba(0,0,0,.35); /* 直貼りの可読性だけ確保 */
   }
 
-  .feature-text p {
-    margin: 0 0 12px;
-    font-size: 14px;
+  .feature-text p{
+    margin: 0 0 14px;
+    font-size: 15px;
     line-height: 1.75;
   }
 
-  /* リストを“段落”として読めるようにする */
-  .feature-list {
-    gap: 10px;
+  /* リスト：PCっぽく「直貼り + 青バー」 */
+  .feature-list{
+    gap: 14px;
   }
 
-  .feature-list li {
-    padding: 12px 12px;
-    border-radius: 14px;
+  .feature-list li{
+    position: relative;
+    padding: 0 0 0 18px;       /* 左の青バー分 */
+    background: transparent;   /* ★カード解除 */
+    border: none;              /* ★カード解除 */
+    border-radius: 0;          /* ★カード解除 */
 
-    background: rgba(0,0,0,0.22);
-    border: 1px solid rgba(255,255,255,0.12);
-
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.7;
 
-    /* ★自然改行（日本語 + 記号混在の破綻を防ぐ） */
-    overflow-wrap: anywhere;
+    overflow-wrap: anywhere;   /* 改行タグなしで見切れ防止 */
     word-break: normal;
   }
 
-  .feature-list strong {
-    display: inline-block;
-    margin-right: 6px;
-    letter-spacing: 0.06em;
+  .feature-list li::before{
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 3px;
+    height: calc(100% - 4px);
+    border-radius: 999px;
+    background: #3b82f6;
+    opacity: .95;
+  }
+
+  .feature-list strong{
+    letter-spacing: .06em;
   }
 }
 
